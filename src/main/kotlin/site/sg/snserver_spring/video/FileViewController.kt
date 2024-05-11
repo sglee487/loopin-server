@@ -1,4 +1,4 @@
-package site.sg.sserver_spring.video
+package site.sg.snserver_spring.video
 
 import org.springframework.web.bind.annotation.RestController
 

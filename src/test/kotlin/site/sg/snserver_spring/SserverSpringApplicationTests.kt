@@ -1,10 +1,10 @@
-package site.sg.sserver_spring
+package site.sg.snserver_spring
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class SserverSpringApplicationTests {
+class SnServerSpringApplicationTests {
 
     @Test
     fun contextLoads() {

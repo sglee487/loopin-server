@@ -1,11 +1,11 @@
-package site.sg.sserver_spring
+package site.sg.snserver_spring
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class SserverSpringApplication
+class SnServerSpringApplication
 
 fun main(args: Array<String>) {
-    runApplication<SserverSpringApplication>(*args)
+    runApplication<SnServerSpringApplication>(*args)
 }

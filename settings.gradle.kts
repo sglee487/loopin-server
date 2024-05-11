@@ -1,1 +1,1 @@
-rootProject.name = "sserver_spring"
+rootProject.name = "snserver_spring"
