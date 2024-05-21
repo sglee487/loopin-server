@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: sn_server_spring
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
