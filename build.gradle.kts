@@ -24,6 +24,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    // https://medium.com/@fajrimoad/efficient-video-splitting-with-ffmpeg-and-javacv-b19692db438d
+    // video streaming
+    implementation("org.bytedeco:javacv:1.5.10")
+    implementation("org.bytedeco:javacv-platform:1.5.10")
+    implementation("org.bytedeco:ffmpeg-platform:6.1.1-1.5.10")
+
     runtimeOnly("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
