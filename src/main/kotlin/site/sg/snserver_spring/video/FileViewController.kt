@@ -76,7 +76,7 @@ class FileViewController {
             tempFolder.mkdir()
         }
 
-        val outputFileName = File(tempFolder, "segment_$segmentNumber.mp4").absolutePath
+        val outputFileName = File(tempFolder, "segment_$segmentNumber.ts").absolutePath
 
         try {
             FFmpegFrameGrabber(filePath).use { grabber ->
@@ -101,7 +101,7 @@ class FileViewController {
     }
 
     private fun configureRecorder(recorder: FFmpegFrameRecorder, grabber: FFmpegFrameGrabber) {
-        recorder.format = "mp4"
+        recorder.format = "ts"
         recorder.frameRate = grabber.frameRate
         recorder.videoBitrate = grabber.videoBitrate
         recorder.videoCodec = avcodec.AV_CODEC_ID_H264
