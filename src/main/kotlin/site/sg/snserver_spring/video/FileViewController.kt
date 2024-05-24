@@ -20,7 +20,7 @@ import java.util.concurrent.Executors
 @RestController
 class FileViewController {
 
-    private final val TOTAL_SEGMENTS = 5
+    private final val DURATION_SEGMENT_SECONDS = 10 * 1000000
 
     @GetMapping("/video", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
     fun getVideoFileBytes(): ByteArrayResource {
@@ -47,12 +47,12 @@ class FileViewController {
                 grabber.start()
 
                 val totalDuration = grabber.lengthInTime
-                val segmentDuration = totalDuration / TOTAL_SEGMENTS
+                val segmentLength = totalDuration / DURATION_SEGMENT_SECONDS
 
-                for (segment in 0 until TOTAL_SEGMENTS) {
-                    val startTimestamp = segment * segmentDuration
+                for (segment in 0 .. segmentLength) {
+                    val startTimestamp = segment * DURATION_SEGMENT_SECONDS
                     val endTimestamp =
-                        if (segment == TOTAL_SEGMENTS - 1) totalDuration else (segment + 1) * segmentDuration
+                        if (segment == segmentLength) totalDuration else (segment + 1) * DURATION_SEGMENT_SECONDS
 
                     executor.submit {
                         try {
@@ -69,7 +69,7 @@ class FileViewController {
         }
     }
 
-    private fun processSegment(filePath: String, segmentNumber: Int, startTimestamp: Long, endTimestamp: Long) {
+    private fun processSegment(filePath: String, segmentNumber: Long, startTimestamp: Long, endTimestamp: Long) {
 
         val tempFolder = File(System.getProperty("java.io.tmpdir"), "temp")
         if (!tempFolder.exists()) {
@@ -97,7 +97,6 @@ class FileViewController {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 
     private fun configureRecorder(recorder: FFmpegFrameRecorder, grabber: FFmpegFrameGrabber) {
