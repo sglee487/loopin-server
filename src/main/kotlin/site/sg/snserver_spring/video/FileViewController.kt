@@ -49,40 +49,57 @@ class FileViewController {
                 val totalDuration = grabber.lengthInTime
                 val segmentLength = totalDuration / DURATION_SEGMENT_SECONDS
 
-                for (segment in 0 .. segmentLength) {
+                val tempFolder = File(System.getProperty("java.io.tmpdir"), "temp")
+                if (!tempFolder.exists()) {
+                    tempFolder.mkdir()
+                }
+
+                // write m3u8 file
+                val m3u8File = File(tempFolder, "playlist.m3u8")
+                m3u8File.writeText("#EXTM3U")
+                m3u8File.appendText("\n#EXT-X-VERSION:3")
+                m3u8File.appendText("\n#EXT-X-TARGETDURATION:2")
+                m3u8File.appendText("\n#EXT-X-MEDIA-SEQUENCE:10")
+                m3u8File.appendText("\n#EXT-FIRST-SEGMENT-TIMESTAMP:0")
+
+                for (segment in 0..segmentLength) {
                     val startTimestamp = segment * DURATION_SEGMENT_SECONDS
                     val endTimestamp =
                         if (segment == segmentLength) totalDuration else (segment + 1) * DURATION_SEGMENT_SECONDS
 
+                    val outputFileName = "segment_$segment.ts"
+                    val outputFilePath = File(tempFolder, outputFileName).absolutePath
+
                     executor.submit {
                         try {
-                            processSegment(filePath, segment, startTimestamp, endTimestamp)
+                            processSegment(filePath, outputFilePath, startTimestamp, endTimestamp)
                         } catch (e: java.lang.Exception) {
                             e.printStackTrace()
                         }
                     }
 
+                    m3u8File.appendText("\n#EXTINF:10.00")
+                    m3u8File.appendText("\nsegment_$segment.ts")
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
         }
     }
 
-    private fun processSegment(filePath: String, segmentNumber: Long, startTimestamp: Long, endTimestamp: Long) {
-
-        val tempFolder = File(System.getProperty("java.io.tmpdir"), "temp")
-        if (!tempFolder.exists()) {
-            tempFolder.mkdir()
-        }
-
-        val outputFileName = File(tempFolder, "segment_$segmentNumber.ts").absolutePath
+    private fun processSegment(
+        inputFilePath: String,
+        outputFilePath: String,
+        startTimestamp: Long,
+        endTimestamp: Long
+    ) {
 
         try {
-            FFmpegFrameGrabber(filePath).use { grabber ->
+            FFmpegFrameGrabber(inputFilePath).use { grabber ->
                 grabber.start()
                 grabber.timestamp = startTimestamp
-                FFmpegFrameRecorder(outputFileName, grabber.imageWidth, grabber.imageHeight).use { recorder ->
+                FFmpegFrameRecorder(outputFilePath, grabber.imageWidth, grabber.imageHeight).use { recorder ->
                     configureRecorder(recorder, grabber)
                     recorder.start()
 
