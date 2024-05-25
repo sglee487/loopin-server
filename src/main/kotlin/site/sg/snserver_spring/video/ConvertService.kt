@@ -17,7 +17,6 @@ class ConvertService {
     fun convertToHLS(fileInputStream: InputStream, filenameNoExt: String) {
         val file = File(ClassLoader.getSystemResource("data/output").path, filenameNoExt)
         file.mkdir()
-        println(file.path)
 
         FFmpeg.atPath()
             .addInput(

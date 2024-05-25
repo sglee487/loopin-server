@@ -2,22 +2,31 @@ package site.sg.snserver_spring.video
 
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.util.FileCopyUtils
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.io.File
 
 @RestController
 class VideoController(
     val convertService: ConvertService
 ) {
 
-    @GetMapping("/video", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
-    fun getVideoFileBytes(): ByteArrayResource {
-        val resource = ClassLoader.getSystemResource("data/test1.mp4") // Use ClassLoader directly
-        return ByteArrayResource(FileCopyUtils.copyToByteArray(resource.openStream()))
+    @GetMapping("/video/{key}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    fun getVideoFileBytes(
+        @PathVariable key: String,
+        @PathVariable filename: String
+    ): ResponseEntity<ByteArrayResource> {
+        val file = File(ClassLoader.getSystemResource("data/output").path, "$key/$filename")
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("application/x-mpegURL"))
+            .body(ByteArrayResource(FileCopyUtils.copyToByteArray(file)))
     }
 
     @PostMapping("/video")
