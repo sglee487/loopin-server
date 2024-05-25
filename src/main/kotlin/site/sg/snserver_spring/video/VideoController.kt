@@ -29,6 +29,19 @@ class VideoController(
             .body(ByteArrayResource(FileCopyUtils.copyToByteArray(file)))
     }
 
+    @GetMapping("/video/{key}/{resolution}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    fun getVideoFileBytes(
+        @PathVariable key: String,
+        @PathVariable resolution: String,
+        @PathVariable filename: String
+    ): ResponseEntity<ByteArrayResource> {
+        val file = File(ClassLoader.getSystemResource("data/output").path, "$key/$resolution/$filename")
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("application/x-mpegURL"))
+            .body(ByteArrayResource(FileCopyUtils.copyToByteArray(file)))
+    }
+
     @PostMapping("/video")
     fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile) {
         val filenameNoExt = uploadedFile.originalFilename?.substringBeforeLast(".") ?: "video"
