@@ -29,19 +29,18 @@ class FileViewController {
     }
 
     @PostMapping("/video")
-    fun uploadVideoFile(@RequestParam("file") file: MultipartFile) {
+    fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile) {
         val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
 
-        val tempFilename = file.originalFilename ?: "temp-video.mp4"
-        val tempFile = File(System.getProperty("java.io.tmpdir"), tempFilename)
-        file.transferTo(tempFile)
-        println(tempFile)
-        println(tempFile.path)
+        val filename = uploadedFile.originalFilename ?: "temp-video.mp4"
+        val filenameNoExt = uploadedFile.originalFilename?.substringBeforeLast(".") ?: "temp-video"
+        val file = File(ClassLoader.getSystemResource("data/output").path, filename)
+        uploadedFile.transferTo(file)
 
-        splitVideo(tempFile.absolutePath, executor)
+        splitVideo(file.absolutePath, filenameNoExt, executor)
     }
 
-    private fun splitVideo(filePath: String, executor: ExecutorService) {
+    private fun splitVideo(filePath: String, filenameNoExt: String, executor: ExecutorService) {
         try {
             FFmpegFrameGrabber(filePath).use { grabber ->
                 grabber.start()
@@ -49,13 +48,13 @@ class FileViewController {
                 val totalDuration = grabber.lengthInTime
                 val segmentLength = totalDuration / DURATION_SEGMENT_SECONDS
 
-                val tempFolder = File(System.getProperty("java.io.tmpdir"), "temp")
+                val tempFolder = File(ClassLoader.getSystemResource("data/output").path, filenameNoExt)
                 if (!tempFolder.exists()) {
                     tempFolder.mkdir()
                 }
 
                 // write m3u8 file
-                val m3u8File = File(tempFolder, "playlist.m3u8")
+                val m3u8File = File(tempFolder, "index.m3u8")
                 m3u8File.writeText("#EXTM3U")
                 m3u8File.appendText("\n#EXT-X-VERSION:3")
                 m3u8File.appendText("\n#EXT-X-TARGETDURATION:2")
