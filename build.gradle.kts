@@ -25,11 +25,10 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    // https://medium.com/@fajrimoad/efficient-video-splitting-with-ffmpeg-and-javacv-b19692db438d
     // video streaming
-    implementation("org.bytedeco:javacv:1.5.10")
-    implementation("org.bytedeco:javacv-platform:1.5.10")
-    implementation("org.bytedeco:ffmpeg-platform:6.1.1-1.5.10")
+    // https://velog.io/@haerong22/%EC%98%81%EC%83%81-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-7.-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-HLS-protocol
+    // https://dev.to/giboow/how-to-build-a-video-transcoder-with-springboot-and-ffmpeg-n7p
+    implementation("com.github.kokorin.jaffree:jaffree:2023.09.10")
 
     runtimeOnly("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
