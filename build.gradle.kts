@@ -30,6 +30,9 @@ dependencies {
     // https://dev.to/giboow/how-to-build-a-video-transcoder-with-springboot-and-ffmpeg-n7p
     implementation("com.github.kokorin.jaffree:jaffree:2023.09.10")
 
+    // database
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.3.0")
+
     runtimeOnly("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

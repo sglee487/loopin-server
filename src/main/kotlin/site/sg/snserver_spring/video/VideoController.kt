@@ -1,51 +1,46 @@
 package site.sg.snserver_spring.video
 
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.util.FileCopyUtils
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import java.io.File
 
 @RestController
 class VideoController(
-    val convertService: ConvertService
+    private val videoService: VideoService
 ) {
 
-    @GetMapping("/video/{key}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    @GetMapping("/video/{title}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
     fun getVideoFileBytes(
-        @PathVariable key: String,
+        @PathVariable title: String,
         @PathVariable filename: String
-    ): ResponseEntity<ByteArrayResource> {
-        val file = File(ClassLoader.getSystemResource("data/output").path, "$key/$filename")
+    ): ResponseEntity<ByteArray> {
+        val fileBytes = videoService.getVideo(title, filename, null)
+            ?: throw IllegalArgumentException("Video not found $title $filename")
 
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/x-mpegURL"))
-            .body(ByteArrayResource(FileCopyUtils.copyToByteArray(file)))
+            .body(fileBytes)
     }
 
-    @GetMapping("/video/{key}/{resolution}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    @GetMapping("/video/{title}/{resolution}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
     fun getVideoFileBytes(
-        @PathVariable key: String,
-        @PathVariable resolution: String,
+        @PathVariable title: String,
+        @PathVariable resolution: String?,
         @PathVariable filename: String
-    ): ResponseEntity<ByteArrayResource> {
-        val file = File(ClassLoader.getSystemResource("data/output").path, "$key/$resolution/$filename")
+    ): ResponseEntity<ByteArray> {
+        val fileBytes = videoService.getVideo(title, filename, resolution)
+            ?: throw IllegalArgumentException("Video not found $title $resolution $filename")
 
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/x-mpegURL"))
-            .body(ByteArrayResource(FileCopyUtils.copyToByteArray(file)))
+            .body(fileBytes)
     }
 
     @PostMapping("/video")
     fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile) {
         val filenameNoExt = uploadedFile.originalFilename?.substringBeforeLast(".") ?: "video"
-        convertService.convertToHLS(uploadedFile.inputStream, filenameNoExt)
+        videoService.saveVideo(uploadedFile.inputStream, filenameNoExt)
     }
 
 

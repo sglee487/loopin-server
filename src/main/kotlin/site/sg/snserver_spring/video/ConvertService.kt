@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import java.io.File
 import java.io.InputStream
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 
 @Service
 class ConvertService {
@@ -15,7 +16,7 @@ class ConvertService {
 
     // https://github.com/kokorin/Jaffree
     // https://velog.io/@haerong22/%EC%98%81%EC%83%81-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-8.-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8DHLS-%EC%9E%90%EB%8F%99-%ED%99%94%EC%A7%88-%EC%A1%B0%EC%A0%88
-    fun convertToHLS(fileInputStream: InputStream, filenameNoExt: String) {
+    fun convertToHLS(fileInputStream: InputStream, filenameNoExt: String): String {
         val file = File(ClassLoader.getSystemResource("data/output").path, filenameNoExt)
         file.mkdir()
 
@@ -36,6 +37,7 @@ class ConvertService {
                     .setFormat("hls")
                     .addArguments("-hls_list_size", "0")
                     .addArguments("-hls_time", DURATION_SEGMENT_SECONDS.toString())
+                    .addArguments("-hls_segment_filename", Path(file.path, "%v/seg_%d.ts").absolutePathString())
                     .addArguments("-master_pl_name", "index.m3u8")
                     .addArguments("-map", "0:v")
                     .addArguments("-map", "0:v")
@@ -64,5 +66,7 @@ class ConvertService {
             )
             .setOverwriteOutput(true)
             .execute()
+
+        return file.path
     }
 }
