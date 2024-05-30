@@ -5,6 +5,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import org.bson.types.Binary
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
+import java.util.UUID
 
 @Document
 class Video(
@@ -14,6 +16,8 @@ class Video(
     val id: String? = null,
 
     var title: String,
+    val uuid: String = UUID.randomUUID().toString(),
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 
     var masterIndex: Binary,
 
