@@ -40,9 +40,12 @@ class ConvertService {
                     .addArguments("-hls_segment_filename", Path(file.path, "%v/seg_%d.ts").absolutePathString())
                     .addArguments("-master_pl_name", "index.m3u8")
                     .addArguments("-map", "0:v")
+                    .addArguments("-map", "0:a")
                     .addArguments("-map", "0:v")
+                    .addArguments("-map", "0:a")
                     .addArguments("-map", "0:v")
-                    .addArguments("-var_stream_map", "v:0,name:480 v:1,name:360 v:2,name:240")
+                    .addArguments("-map", "0:a")
+                    .addArguments("-var_stream_map", "v:0,a:0,name:480 v:1,a:1,name:360 v:2,a:2,name:240")
 
                     .addArguments("-b:v:0", "1000k")
                     .addArguments("-maxrate:v:0", "1000k")
