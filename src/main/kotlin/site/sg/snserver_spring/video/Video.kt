@@ -16,13 +16,13 @@ class Video(
     val id: String? = null,
 
     var title: String,
-    val uuid: String = UUID.randomUUID().toString(),
+    val uuid: String,
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    var masterIndex: Binary,
+    var masterIndex: String,
 
-    var res480p: Map<String, Binary>,
-    var res360p: Map<String, Binary>,
-    var res240p: Map<String, Binary>
+    var res480p: Map<String, String>,
+    var res360p: Map<String, String>,
+    var res240p: Map<String, String>
 ) {
 }
