@@ -63,6 +63,7 @@ class ConvertService {
                     .addArguments("-bufsize:v:2", "600k")
                     .addArguments("-s:v:2", "320x240")
                     .addArguments("-crf:v:2", "28")
+                    .addArguments("-b:a:2", "64k")
             )
             .setOverwriteOutput(true)
             .execute()
