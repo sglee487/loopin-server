@@ -26,7 +26,7 @@ class Video(
     var thumbnail: String, // base64
     var videoInfo: VideoInfo,
 
-    var content: String? = null,
+    var description: String? = null,
 ) {
 }
 

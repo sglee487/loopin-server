@@ -38,9 +38,9 @@ class VideoController(
     }
 
     @PostMapping("/video")
-    fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile, @RequestParam("content") content: String?) {
+    fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile, @RequestParam("description") description: String?) {
         val filenameNoExt = uploadedFile.originalFilename?.substringBeforeLast(".") ?: "video"
-        videoService.saveVideo(uploadedFile.inputStream, filenameNoExt, content)
+        videoService.saveVideo(uploadedFile.inputStream, filenameNoExt, description)
     }
 
     @GetMapping("/videos")

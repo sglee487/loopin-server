@@ -44,7 +44,7 @@ class VideoService(
         return gridFsTemplate.getResource(video.masterIndex)
     }
 
-    fun saveVideo(inputStream: InputStream, filenameNoExt: String, content: String?) {
+    fun saveVideo(inputStream: InputStream, filenameNoExt: String, description: String?) {
         val uuid: String = UUID.randomUUID().toString()
 
         val saveFilePath = convertService.convertToHLS(inputStream, filenameNoExt)
@@ -86,7 +86,7 @@ class VideoService(
             res240p = res240p,
             thumbnail = Base64.getEncoder().encodeToString(thumbnail.readBytes()),
             videoInfo = videoInfo,
-            content = content
+            description = description
         )
         videoRepository.save(video)
     }
