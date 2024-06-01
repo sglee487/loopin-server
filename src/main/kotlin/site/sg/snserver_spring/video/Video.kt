@@ -24,7 +24,9 @@ class Video(
     var res240p: Map<String, String>,
 
     var thumbnail: String, // base64
-    var videoInfo: VideoInfo
+    var videoInfo: VideoInfo,
+
+    var content: String? = null,
 ) {
 }
 
