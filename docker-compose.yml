@@ -6,6 +6,6 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - type: bind
+      - type: volume
         source: ./data/mongodb
         target: /data/db
