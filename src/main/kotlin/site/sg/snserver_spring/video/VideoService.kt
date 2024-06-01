@@ -1,6 +1,7 @@
 package site.sg.snserver_spring.video
 
-import org.bson.types.Binary
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import org.springframework.data.mongodb.gridfs.GridFsOperations
 import org.springframework.data.mongodb.gridfs.GridFsResource
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
@@ -70,14 +71,28 @@ class VideoService(
             name to savePath
         } ?: emptyMap()
 
+        val thumbnail = File(saveFilePath, "thumbnail.jpg")
+
+        val videoInfo = readVideoInfoData(File(saveFilePath, "video_info.json"))
+
         val video = Video(
             title = filenameNoExt,
             uuid = uuid,
             masterIndex = masterIndex,
             res480p = res480p,
             res360p = res360p,
-            res240p = res240p
+            res240p = res240p,
+            thumbnail = Base64.getEncoder().encodeToString(thumbnail.readBytes()),
+            videoInfo = videoInfo
         )
         videoRepository.save(video)
+    }
+
+    private fun readVideoInfoData(file: File): VideoInfo {
+        val gson = Gson()
+        val jsonData = gson.fromJson(file.readText(), JsonObject::class.java)
+        return VideoInfo(
+            duration = jsonData.get("duration").asDouble
+        )
     }
 }

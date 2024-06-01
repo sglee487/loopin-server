@@ -29,6 +29,7 @@ dependencies {
     // https://velog.io/@haerong22/%EC%98%81%EC%83%81-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-7.-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-HLS-protocol
     // https://dev.to/giboow/how-to-build-a-video-transcoder-with-springboot-and-ffmpeg-n7p
     implementation("com.github.kokorin.jaffree:jaffree:2023.09.10")
+    implementation("com.google.code.gson:gson:2.11.0")
 
     // database
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.3.0")

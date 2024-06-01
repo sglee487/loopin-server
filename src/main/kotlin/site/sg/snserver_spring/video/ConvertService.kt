@@ -3,9 +3,13 @@ package site.sg.snserver_spring.video
 import com.github.kokorin.jaffree.ffmpeg.FFmpeg
 import com.github.kokorin.jaffree.ffmpeg.PipeInput
 import com.github.kokorin.jaffree.ffmpeg.UrlOutput
+import com.github.kokorin.jaffree.ffprobe.FFprobe
+import com.google.gson.Gson
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.InputStream
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 
@@ -68,8 +72,32 @@ class ConvertService {
                     .addArguments("-crf:v:2", "28")
                     .addArguments("-b:a:2", "64k")
             )
+            .addOutput(
+                // create thumbnail with keeping ratio
+                UrlOutput.toPath(Path(file.path, "/thumbnail.jpg"))
+                    .setFormat("image2")
+                    .addArguments("-vf", "thumbnail,scale=640:-1")
+                    .addArguments("-frames:v", "1")
+            )
             .setOverwriteOutput(true)
             .execute()
+
+        // 비디오 정보 추출
+        val probeResult = FFprobe.atPath()
+            .setShowStreams(true)
+            .setShowFormat(true)
+            .setInput(file.path + "/480/index.m3u8")
+            .execute()
+
+        // 비디오 전체 길이 추출
+        val duration = probeResult.format.duration
+
+        // JSON으로 변환하여 저장
+        val gson = Gson()
+
+        // video 길이를 json 파일로 저장
+        val durationJson = gson.toJson(mapOf("duration" to duration))
+        Files.write(Path(file.path, "video_info.json"), durationJson.toByteArray(), StandardOpenOption.CREATE)
 
         return file.path
     }
