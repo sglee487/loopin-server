@@ -2,6 +2,8 @@ package site.sg.snserver_spring.video
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.gridfs.GridFsOperations
 import org.springframework.data.mongodb.gridfs.GridFsResource
 import org.springframework.data.mongodb.gridfs.GridFsTemplate
@@ -87,6 +89,11 @@ class VideoService(
             content = content
         )
         videoRepository.save(video)
+    }
+
+    fun getVideos(page: Int, size: Int): Page<VideoDTO> {
+        val pageable = PageRequest.of(page, size)
+        return videoRepository.findAllProjectedBy(pageable)
     }
 
     private fun readVideoInfoData(file: File): VideoInfo {

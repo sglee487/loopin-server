@@ -1,5 +1,6 @@
 package site.sg.snserver_spring.video
 
+import org.springframework.data.domain.Page
 import org.springframework.data.mongodb.gridfs.GridFsResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -40,6 +41,12 @@ class VideoController(
     fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile, @RequestParam("content") content: String?) {
         val filenameNoExt = uploadedFile.originalFilename?.substringBeforeLast(".") ?: "video"
         videoService.saveVideo(uploadedFile.inputStream, filenameNoExt, content)
+    }
+
+    @GetMapping("/videos")
+    fun getVideos(@RequestParam("page", defaultValue = "0") page: Int,
+                  @RequestParam("size", defaultValue = "10") size: Int): Page<VideoDTO> {
+        return videoService.getVideos(page, size)
     }
 
 }
