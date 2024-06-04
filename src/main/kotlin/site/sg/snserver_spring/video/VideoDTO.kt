@@ -6,8 +6,12 @@ data class VideoDTO(
     val id: String?,
     val title: String,
     val uuid: String,
-    val createdAt: LocalDateTime,
+    val uploadedAt: LocalDateTime,
     val thumbnail: String,
     val videoInfo: VideoInfo,
-    val content: String?
+    val author: String,
+    val hit: Int,
+    val like: Int,
+    val dislike: Int,
+    val description: String?
 )

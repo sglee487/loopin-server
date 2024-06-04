@@ -15,7 +15,7 @@ class Video(
 
     var title: String,
     val uuid: String,
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val uploadedAt: LocalDateTime = LocalDateTime.now(),
 
     var masterIndex: String,
 
