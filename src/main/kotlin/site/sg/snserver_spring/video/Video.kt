@@ -26,6 +26,11 @@ class Video(
     var thumbnail: String, // base64
     var videoInfo: VideoInfo,
 
+    val author: String,
+    var hit: Int = 0,
+    var like: Int = 0,
+    var dislike: Int = 0,
+
     var description: String? = null,
 ) {
 }

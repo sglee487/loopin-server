@@ -86,6 +86,7 @@ class VideoService(
             res240p = res240p,
             thumbnail = Base64.getEncoder().encodeToString(thumbnail.readBytes()),
             videoInfo = videoInfo,
+            author = "admin",
             description = description
         )
         videoRepository.save(video)
