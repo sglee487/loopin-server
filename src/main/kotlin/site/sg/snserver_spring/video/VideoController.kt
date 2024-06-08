@@ -12,41 +12,46 @@ class VideoController(
     private val videoService: VideoService
 ) {
 
-    @GetMapping("/video/{uuid}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
-    fun getVideoFileBytes(
-        @PathVariable uuid: String,
-        @PathVariable filename: String
-    ): ResponseEntity<GridFsResource> {
-        val fileBytes = videoService.getVideo(uuid, filename, null)
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType("application/x-mpegURL"))
-            .body(fileBytes)
-    }
-
-    @GetMapping("/video/{uuid}/{resolution}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
-    fun getVideoFileBytes(
-        @PathVariable uuid: String,
-        @PathVariable resolution: String?,
-        @PathVariable filename: String
-    ): ResponseEntity<GridFsResource> {
-        val fileBytes = videoService.getVideo(uuid, filename, resolution)
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType("application/x-mpegURL"))
-            .body(fileBytes)
-    }
-
     @PostMapping("/video")
     fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile, @RequestParam("description") description: String?) {
         val filenameNoExt = uploadedFile.originalFilename?.substringBeforeLast(".") ?: "video"
         videoService.saveVideo(uploadedFile.inputStream, filenameNoExt, description)
     }
 
+    @GetMapping("/video/{uuid}")
+    fun getVideo(@PathVariable uuid: String): VideoDTO {
+        return videoService.getVideo(uuid)
+    }
+
     @GetMapping("/videos")
     fun getVideos(@RequestParam("page", defaultValue = "0") page: Int,
                   @RequestParam("size", defaultValue = "10") size: Int): Page<VideoDTO> {
         return videoService.getVideos(page, size)
+    }
+
+    @GetMapping("/video-hls/{uuid}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    fun getVideoFileBytes(
+        @PathVariable uuid: String,
+        @PathVariable filename: String
+    ): ResponseEntity<GridFsResource> {
+        val fileBytes = videoService.getVideoHLS(uuid, filename, null)
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("application/x-mpegURL"))
+            .body(fileBytes)
+    }
+
+    @GetMapping("/video-hls/{uuid}/{resolution}/{filename}", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
+    fun getVideoFileBytes(
+        @PathVariable uuid: String,
+        @PathVariable resolution: String?,
+        @PathVariable filename: String
+    ): ResponseEntity<GridFsResource> {
+        val fileBytes = videoService.getVideoHLS(uuid, filename, resolution)
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("application/x-mpegURL"))
+            .body(fileBytes)
     }
 
 }

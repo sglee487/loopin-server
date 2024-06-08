@@ -20,7 +20,7 @@ class VideoService(
     private val gridFsOperations: GridFsOperations
 ) {
 
-    fun getVideo(uuid: String, filename: String, resolution: String?): GridFsResource {
+    fun getVideoHLS(uuid: String, filename: String, resolution: String?): GridFsResource {
         val video = videoRepository.findByUuid(uuid)
         val filenameNoExt = filename.substringBeforeLast(".")
 
@@ -103,5 +103,9 @@ class VideoService(
         return VideoInfo(
             duration = jsonData.get("duration").asDouble
         )
+    }
+
+    fun getVideo(uuid: String): VideoDTO {
+        return videoRepository.findDTOByUuid(uuid)
     }
 }
