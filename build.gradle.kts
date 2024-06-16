@@ -42,6 +42,7 @@ dependencies {
     implementation("com.google.api.client:google-api-client-extensions:1.4.1-beta")
     implementation("com.google.api-client:google-api-client-java6:2.1.4")
     implementation("com.google.oauth-client:google-oauth-client-jetty:1.36.0")
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
 
 
     runtimeOnly("com.h2database:h2")
