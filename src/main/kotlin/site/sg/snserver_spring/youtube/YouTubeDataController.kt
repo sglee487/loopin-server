@@ -10,8 +10,9 @@ class YouTubeDataController(
 ) {
     @GetMapping("/listitems")
     fun getItemList(
-        @RequestParam playlistId: String
+        @RequestParam playlistId: String,
+        @RequestParam refresh: Boolean = false
     ): PlayList {
-        return youTubeDataService.getplaylist(playlistId)
+        return youTubeDataService.getplaylist(playlistId, refresh)
     }
 }
