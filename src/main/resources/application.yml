@@ -9,5 +9,5 @@ spring:
       max-request-size: 50MB
   data:
     mongodb:
-      uri: mongodb://localhost:27017/mydb
+      uri: ${MONGODB_URL}
       auto-index-creation: true
