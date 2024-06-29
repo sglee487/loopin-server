@@ -7,6 +7,8 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.model.ThumbnailDetails
 import io.github.cdimascio.dotenv.Dotenv
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.net.URI
@@ -143,4 +145,7 @@ class YouTubeDataService(
         return LocalDateTime.parse(this, formatter)
     }
 
+    fun getPlayLists(page: Int, size: Int): Page<ListsDTO> {
+        return playListItemsRepository.findAllProjectedBy(PageRequest.of(page, size))
+    }
 }
