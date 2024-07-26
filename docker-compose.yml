@@ -1,7 +1,15 @@
+x-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   mongo:
     image: mongo
     restart: always
+    env_file:
+      - .env
     ports:
       - ${MONGODB_PORT}:27017
     volumes:

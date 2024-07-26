@@ -8,17 +8,18 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
+@RequestMapping("/api/v1/video")
 class VideoController(
     private val videoService: VideoService
 ) {
 
-    @PostMapping("/video")
+    @PostMapping
     fun uploadVideoFile(@RequestParam("file") uploadedFile: MultipartFile, @RequestParam("description") description: String?) {
         val filenameNoExt = uploadedFile.originalFilename?.substringBeforeLast(".") ?: "video"
         videoService.saveVideo(uploadedFile.inputStream, filenameNoExt, description)
     }
 
-    @GetMapping("/video/{uuid}")
+    @GetMapping("/{uuid}")
     fun getVideo(@PathVariable uuid: String): VideoDTO {
         return videoService.getVideo(uuid)
     }

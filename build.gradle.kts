@@ -25,6 +25,14 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    // security
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.springframework.security:spring-security-config")
+    implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server")
+    implementation("io.jsonwebtoken:jjwt:0.9.1")
+
     // video streaming
     // https://velog.io/@haerong22/%EC%98%81%EC%83%81-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-7.-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-HLS-protocol
     // https://dev.to/giboow/how-to-build-a-video-transcoder-with-springboot-and-ffmpeg-n7p

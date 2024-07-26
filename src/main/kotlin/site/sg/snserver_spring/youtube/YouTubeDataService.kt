@@ -86,7 +86,7 @@ class YouTubeDataService(
         val playlistItemsRequest = youtubeService.playlistItems()
             .list(listOf("snippet"))
 
-        val playItems = mutableListOf<PlayItem>()
+        val playListItems = mutableListOf<PlayListItem>()
 
         var nextPageToken: String? = null
 
@@ -96,8 +96,8 @@ class YouTubeDataService(
                 .setPageToken(nextPageToken)
                 .execute()
 
-            playItems.addAll(playlistItemsResponse.items.map {
-                PlayItem(
+            playListItems.addAll(playlistItemsResponse.items.map {
+                PlayListItem(
                     publishedAt = it.snippet.publishedAt.toStringRfc3339().toLocalDateTime(),
                     channelId = it.snippet.channelId,
                     title = it.snippet.title,
@@ -117,7 +117,7 @@ class YouTubeDataService(
             nextPageToken = playlistItemsResponse.nextPageToken
         } while (nextPageToken != null)
 
-        playList.items = playItems
+        playList.items = playListItems
 
         playListItemsRepository.save(playList)
 

@@ -16,7 +16,7 @@ class PlayList(
     var channelTitle: String,
     var localized: Localized,
     var contentDetails: ContentDetails,
-    var items: MutableList<PlayItem> = mutableListOf(),
+    var items: MutableList<PlayListItem> = mutableListOf(),
     val publishedAt: LocalDateTime,
 
     @LastModifiedDate
@@ -33,7 +33,7 @@ class ContentDetails(
     var itemCount: Long
 )
 
-class PlayItem(
+class PlayListItem(
     val publishedAt: LocalDateTime,
     val channelId: String,
     var title: String,

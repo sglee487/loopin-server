@@ -11,3 +11,11 @@ spring:
     mongodb:
       uri: ${MONGODB_URL}
       auto-index-creation: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH_URL}
+logging:
+  level:
+    site.sg.snserver_spring: debug
