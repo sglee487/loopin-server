@@ -1,6 +1,7 @@
 package site.sg.snserver_spring.plays
 
 import org.slf4j.LoggerFactory
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -11,10 +12,8 @@ class UserPlaysService(
 
     private val logger = LoggerFactory.getLogger(UserPlaysService::class.java)
 
-    fun getUserPlays(userId: UUID): Optional<UserPlays> {
-        val result = userPlaysRepository.findById(userId)
-        logger.debug(result.toString())
-        return result
+    fun getUserPlays(userId: UUID): UserPlays? {
+        return userPlaysRepository.findByIdOrNull(userId)
     }
 
     fun createOrUpdateUserPlays(

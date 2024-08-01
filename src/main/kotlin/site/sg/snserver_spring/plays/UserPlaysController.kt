@@ -2,12 +2,8 @@ package site.sg.snserver_spring.plays
 
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import site.sg.snserver_spring.plays.dto.CreateOrUpdateUserPlaysRequest
-import site.sg.snserver_spring.plays.dto.CurrentPlayRequest
-import site.sg.snserver_spring.plays.dto.PlayListItemRequest
-import site.sg.snserver_spring.plays.dto.PlayListQueuesRequest
+import site.sg.snserver_spring.plays.dto.*
 import site.sg.snserver_spring.youtube.ContentDetails
 import site.sg.snserver_spring.youtube.Localized
 import site.sg.snserver_spring.youtube.PlayListItem
@@ -23,20 +19,69 @@ class UserPlaysController(
 
     private val logger = LoggerFactory.getLogger(UserPlaysController::class.java)
 
-    @GetMapping
-    fun getUserPlays(
+    @GetMapping("/current-plays")
+    @ResponseStatus(HttpStatus.OK)
+    fun getUserCurrentPlays(
         principal: Principal
-    ): ResponseEntity<Any> {
-        println(principal)
-        println(principal.name)
+    ): Map<String, CurrentPlayResponse> {
         val userId = UUID.fromString(principal.name)
 
-        val result = userPlaysService.getUserPlays(userId)
+        val userPlays: UserPlays? = userPlaysService.getUserPlays(userId)
 
-        logger.debug(result.toString())
+        return userPlays?.plays?.currentPlays?.mapValues { entry ->
+            CurrentPlayResponse(
+                startSeconds = entry.value.startSeconds,
+                playListId = entry.value.playListId,
+                channelId = entry.value.channelId,
+                title = entry.value.title,
+                description = entry.value.description,
+                thumbnail = entry.value.thumbnail.toString(),
+                channelTitle = entry.value.channelTitle,
+                localized = LocalizedResponse(
+                    title = entry.value.localized.title,
+                    description = entry.value.localized.description
+                ),
+                contentDetails = ContentDetailsResponse(
+                    itemCount = entry.value.contentDetails.itemCount
+                ),
+                item = entry.value.item?.let { item ->
+                    PlayListItemResponse(
+                        publishedAt = item.publishedAt,
+                        channelId = item.channelId,
+                        title = item.title,
+                        description = item.description,
+                        thumbnail = item.thumbnail,
+                        channelTitle = item.channelTitle,
+                        playListId = item.playListId,
+                        position = item.position,
+                        resource = ResourceResponse(
+                            kind = item.resource.kind,
+                            videoId = item.resource.videoId
+                        ),
+                        videoOwnerChannelTitle = item.videoOwnerChannelTitle,
+                        videoOwnerChannelId = item.videoOwnerChannelId
+                    )
+                },
+                publishedAt = entry.value.publishedAt.toString(),
+                updatedAt = entry.value.updatedAt.toString()
+            )
+        } ?: emptyMap()
+    }
 
+    @GetMapping("/playlist-queues/{playListId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getUserPlayListQueues(
+        @PathVariable playListId: String,
+        principal: Principal
+    ): GetUserPlaylistQueuesResponse {
+        val userId = UUID.fromString(principal.name)
 
-        return ResponseEntity.ok(userId)
+        val userPlays: UserPlays? = userPlaysService.getUserPlays(userId)
+
+        return GetUserPlaylistQueuesResponse(
+            prev = createPlayListQueueItem(userPlays?.plays?.playListsQueues?.get(playListId)?.prev),
+            next = createPlayListQueueItem(userPlays?.plays?.playListsQueues?.get(playListId)?.next)
+        )
     }
 
     @PostMapping
@@ -50,7 +95,35 @@ class UserPlaysController(
         val currentPlay = createCurrentPlay(createOrUpdateUserPlaysRequest.currentPlays)
         val playListQueues = createPlayListQueues(createOrUpdateUserPlaysRequest.playListQueues)
 
-        userPlaysService.createOrUpdateUserPlays(userId, createOrUpdateUserPlaysRequest.playListId, currentPlay, playListQueues)
+        userPlaysService.createOrUpdateUserPlays(
+            userId,
+            createOrUpdateUserPlaysRequest.playListId,
+            currentPlay,
+            playListQueues
+        )
+    }
+
+    fun createPlayListQueueItem(
+        playListItems: MutableList<PlayListItem>?
+    ): List<PlayListItemResponse> {
+        return playListItems?.map { item ->
+            PlayListItemResponse(
+                publishedAt = item.publishedAt,
+                channelId = item.channelId,
+                title = item.title,
+                description = item.description,
+                thumbnail = item.thumbnail,
+                channelTitle = item.channelTitle,
+                playListId = item.playListId,
+                position = item.position,
+                resource = ResourceResponse(
+                    kind = item.resource.kind,
+                    videoId = item.resource.videoId
+                ),
+                videoOwnerChannelTitle = item.videoOwnerChannelTitle,
+                videoOwnerChannelId = item.videoOwnerChannelId
+            )
+        } ?: emptyList()
     }
 
     fun createCurrentPlay(currentPlayRequest: CurrentPlayRequest): CurrentPlay {
