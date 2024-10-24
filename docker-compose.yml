@@ -8,14 +8,15 @@ services:
   mongo:
     image: mongo
     restart: always
-    env_file:
-      - .env
+    networks:
+      - sn-network
     ports:
       - ${MONGODB_PORT}:27017
-    volumes:
-      - ./data/mongodb:/data/db
-    container_name: "docker-mongodb"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
       - MONGO_INITDB_DATABASE=${MONGODB_AUTH_DB}
+
+networks:
+  sn-network:
+    external: true
