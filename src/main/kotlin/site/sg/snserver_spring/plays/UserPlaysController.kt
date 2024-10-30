@@ -79,6 +79,7 @@ class UserPlaysController(
         val userPlays: UserPlays? = userPlaysService.getUserPlays(userId)
 
         return GetUserPlaylistQueuesResponse(
+            playListId = playListId,
             prev = createPlayListQueueItem(userPlays?.plays?.playListsQueues?.get(playListId)?.prev),
             next = createPlayListQueueItem(userPlays?.plays?.playListsQueues?.get(playListId)?.next)
         )
