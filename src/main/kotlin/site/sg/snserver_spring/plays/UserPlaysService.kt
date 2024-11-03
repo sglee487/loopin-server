@@ -37,4 +37,14 @@ class UserPlaysService(
         return userPlays
     }
 
+    fun deleteUserPlays(userId: UUID, playListId: String) {
+        val userPlays = userPlaysRepository.findByIdOrNull(userId) ?: return
+
+        userPlays.plays.currentPlays.remove(playListId)
+        userPlays.plays.playListsQueues.remove(playListId)
+
+        userPlaysRepository.save(userPlays)
+
+    }
+
 }

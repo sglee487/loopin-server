@@ -13,6 +13,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("/api/v1/user_plays")
+@CrossOrigin(origins = ["http://localhost:14200"])
 class UserPlaysController(
     val userPlaysService: UserPlaysService
 ) {
@@ -102,6 +103,17 @@ class UserPlaysController(
             currentPlay,
             playListQueues
         )
+    }
+
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteUserPlays(
+        @RequestBody deleteUserPlaysRequest: DeleteUserPlaysRequest,
+        principal: Principal
+    ) {
+        val userId = UUID.fromString(principal.name)
+
+        userPlaysService.deleteUserPlays(userId, deleteUserPlaysRequest.playListId)
     }
 
     fun createPlayListQueueItem(
