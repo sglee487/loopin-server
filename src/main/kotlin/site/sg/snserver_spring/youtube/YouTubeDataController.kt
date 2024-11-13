@@ -7,11 +7,19 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/v1/list")
+@RequestMapping("/api/v1/lists")
 class YouTubeDataController(
     val youTubeDataService: YouTubeDataService
 ) {
-    @GetMapping("/listitems")
+
+    @GetMapping
+    fun getPlayLists(
+        @RequestParam("page", defaultValue = "0") page: Int,
+        @RequestParam("size", defaultValue = "10") size: Int
+    ): Page<ListsDTO> {
+        return youTubeDataService.getPlayLists(page, size)
+    }
+    @GetMapping("/item")
     fun getItemList(
         @RequestParam playlistId: String,
         @RequestParam refresh: Boolean = false
@@ -19,11 +27,4 @@ class YouTubeDataController(
         return youTubeDataService.getplaylist(playlistId, refresh)
     }
 
-    @GetMapping("/lists")
-    fun getPlayLists(
-        @RequestParam("page", defaultValue = "0") page: Int,
-        @RequestParam("size", defaultValue = "10") size: Int
-    ): Page<ListsDTO> {
-        return youTubeDataService.getPlayLists(page, size)
-    }
 }

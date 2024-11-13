@@ -16,7 +16,7 @@ class SecurityConfig {
         http
             .authorizeHttpRequests{ authorize ->
                 authorize
-                    .requestMatchers( "/swagger-ui/**","/api/v1/list/**","/api/v1/video/videos", "/actuator/**", "/usage" ).permitAll()
+                    .requestMatchers( "/swagger-ui/**","/api/v1/lists/**","/api/v1/video/videos", "/actuator/**", "/usage" ).permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2ResourceServer{ oauth2ResourceServer ->
