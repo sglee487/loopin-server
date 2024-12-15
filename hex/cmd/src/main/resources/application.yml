@@ -1,0 +1,3 @@
+spring:
+  profiles:
+    include: cmd, infrastructure, adapter_inbound

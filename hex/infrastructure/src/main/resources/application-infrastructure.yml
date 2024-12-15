@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: sn_server_spring
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  data:
+    mongodb:
+      uri: ${MONGODB_URL}
+      auto-index-creation: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8989/realms/snservice
+#logging:
+#  level:
+#    site.sg.sn: debug

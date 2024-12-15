@@ -1,0 +1,9 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+#storage:
+#  name: ${STORAGE_NAME}
+#  prefix: ${STORAGE_PREFIX}
