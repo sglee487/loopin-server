@@ -14,5 +14,5 @@ data class Playlist(
     var localized: Localized,
     var contentDetails: ContentDetails,
     val publishedAt: Instant,
-    var items: MutableList<NewPlayItem> = mutableListOf(),
+    var items: MutableList<NewPlayItem>? = mutableListOf(),
 ):Base()

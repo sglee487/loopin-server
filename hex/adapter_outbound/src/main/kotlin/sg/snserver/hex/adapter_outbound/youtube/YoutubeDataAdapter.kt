@@ -29,7 +29,7 @@ class YoutubeDataAdapter(
 
     private val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
 
-    override fun loadYoutubeData(playlistId: String, refresh: Boolean): Playlist {
+    override fun loadYoutubeData(playlistId: String): Playlist {
         val youtubeService = getService()
 
         val playlistsRequest = youtubeService.playlists()

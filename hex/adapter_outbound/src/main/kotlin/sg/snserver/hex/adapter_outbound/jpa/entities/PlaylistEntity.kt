@@ -2,6 +2,7 @@ package sg.snserver.hex.adapter_outbound.jpa.entities
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import sg.snserver.hex.domain.entities.Playlist
 import java.net.URL
 import java.time.Instant
 
@@ -19,4 +20,18 @@ data class PlaylistEntity(
     val publishedAt: Instant,
     var items: MutableList<NewPlayItemEntity> = mutableListOf(),
 ): BaseEntity() {
+    fun toDomain(): Playlist {
+        return Playlist(
+            playlistId = playlistId,
+            channelId = channelId,
+            title = title,
+            description = description,
+            thumbnail = thumbnail,
+            channelTitle = channelTitle,
+            localized = localized.toDomain(),
+            contentDetails = contentDetails.toDomain(),
+            publishedAt = publishedAt,
+            items = items.map { it.toDomain() }.toMutableList(),
+        )
+    }
 }

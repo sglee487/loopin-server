@@ -17,7 +17,7 @@ fun Playlist.toEntity() = PlaylistEntity(
     localized = localized.toEntity(),
     contentDetails = contentDetails.toEntity(),
     publishedAt = publishedAt,
-    items = items.map { it.toEntity() }.toMutableList(),
+    items = items?.map { it.toEntity() }?.toMutableList()!!,
 )
 
 fun NewPlayItem.toEntity() = NewPlayItemEntity(
