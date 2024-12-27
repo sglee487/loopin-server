@@ -6,11 +6,31 @@ import sg.snserver.hex.domain.entities.Playlist
 import java.net.URL
 import java.time.Instant
 
+data class CreatePlaylistRequestDTO(
+    val playlistId: String,
+    val refresh: Boolean = false,
+)
+
 data class GetPlaylistResponseDTO(
     val playlistId: String,
     val channelId: String,
     var title: String,
-    var description: String,
+    var description: String?,
+    var thumbnail: URL?,
+    var channelTitle: String,
+    var localized: LocalizedResponseDTO,
+    var contentDetails: ContentDetailsResponseDTO,
+    var items: MutableList<GetNewPlayItemResponseDTO>? = mutableListOf(),
+    val publishedAt: Instant,
+
+    var updatedAt: Instant,
+)
+
+data class GetPlaylistBatchResponseDTO(
+    val playlistId: String,
+    val channelId: String,
+    var title: String,
+    var description: String?,
     var thumbnail: URL?,
     var channelTitle: String,
     var localized: LocalizedResponseDTO,

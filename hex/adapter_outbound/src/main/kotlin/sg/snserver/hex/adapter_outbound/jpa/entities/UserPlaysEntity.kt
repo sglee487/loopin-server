@@ -1,12 +1,20 @@
 package sg.snserver.hex.adapter_outbound.jpa.entities
 
-import org.springframework.data.mongodb.core.mapping.Document
-import sg.snserver.hex.domain.entities.Plays
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Table
 import java.util.*
 
-@Document
+@Entity
+@Table(name = "sn_user_plays")
 data class UserPlaysEntity(
+    @Id
     val id: UUID,
 
-    val plays: Plays,
+    @JoinColumn
+    @OneToMany(cascade = [CascadeType.MERGE, CascadeType.PERSIST])
+    val currentPlays: MutableList<CurrentPlayEntity>,
 ): BaseEntity()

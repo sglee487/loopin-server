@@ -1,5 +1,6 @@
 package sg.snserver.hex.application.services
 
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -21,6 +22,9 @@ class PlaylistService(
     private val savePlaylistPort: SavePlaylistPort,
     private val updatePlaylistPort: UpdatePlaylistPort,
 ): GetPlaylistUseCase, SaveYoutubeDataUseCase, UpdateYoutubeDataUseCase {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
     override fun savePlaylist(playlistId: String) {
 
         val playlist: Playlist? = getPlaylistPort.getPlaylist(playlistId)
@@ -31,6 +35,8 @@ class PlaylistService(
         val newPlaylist = loadYoutubeDataPort.loadYoutubeData(
             playlistId = playlistId,
         )
+
+        log.debug(newPlaylist.toString())
 
         savePlaylistPort.savePlaylist(newPlaylist)
     }

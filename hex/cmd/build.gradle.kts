@@ -6,7 +6,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 //    testImplementation(kotlin("test"))
 
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.3.0")
+//    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.3.0")
 
 }
 

@@ -1,8 +1,8 @@
-package sg.snserver.hex.application.outbound
+package sg.snserver.hex.application.inbound
 
 import sg.snserver.hex.domain.entities.CurrentPlay
-import java.util.*
+import java.util.UUID
 
-interface GetUserPlaysPort {
+interface GetUserCurrentPlaysUseCase {
     fun getUserCurrentPlays(userId: UUID): List<Map<String, CurrentPlay>>
 }

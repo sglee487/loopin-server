@@ -2,11 +2,10 @@ package sg.snserver.hex.adapter_outbound.jpa.dto
 
 import sg.snserver.hex.domain.entities.ContentDetails
 import sg.snserver.hex.domain.entities.Localized
-import sg.snserver.hex.domain.entities.NewPlayItem
 import sg.snserver.hex.domain.entities.Playlist
+import sg.snserver.hex.domain.enums.PlatformType
 import java.net.URL
 import java.time.Instant
-
 
 data class PlaylistBatchDTO(
     val playlistId: String,
@@ -19,6 +18,7 @@ data class PlaylistBatchDTO(
     var localized: Localized,
     var contentDetails: ContentDetails,
     val publishedAt: Instant,
+    val platformType: PlatformType,
 ) {
     fun toDomain(): Playlist = Playlist(
         playlistId = playlistId,
@@ -31,5 +31,6 @@ data class PlaylistBatchDTO(
         contentDetails = contentDetails,
         publishedAt = publishedAt,
         items = null,
+        platformType = platformType,
     )
 }

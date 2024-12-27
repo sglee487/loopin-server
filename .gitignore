@@ -1,4 +1,5 @@
 .env
+.postgres_data
 
 hex/HELP.md
 .gradle

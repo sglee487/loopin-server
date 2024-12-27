@@ -1,3 +1,8 @@
+plugins {
+    kotlin("plugin.jpa") version "1.9.25"
+}
+
+
 dependencies {
     implementation((project(":domain")))
     implementation((project(":application")))
@@ -6,8 +11,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     // database
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.3.0")
-
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     // google api (youtube)

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import sg.snserver.hex.adapter_outbound.config.YoutubeDataProperties
 import sg.snserver.hex.application.outbound.LoadYoutubeDataPort
 import sg.snserver.hex.domain.entities.*
+import sg.snserver.hex.domain.enums.PlatformType
 import java.io.IOException
 import java.net.URI
 import java.net.URL
@@ -50,22 +51,25 @@ class YoutubeDataAdapter(
                 thumbnail = response.items[0].snippet.thumbnails.getHighestThumbnail(),
                 channelTitle = response.items[0].snippet.channelTitle,
                 localized = Localized(
+                    playlistId = playlistId,
                     title = response.items[0].snippet.localized.title,
                     description = response.items[0].snippet.localized.description
                 ),
                 contentDetails = ContentDetails(
+                    playlistId = playlistId,
                     itemCount = response.items[0].contentDetails.itemCount
                 ),
                 publishedAt = response.items[0].snippet.publishedAt.toStringRfc3339().toLocalDateTime().toInstant(
                     ZoneOffset.UTC
                 ),
+                platformType = PlatformType.YOUTUBE,
             )
         }
 
         val playlistItemsRequest = youtubeService.playlistItems()
             .list(listOf("snippet"))
 
-        val items = mutableListOf<NewPlayItem>()
+        val items = mutableListOf<PlayItem>()
 
         var nextPageToken: String? = null
 
@@ -76,7 +80,8 @@ class YoutubeDataAdapter(
                 .execute()
 
             items.addAll(playlistItemsResponse.items.map {
-                NewPlayItem(
+                PlayItem(
+                    videoId = it.id,
                     publishedAt = it.snippet.publishedAt.toStringRfc3339().toLocalDateTime().toInstant(
                         ZoneOffset.UTC
                     ),
@@ -85,7 +90,6 @@ class YoutubeDataAdapter(
                     description = it.snippet.description,
                     thumbnail = it.snippet.thumbnails.getHighestThumbnail(),
                     channelTitle = it.snippet.channelTitle,
-                    playListId = it.snippet.playlistId,
                     position = it.snippet.position,
                     resource = Resource(
                         kind = it.snippet.resourceId.kind,
@@ -93,6 +97,7 @@ class YoutubeDataAdapter(
                     ),
                     videoOwnerChannelId = it.snippet.videoOwnerChannelId,
                     videoOwnerChannelTitle = it.snippet.videoOwnerChannelTitle,
+                    platformType = PlatformType.YOUTUBE,
                 )
             })
             nextPageToken = playlistItemsResponse.nextPageToken

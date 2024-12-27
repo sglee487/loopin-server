@@ -5,10 +5,18 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-  data:
-    mongodb:
-      uri: ${MONGODB_URL}
-      auto-index-creation: true
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
   security:
     oauth2:
       resourceserver:

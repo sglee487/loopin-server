@@ -1,37 +1,51 @@
 package sg.snserver.hex.adapter_outbound.jpa.entities
 
-import org.springframework.data.mongodb.core.mapping.Document
-import sg.snserver.hex.domain.entities.NewPlayItem
+import jakarta.persistence.*
+import sg.snserver.hex.adapter_outbound.jpa.enums.PlatformTypeEntity
+import sg.snserver.hex.domain.entities.PlayItem
 import java.net.URL
 import java.time.Instant
 
-@Document
-data class NewPlayItemEntity(
+@Entity
+@Table(name = "sn_play_item")
+data class PlayItemEntity(
+    @Id
+    val videoId: String,
+
     val publishedAt: Instant,
     val channelId: String,
     var title: String,
-    var description: String,
+    var description: String?,
     var thumbnail: URL?,
     var channelTitle: String,
-    val playListId: String,
+
     var position: Long,
+
+    @ManyToOne(fetch = FetchType.EAGER)
     val resource: ResourceEntity,
+
     val videoOwnerChannelId: String?,
     var videoOwnerChannelTitle: String?,
     var startSeconds: Float = 0.0f,
+    var isDeleted: Boolean = false,
+
+    @Enumerated(EnumType.STRING)
+    val platformType: PlatformTypeEntity,
 ) : BaseEntity() {
-    fun toDomain(): NewPlayItem = NewPlayItem(
+    fun toDomain(): PlayItem = PlayItem(
+        videoId = videoId,
         publishedAt = publishedAt,
         channelId = channelId,
         title = title,
         description = description,
         thumbnail = thumbnail,
         channelTitle = channelTitle,
-        playListId = playListId,
         position = position,
         resource = resource.toDomain(),
         videoOwnerChannelId = videoOwnerChannelId,
         videoOwnerChannelTitle = videoOwnerChannelTitle,
         startSeconds = startSeconds,
+        isDeleted = isDeleted,
+        platformType = platformType.toDomain(),
     )
 }

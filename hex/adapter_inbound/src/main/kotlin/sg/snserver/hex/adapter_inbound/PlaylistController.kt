@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import sg.snserver.hex.adapter_inbound.dto.ApiResponseDTO
+import sg.snserver.hex.adapter_inbound.dto.CreatePlaylistRequestDTO
 import sg.snserver.hex.adapter_inbound.dto.GetPlaylistResponseDTO
 import sg.snserver.hex.adapter_inbound.dto.toResponseDTO
 import sg.snserver.hex.application.inbound.GetPlaylistUseCase
@@ -16,21 +17,24 @@ import sg.snserver.hex.application.inbound.UpdateYoutubeDataUseCase
 @RestController
 @RequestMapping(
     "/api/v1/playlist",
+    consumes = [],
     produces = [MediaType.APPLICATION_JSON_VALUE],
 )
+@CrossOrigin(origins = ["http://localhost:14200", "http://localhost:6006"])
 class PlaylistController(
     val saveYoutubeDataUseCase: SaveYoutubeDataUseCase,
     val getPlaylistUseCase: GetPlaylistUseCase,
     val updateYoutubeDataUseCase: UpdateYoutubeDataUseCase,
 ) {
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    @PostMapping
+    @PostMapping(
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+    )
     fun createPlaylist(
-        @RequestParam id: String,
-        @RequestParam refresh: Boolean = false
+        @RequestBody request: CreatePlaylistRequestDTO,
     ): ApiResponseDTO.Success<Map<String, Any>> {
 
-        saveYoutubeDataUseCase.savePlaylist(id)
+        saveYoutubeDataUseCase.savePlaylist(request.playlistId)
 
         return ApiResponseDTO.emptySuccess(
             message = "save successful",
@@ -54,10 +58,10 @@ class PlaylistController(
 
     @GetMapping
     fun getItemList(
-        @RequestParam id: String,
+        @RequestParam playlistId: String,
     ): ApiResponseDTO.Success<GetPlaylistResponseDTO> {
 
-        val playlist = getPlaylistUseCase.getPlaylist(id)
+        val playlist = getPlaylistUseCase.getPlaylist(playlistId)
 
         return ApiResponseDTO.Success(
             message = "get playlistBatch success",
@@ -67,7 +71,10 @@ class PlaylistController(
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    @PatchMapping("/{playlistId}")
+    @PatchMapping(
+        "/{playlistId}",
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+    )
     fun updateItem(
         @PathVariable playlistId: String,
     ): ApiResponseDTO.Success<Map<String, Any>> {

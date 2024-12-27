@@ -1,8 +1,6 @@
 package sg.snserver.hex.adapter_inbound.dto
 
-import sg.snserver.hex.domain.entities.ContentDetails
-import sg.snserver.hex.domain.entities.Localized
-import sg.snserver.hex.domain.entities.NewPlayItem
+import sg.snserver.hex.domain.entities.PlayItem
 import sg.snserver.hex.domain.entities.Resource
 import java.net.URL
 import java.time.Instant
@@ -11,10 +9,9 @@ data class GetNewPlayItemResponseDTO(
     val publishedAt: Instant,
     val channelId: String,
     var title: String,
-    var description: String,
+    var description: String?,
     var thumbnail: URL?,
     var channelTitle: String,
-    val playListId: String,
     var position: Long,
     val resource: ResourceResponseDTO,
     val videoOwnerChannelId: String?,
@@ -22,14 +19,13 @@ data class GetNewPlayItemResponseDTO(
     var startSeconds: Float = 0.0f,
 )
 
-fun NewPlayItem.toResponseDTO(): GetNewPlayItemResponseDTO = GetNewPlayItemResponseDTO(
+fun PlayItem.toResponseDTO(): GetNewPlayItemResponseDTO = GetNewPlayItemResponseDTO(
     publishedAt = publishedAt,
     channelId = channelId,
     title = title,
     description = description,
     thumbnail = thumbnail,
     channelTitle = channelTitle,
-    playListId = playListId,
     position = position,
     resource = resource.toResponseDTO(),
     videoOwnerChannelId = videoOwnerChannelId,

@@ -2,9 +2,9 @@ package sg.snserver.hex.domain.entities
 
 import java.util.*
 
-data class Resource(
+data class PlaylistQueues(
     val id: UUID = UUID.randomUUID(),
 
-    val kind: String,
-    val videoId: String,
+    var prev: MutableList<PlayItem>,
+    var next: MutableList<PlayItem>,
 ): Base()
