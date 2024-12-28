@@ -27,7 +27,8 @@ data class PlaylistEntity(
     val publishedAt: Instant,
 
     @OneToMany(
-        fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
+        fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.MERGE]
+    )
     @JoinTable(
         name = "sn_playlist_items", // 조인 테이블 이름
         joinColumns = [JoinColumn(name = "sn_playlist_id")],
@@ -37,8 +38,10 @@ data class PlaylistEntity(
 
     @Enumerated(EnumType.STRING)
     val platformType: PlatformTypeEntity,
-): BaseEntity() {
-    fun toDomain(): Playlist {
+) : BaseEntity() {
+    fun toDomain(
+        itemsNull: Boolean = false,
+    ): Playlist {
         return Playlist(
             playlistId = playlistId,
             channelId = channelId,
@@ -50,7 +53,7 @@ data class PlaylistEntity(
             contentDetails = contentDetails.toDomain(),
             publishedAt = publishedAt,
             platformType = platformType.toDomain(),
-            items = items?.map { it.toDomain() }?.toMutableList(),
+            items = if (itemsNull) null else items?.map { it.toDomain() }?.toMutableList(),
         )
     }
 }

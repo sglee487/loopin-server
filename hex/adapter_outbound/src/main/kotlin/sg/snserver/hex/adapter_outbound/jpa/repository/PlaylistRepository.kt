@@ -79,7 +79,8 @@ class PlaylistRepository(
     }
 
     override fun getPlaylistBatch(pageable: Pageable): Page<Playlist> {
-        return playlistRepositoryJpa.findAll(pageable).map { it.toDomain() }
+        return playlistRepositoryJpa.findAllWithoutItems(pageable).map {
+            it.toDomain(itemsNull = true) }
     }
 
     override fun updatePlaylist(playlistId: String, updatedPlaylist: Playlist): Playlist {
