@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 import sg.snserver.hex.adapter_outbound.jpa.entities.PlayItemEntity
 import sg.snserver.hex.adapter_outbound.jpa.entities.PlaylistEntity
-import sg.snserver.hex.adapter_outbound.jpa.entities.PlaylistItemManyEntity
 import sg.snserver.hex.adapter_outbound.jpa.interfaces.*
 import sg.snserver.hex.adapter_outbound.jpa.mapper.toEntity
 import sg.snserver.hex.application.NotExistsException
@@ -18,8 +17,6 @@ import sg.snserver.hex.domain.entities.Playlist
 @Repository
 class PlaylistRepository(
     private val playlistRepositoryJpa: PlaylistRepositoryJpa,
-    private val playItemRepositoryJpa: PlayItemRepositoryJpa,
-    private val playlistItemManyJpa: PlaylistItemManyJpa,
     private val localizedRepositoryJpa: LocalizedRepositoryJpa,
     private val contentDetailsRepositoryJpa: ContentDetailsRepositoryJpa,
     private val resourceRepositoryJpa: ResourceRepositoryJpa,
@@ -28,69 +25,52 @@ class PlaylistRepository(
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun savePlaylist(playlist: Playlist) {
-        if (playlist.items == null) {
-            throw IllegalArgumentException("There is no items in the playlist when save.")
+        requireNotNull(playlist.items) { "There is no items in the playlist when save." }
+
+        val localizedEntity = playlist.localized.toEntity().also {
+            localizedRepositoryJpa.save(it)
+        }
+        val contentDetailsEntity = playlist.contentDetails.toEntity().also {
+            contentDetailsRepositoryJpa.save(it)
         }
 
-        val newPlaylistEntity: PlaylistEntity
+        val newPlaylistEntity = PlaylistEntity(
+            playlistId = playlist.playlistId,
+            channelId = playlist.channelId,
+            title = playlist.title,
+            description = playlist.description,
+            thumbnail = playlist.thumbnail,
+            channelTitle = playlist.channelTitle,
+            localized = localizedEntity,
+            contentDetails = contentDetailsEntity,
+            publishedAt = playlist.publishedAt,
+            items = mutableListOf(),
+            platformType = playlist.platformType.toEntity()
+        )
 
-        with(playlist){
-            val localizedEntity = localized.toEntity()
-            localizedRepositoryJpa.save(localizedEntity)
-
-            val contentDetailsEntity = contentDetails.toEntity()
-            contentDetailsRepositoryJpa.save(contentDetailsEntity)
-
-            newPlaylistEntity = PlaylistEntity(
-                playlistId = playlistId,
-                channelId = channelId,
-                title = title,
-                description = description,
-                thumbnail = thumbnail,
-                channelTitle = channelTitle,
-                localized = localizedEntity,
-                contentDetails = contentDetailsEntity,
-                publishedAt = publishedAt,
-                items = mutableListOf(),
-                platformType = platformType.toEntity(),
-            )
-        }
-        playlistRepositoryJpa.save(newPlaylistEntity)
-
-        val playlistItemManyEntityList = mutableListOf<PlaylistItemManyEntity>()
-
-        playlist.items!!.forEach { playItem ->
-            val resourceEntity = playItem.resource.toEntity()
-            resourceRepositoryJpa.save(resourceEntity)
-            playlistItemManyEntityList.add(
-                PlaylistItemManyEntity(
-                    playlist = newPlaylistEntity,
-                    playItem = PlayItemEntity(
-                        videoId = playItem.videoId,
-                        publishedAt = playItem.publishedAt,
-                        channelId = playItem.channelId,
-                        title = playItem.title,
-                        description = playItem.description,
-                        thumbnail = playItem.thumbnail,
-                        channelTitle = playItem.channelTitle,
-                        position = playItem.position,
-                        resource = resourceEntity,
-                        videoOwnerChannelId = playItem.videoOwnerChannelId,
-                        videoOwnerChannelTitle = playItem.videoOwnerChannelTitle,
-                        startSeconds = playItem.startSeconds,
-                        isDeleted = playItem.isDeleted,
-                        platformType = playItem.platformType.toEntity(),
-                    ),
-                )
+        val playItemEntities = playlist.items!!.map { playItem ->
+            val resourceEntity = playItem.resource.toEntity().also {
+                resourceRepositoryJpa.save(it)
+            }
+            PlayItemEntity(
+                videoId = playItem.videoId,
+                publishedAt = playItem.publishedAt,
+                channelId = playItem.channelId,
+                title = playItem.title,
+                description = playItem.description,
+                thumbnail = playItem.thumbnail,
+                channelTitle = playItem.channelTitle,
+                position = playItem.position,
+                resource = resourceEntity,
+                videoOwnerChannelId = playItem.videoOwnerChannelId,
+                videoOwnerChannelTitle = playItem.videoOwnerChannelTitle,
+                startSeconds = playItem.startSeconds,
+                isDeleted = playItem.isDeleted,
+                platformType = playItem.platformType.toEntity()
             )
         }
 
-        log.debug(playlistItemManyEntityList.toString())
-
-        playlistItemManyJpa.saveAll(playlistItemManyEntityList)
-
-        newPlaylistEntity.items = playlistItemManyEntityList
-
+        newPlaylistEntity.items = playItemEntities.toMutableList()
         playlistRepositoryJpa.save(newPlaylistEntity)
     }
 

@@ -27,9 +27,13 @@ data class PlaylistEntity(
     val publishedAt: Instant,
 
     @OneToMany(
-        mappedBy = "playlist",
         fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
-    var items: MutableList<PlaylistItemManyEntity>? = mutableListOf(),
+    @JoinTable(
+        name = "sn_playlist_items", // 조인 테이블 이름
+        joinColumns = [JoinColumn(name = "sn_playlist_id")],
+        inverseJoinColumns = [JoinColumn(name = "sn_play_item_video_id")]
+    )
+    var items: MutableList<PlayItemEntity>? = mutableListOf(),
 
     @Enumerated(EnumType.STRING)
     val platformType: PlatformTypeEntity,
