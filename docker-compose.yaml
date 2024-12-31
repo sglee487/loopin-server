@@ -7,6 +7,8 @@ x-logging: &logging
 services:
   snserver-db:
     image: postgres:15-alpine
+    networks:
+      - sn-network
     env_file:
       - .env
     environment:
@@ -23,6 +25,19 @@ services:
     volumes:
       - .postgres_data:/var/lib/postgresql/data
     logging: *logging
+  mongo-db:
+    image: mongo
+    restart: always
+    networks:
+      - sn-network
+    ports:
+      - ${MONGODB_PORT}:27017
+    volumes:
+      - .mongo_data:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGODB_DB}
 #  migrations:
 #    image: flyway/flyway
 #    networks:
@@ -37,3 +52,7 @@ services:
 #      FLYWAY_USER: ${MYSQL_USER}
 #      FLYWAY_PASSWORD: ${MYSQL_PASSWORD}
 #    command: migrate
+
+networks:
+  sn-network:
+    external: true

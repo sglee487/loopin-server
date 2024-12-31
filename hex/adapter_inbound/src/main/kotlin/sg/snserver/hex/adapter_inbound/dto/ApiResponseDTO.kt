@@ -12,12 +12,12 @@ sealed class ApiResponseDTO<T>{
     ) : ApiResponseDTO<T>()
 
     companion object {
-        fun emptySuccess(message: String): Success<Map<String, Any>> {
-            return Success(message = message, data = emptyMap())
+        fun emptySuccess(message: String): Success<Unit> {
+            return Success(message = message, data = Unit)
         }
 
-        fun emptyError(message: String): Error<Map<String, Any>> {
-            return Error(message = message, data = emptyMap())
+        fun emptyError(message: String): Error<Unit> {
+            return Error(message = message, data = Unit)
         }
     }
 }

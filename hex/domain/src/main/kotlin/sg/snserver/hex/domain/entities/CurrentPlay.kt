@@ -7,5 +7,7 @@ data class CurrentPlay(
 
     val nowPlayingItem: PlayItem,
     val playlist: Playlist,
-    val playlistQueues: PlaylistQueues,
+
+    val prev: MutableList<PlayItem>,
+    val next: MutableList<PlayItem>,
 )

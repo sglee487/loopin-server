@@ -32,13 +32,27 @@ class PlaylistController(
     )
     fun createPlaylist(
         @RequestBody request: CreatePlaylistRequestDTO,
-    ): ApiResponseDTO.Success<Map<String, Any>> {
+    ): ApiResponseDTO.Success<Unit> {
 
         saveYoutubeDataUseCase.savePlaylist(request.playlistId)
 
         return ApiResponseDTO.emptySuccess(
             message = "save successful",
         )
+    }
+
+    @GetMapping
+    fun getItemList(
+        @RequestParam playlistId: String,
+    ): ApiResponseDTO.Success<GetPlaylistResponseDTO> {
+
+        val playlist = getPlaylistUseCase.getPlaylist(playlistId)
+
+        return ApiResponseDTO.Success(
+            message = "get playlist success",
+            data = playlist.toResponseDTO()
+        )
+
     }
 
     @GetMapping("/batch")
@@ -56,20 +70,6 @@ class PlaylistController(
         )
     }
 
-    @GetMapping
-    fun getItemList(
-        @RequestParam playlistId: String,
-    ): ApiResponseDTO.Success<GetPlaylistResponseDTO> {
-
-        val playlist = getPlaylistUseCase.getPlaylist(playlistId)
-
-        return ApiResponseDTO.Success(
-            message = "get playlistBatch success",
-            data = playlist.toResponseDTO()
-        )
-
-    }
-
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @PatchMapping(
         "/{playlistId}",
@@ -77,7 +77,7 @@ class PlaylistController(
     )
     fun updateItem(
         @PathVariable playlistId: String,
-    ): ApiResponseDTO.Success<Map<String, Any>> {
+    ): ApiResponseDTO.Success<Unit> {
         updateYoutubeDataUseCase.updatePlaylist(playlistId = playlistId)
 
         return ApiResponseDTO.emptySuccess(

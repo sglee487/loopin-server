@@ -18,10 +18,10 @@ data class PlaylistEntity(
     var thumbnail: URL?,
     var channelTitle: String,
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     var localized: LocalizedEntity,
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     var contentDetails: ContentDetailsEntity,
 
     val publishedAt: Instant,

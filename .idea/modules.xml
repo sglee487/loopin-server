@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/adapter_outbound/hex.adapter_outbound.main.iml" filepath="$PROJECT_DIR$/.idea/modules/adapter_outbound/hex.adapter_outbound.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/snserver.iml" filepath="$PROJECT_DIR$/snserver.iml" />
     </modules>
   </component>

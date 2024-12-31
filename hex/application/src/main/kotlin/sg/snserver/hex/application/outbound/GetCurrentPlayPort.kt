@@ -1,13 +1,16 @@
-package sg.snserver.hex.application.inbound
+package sg.snserver.hex.application.outbound
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import sg.snserver.hex.domain.entities.CurrentPlay
 import java.util.*
 
-interface GetCurrentPlaysUseCase {
-    fun getCurrentPlayUseCase(userId: UUID, playlistId: String): CurrentPlay
-    fun getCurrentPlayBatchUseCase(
+interface GetCurrentPlayPort {
+    fun getCurrentPlay(
+        userId: UUID,
+        playlistId: String,
+    ): CurrentPlay
+    fun getCurrentPlays(
         userId: UUID,
         pageable: Pageable,
     ): Page<CurrentPlay>

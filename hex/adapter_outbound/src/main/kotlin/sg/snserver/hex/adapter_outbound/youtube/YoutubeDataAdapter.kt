@@ -81,7 +81,7 @@ class YoutubeDataAdapter(
 
             items.addAll(playlistItemsResponse.items.map {
                 PlayItem(
-                    videoId = it.id,
+                    playItemId = it.id,
                     publishedAt = it.snippet.publishedAt.toStringRfc3339().toLocalDateTime().toInstant(
                         ZoneOffset.UTC
                     ),
@@ -92,8 +92,8 @@ class YoutubeDataAdapter(
                     channelTitle = it.snippet.channelTitle,
                     position = it.snippet.position,
                     resource = Resource(
-                        kind = it.snippet.resourceId.kind,
-                        videoId = it.snippet.resourceId.videoId
+                        videoId = it.snippet.resourceId.videoId,
+                        kind = it.snippet.resourceId.kind
                     ),
                     videoOwnerChannelId = it.snippet.videoOwnerChannelId,
                     videoOwnerChannelTitle = it.snippet.videoOwnerChannelTitle,

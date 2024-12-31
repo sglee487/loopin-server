@@ -6,6 +6,7 @@ import java.net.URL
 import java.time.Instant
 
 data class GetNewPlayItemResponseDTO(
+    val playItemId: String,
     val publishedAt: Instant,
     val channelId: String,
     var title: String,
@@ -17,9 +18,11 @@ data class GetNewPlayItemResponseDTO(
     val videoOwnerChannelId: String?,
     var videoOwnerChannelTitle: String?,
     var startSeconds: Float = 0.0f,
+    val platformType: PlatformTypeResponseDTO,
 )
 
 fun PlayItem.toResponseDTO(): GetNewPlayItemResponseDTO = GetNewPlayItemResponseDTO(
+    playItemId = this.playItemId,
     publishedAt = publishedAt,
     channelId = channelId,
     title = title,
@@ -31,6 +34,7 @@ fun PlayItem.toResponseDTO(): GetNewPlayItemResponseDTO = GetNewPlayItemResponse
     videoOwnerChannelId = videoOwnerChannelId,
     videoOwnerChannelTitle = videoOwnerChannelTitle,
     startSeconds = startSeconds,
+    platformType = PlatformTypeResponseDTO.fromValue(platformType.value),
 )
 
 data class ResourceResponseDTO(

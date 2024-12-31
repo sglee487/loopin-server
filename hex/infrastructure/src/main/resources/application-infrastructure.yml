@@ -10,6 +10,10 @@ spring:
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+  data:
+    mongodb:
+      uri: ${MONGODB_URL}
+      auto-index-creation: true
   jpa:
     hibernate:
       ddl-auto: update

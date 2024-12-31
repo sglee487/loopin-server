@@ -10,11 +10,13 @@ import java.time.Instant
 @Table(name = "sn_play_item")
 data class PlayItemEntity(
     @Id
-    val videoId: String,
+    val playItemId: String,
 
     val publishedAt: Instant,
     val channelId: String,
     var title: String,
+
+    @Column(columnDefinition = "TEXT")
     var description: String?,
     var thumbnail: URL?,
     var channelTitle: String,
@@ -33,7 +35,7 @@ data class PlayItemEntity(
     val platformType: PlatformTypeEntity,
 ) : BaseEntity() {
     fun toDomain(): PlayItem = PlayItem(
-        videoId = videoId,
+        playItemId = playItemId,
         publishedAt = publishedAt,
         channelId = channelId,
         title = title,

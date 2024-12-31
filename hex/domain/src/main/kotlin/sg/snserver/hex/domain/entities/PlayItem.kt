@@ -5,7 +5,7 @@ import java.net.URL
 import java.time.Instant
 
 data class PlayItem(
-    val videoId: String,
+    val playItemId: String,
 
     val publishedAt: Instant,
     val channelId: String,

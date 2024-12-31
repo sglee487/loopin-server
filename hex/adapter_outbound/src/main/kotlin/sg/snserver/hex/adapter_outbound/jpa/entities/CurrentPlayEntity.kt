@@ -7,10 +7,9 @@ import java.util.*
 @Table(name = "sn_current_play")
 data class CurrentPlayEntity(
     @Id
-    val id: UUID,
+    val id: UUID = UUID.randomUUID(),
 
-    @JoinColumn
-    @ManyToOne(cascade = [CascadeType.MERGE, CascadeType.PERSIST])
+    @ManyToOne
     val userPlays: UserPlaysEntity,
 
     @JoinColumn
@@ -21,14 +20,7 @@ data class CurrentPlayEntity(
     @ManyToOne(cascade = [CascadeType.MERGE, CascadeType.PERSIST])
     val playlist: PlaylistEntity,
 
-    @OneToMany(
-        cascade = [CascadeType.MERGE, CascadeType.PERSIST]
-    )
-    val prev: MutableList<QueueListEntity>,
+    @Column(name = "sn_current_play_queues")
+    val queuesId: String,
 
-    @OneToMany(
-        cascade = [CascadeType.MERGE, CascadeType.PERSIST]
-    )
-    val next: MutableList<QueueListEntity>,
-
-): BaseEntity()
+    ) : BaseEntity()

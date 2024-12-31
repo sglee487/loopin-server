@@ -53,7 +53,7 @@ class PlaylistRepository(
                 resourceRepositoryJpa.save(it)
             }
             PlayItemEntity(
-                videoId = playItem.videoId,
+                playItemId = playItem.playItemId,
                 publishedAt = playItem.publishedAt,
                 channelId = playItem.channelId,
                 title = playItem.title,

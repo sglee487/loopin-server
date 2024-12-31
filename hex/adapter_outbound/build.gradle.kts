@@ -12,6 +12,7 @@ dependencies {
 
     // database
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:3.3.0")
 
     // google api (youtube)
     implementation("com.google.api-client:google-api-client:2.6.0")
