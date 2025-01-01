@@ -2,6 +2,7 @@ package sg.snserver.hex.adapter_outbound.jpa.interfaces
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import sg.snserver.hex.adapter_outbound.jpa.entities.CurrentPlayEntity
@@ -15,6 +16,7 @@ interface CurrentPlayRepositoryJpa: JpaRepository<CurrentPlayEntity, UUID> {
         playlistEntity: PlaylistEntity,
     ): CurrentPlayEntity?
 
+    @EntityGraph(attributePaths = ["playlist"])
     @Query("SELECT c FROM CurrentPlayEntity c",
         countQuery = "select count(c) from CurrentPlayEntity c",
     )

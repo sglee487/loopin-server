@@ -95,11 +95,9 @@ class UserPlaysRepository(
         val prevIdList: List<String> = queuesEntity.prev
         val nextIdList: List<String> = queuesEntity.next
 
-        // 한 번의 쿼리로 모든 PlayItem을 조회
-        val allIds = prevIdList + nextIdList
-        val allItems = playItemRepositoryJpa.findAllById(allIds).associateBy { it.playItemId }
+        // 단일 쿼리 최적화를 위한 커스텀 메서드 사용
+        val allItems = playItemRepositoryJpa.findAllByPlayItemIds(prevIdList + nextIdList).associateBy { it.playItemId }
 
-        // prevIdList와 nextIdList에 따라 PlayItem 생성
         val prevItemList = prevIdList.mapNotNull { allItems[it]?.toDomain() }.toMutableList()
         val nextItemList = nextIdList.mapNotNull { allItems[it]?.toDomain() }.toMutableList()
 
@@ -122,13 +120,11 @@ class UserPlaysRepository(
         logger.debug(currentPlayEntityPage.toString())
 
         return currentPlayEntityPage.map {
-            val playlistEntity = playlistRepositoryJpa.findByPlaylistId(it.playlist.playlistId)
-                ?: throw NotExistsException("not playlist entity ${it.playlist.playlistId}")
 
             CurrentPlay(
                 id = it.id,
                 nowPlayingItem = it.nowPlayingItem.toDomain(),
-                playlist = playlistEntity.toDomain(itemsNull = true),
+                playlist = it.playlist.toDomain(itemsNull = true),
                 prev = emptyList<PlayItem>().toMutableList(),
                 next = emptyList<PlayItem>().toMutableList(),
             )

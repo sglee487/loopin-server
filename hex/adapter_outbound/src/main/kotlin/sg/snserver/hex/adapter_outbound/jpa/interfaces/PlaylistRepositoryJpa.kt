@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query
 import sg.snserver.hex.adapter_outbound.jpa.entities.PlaylistEntity
 
 interface PlaylistRepositoryJpa : JpaRepository<PlaylistEntity, String> {
+    @EntityGraph(attributePaths = ["localized", "contentDetails"])
     fun findByPlaylistId(playlistId: String): PlaylistEntity?
 
     @EntityGraph(attributePaths = ["localized", "contentDetails"])
