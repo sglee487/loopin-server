@@ -24,6 +24,7 @@ data class GetPlaylistResponseDTO(
     val publishedAt: Instant,
 
     var updatedAt: Instant,
+    val platformType: PlatformTypeResponseDTO,
 )
 
 data class GetPlaylistBatchResponseDTO(
@@ -39,6 +40,8 @@ data class GetPlaylistBatchResponseDTO(
     val publishedAt: Instant,
 
     var updatedAt: Instant,
+
+    val platformType: PlatformTypeResponseDTO
 )
 
 
@@ -54,6 +57,7 @@ fun Playlist.toResponseDTO(): GetPlaylistResponseDTO = GetPlaylistResponseDTO(
     items = items?.map { it.toResponseDTO() }?.toMutableList(),
     publishedAt = publishedAt,
     updatedAt = updatedAt,
+    platformType = PlatformTypeResponseDTO.fromValue(platformType.value)
 )
 
 
