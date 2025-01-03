@@ -16,7 +16,7 @@ import sg.snserver.hex.application.inbound.UpdateYoutubeDataUseCase
 
 @RestController
 @RequestMapping(
-    "/api/v1/playlist",
+    "/api/v1/playlists",
     consumes = [],
     produces = [MediaType.APPLICATION_JSON_VALUE],
 )
@@ -42,21 +42,7 @@ class PlaylistController(
     }
 
     @GetMapping
-    fun getItemList(
-        @RequestParam playlistId: String,
-    ): ApiResponseDTO.Success<GetPlaylistResponseDTO> {
-
-        val playlist = getPlaylistUseCase.getPlaylist(playlistId)
-
-        return ApiResponseDTO.Success(
-            message = "get playlist success",
-            data = playlist.toResponseDTO()
-        )
-
-    }
-
-    @GetMapping("/batch")
-    fun getPlaylistBatch(
+    fun getPlaylists(
         pageable: Pageable,
     ): ApiResponseDTO.Success<Page<GetPlaylistResponseDTO>> {
 
@@ -70,12 +56,28 @@ class PlaylistController(
         )
     }
 
+    @GetMapping(
+        "/{playlistId}",
+    )
+    fun getPlaylist(
+        @PathVariable playlistId: String,
+    ): ApiResponseDTO.Success<GetPlaylistResponseDTO> {
+
+        val playlist = getPlaylistUseCase.getPlaylist(playlistId)
+
+        return ApiResponseDTO.Success(
+            message = "get playlist success",
+            data = playlist.toResponseDTO()
+        )
+
+    }
+
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @PatchMapping(
         "/{playlistId}",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
-    fun updateItem(
+    fun updatePlaylist(
         @PathVariable playlistId: String,
     ): ApiResponseDTO.Success<Unit> {
         updateYoutubeDataUseCase.updatePlaylist(playlistId = playlistId)
