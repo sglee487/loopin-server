@@ -64,7 +64,6 @@ class PlaylistRepository(
                 resource = resourceEntity,
                 videoOwnerChannelId = playItem.videoOwnerChannelId,
                 videoOwnerChannelTitle = playItem.videoOwnerChannelTitle,
-                startSeconds = playItem.startSeconds,
                 isDeleted = playItem.isDeleted,
                 platformType = playItem.platformType.toEntity()
             )
@@ -75,7 +74,7 @@ class PlaylistRepository(
     }
 
     override fun getPlaylist(playlistId: String): Playlist? {
-        return playlistRepositoryJpa.findByPlaylistId(playlistId)?.toDomain()
+        return playlistRepositoryJpa.findWithJoinsByPlaylistId(playlistId)?.toDomain()
     }
 
     override fun getPlaylistBatch(pageable: Pageable): Page<Playlist> {
@@ -85,7 +84,7 @@ class PlaylistRepository(
 
     override fun updatePlaylist(playlistId: String, updatedPlaylist: Playlist): Playlist {
 
-        val basePlaylistEntity = playlistRepositoryJpa.findByPlaylistId(
+        val basePlaylistEntity = playlistRepositoryJpa.findWithJoinsByPlaylistId(
             playlistId = playlistId
         ) ?: throw NotExistsException("playlist: $playlistId not exists")
 

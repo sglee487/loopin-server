@@ -17,7 +17,6 @@ data class GetNewPlayItemResponseDTO(
     val resource: ResourceResponseDTO,
     val videoOwnerChannelId: String?,
     var videoOwnerChannelTitle: String?,
-    var startSeconds: Float = 0.0f,
     val platformType: PlatformTypeResponseDTO,
 )
 
@@ -33,7 +32,6 @@ fun PlayItem.toResponseDTO(): GetNewPlayItemResponseDTO = GetNewPlayItemResponse
     resource = resource.toResponseDTO(),
     videoOwnerChannelId = videoOwnerChannelId,
     videoOwnerChannelTitle = videoOwnerChannelTitle,
-    startSeconds = startSeconds,
     platformType = PlatformTypeResponseDTO.fromValue(platformType.value),
 )
 

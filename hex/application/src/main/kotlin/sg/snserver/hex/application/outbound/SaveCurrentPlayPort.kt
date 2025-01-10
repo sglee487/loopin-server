@@ -7,8 +7,14 @@ interface SaveCurrentPlayPort {
     fun saveCurrentPlay(
         userId: UUID,
         playlistId: String,
-        nowPlayingItem: PlayItem,
+        nowPlayingItem: PlayItem?,
         prevItemIdList: List<String>,
         nextItemIdList: List<String>
+    )
+
+    fun setCurrentPlayStartSeconds(
+        userId: UUID,
+        playlistId: String,
+        startSeconds: Float
     )
 }

@@ -9,10 +9,13 @@ import java.net.URL
 import java.time.Instant
 
 data class SaveCurrentPlayRequestDTO(
-    val playlistId: String,
-    val nowPlayingItem: SaveNowPlayingItemDTO,
+    val nowPlayingItem: SaveNowPlayingItemDTO?,
     val prevItemIdList: List<String>,
     val nextItemIdList: List<String>,
+)
+
+data class SaveCurrentPlayStartSecondsRequestDTO(
+    val startSeconds: Float,
 )
 
 data class SaveNowPlayingItemDTO(
@@ -44,14 +47,13 @@ data class SaveNowPlayingItemDTO(
         resource = resource.toDomain(),
         videoOwnerChannelId = videoOwnerChannelId,
         videoOwnerChannelTitle = videoOwnerChannelTitle,
-        startSeconds = startSeconds,
         isDeleted = isDeleted,
         platformType = platformType.toDomain(),
     )
 }
 
 data class GetCurrentPlayRequestDTO(
-    val nowPlayingItem: GetNewPlayItemResponseDTO,
+    val nowPlayingItem: GetNewPlayItemResponseDTO?,
     val playlist: GetPlaylistResponseDTO,
     val prev: List<GetNewPlayItemResponseDTO>?,
     val next: List<GetNewPlayItemResponseDTO>?,
@@ -60,7 +62,7 @@ data class GetCurrentPlayRequestDTO(
 )
 
 fun CurrentPlay.toResponseDTO() = GetCurrentPlayRequestDTO(
-    nowPlayingItem = nowPlayingItem.toResponseDTO(),
+    nowPlayingItem = nowPlayingItem?.toResponseDTO(),
     playlist = playlist.toResponseDTO(),
     prev = prev.map { it.toResponseDTO() },
     next = next.map { it.toResponseDTO() },

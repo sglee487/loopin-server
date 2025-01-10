@@ -7,8 +7,13 @@ interface SaveCurrentPlayUseCase {
     fun saveCurrentPlay(
         userId: UUID,
         playlistId: String,
-        nowPlayingItem: PlayItem,
+        nowPlayingItem: PlayItem?,
         prevItemIdList: List<String>,
         nextItemIdList: List<String>,
+    )
+    fun setStartSeconds(
+        userId: UUID,
+        playlistId: String,
+        startSeconds: Float,
     )
 }

@@ -9,7 +9,7 @@ import sg.snserver.hex.adapter_outbound.jpa.entities.PlaylistEntity
 
 interface PlaylistRepositoryJpa : JpaRepository<PlaylistEntity, String> {
     @EntityGraph(attributePaths = ["localized", "contentDetails"])
-    fun findByPlaylistId(playlistId: String): PlaylistEntity?
+    fun findWithJoinsByPlaylistId(playlistId: String): PlaylistEntity?
 
     @EntityGraph(attributePaths = ["localized", "contentDetails"])
     @Query("SELECT p FROM PlaylistEntity p",

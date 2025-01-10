@@ -20,7 +20,7 @@ class CurrentPlaysService(
     override fun saveCurrentPlay(
         userId: UUID,
         playlistId: String,
-        nowPlayingItem: PlayItem,
+        nowPlayingItem: PlayItem?,
         prevItemIdList: List<String>,
         nextItemIdList: List<String>,
     ) {
@@ -30,6 +30,14 @@ class CurrentPlaysService(
             nowPlayingItem = nowPlayingItem,
             prevItemIdList = prevItemIdList,
             nextItemIdList = nextItemIdList,
+        )
+    }
+
+    override fun setStartSeconds(userId: UUID, playlistId: String, startSeconds: Float) {
+        saveCurrentPlayPort.setCurrentPlayStartSeconds(
+            userId = userId,
+            playlistId = playlistId,
+            startSeconds = startSeconds,
         )
     }
 

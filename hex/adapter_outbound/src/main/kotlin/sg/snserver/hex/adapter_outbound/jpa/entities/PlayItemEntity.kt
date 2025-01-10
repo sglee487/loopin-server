@@ -28,9 +28,7 @@ data class PlayItemEntity(
 
     val videoOwnerChannelId: String?,
     var videoOwnerChannelTitle: String?,
-    var startSeconds: Float = 0.0f,
     var isDeleted: Boolean = false,
-
     @Enumerated(EnumType.STRING)
     val platformType: PlatformTypeEntity,
 ) : BaseEntity() {
@@ -46,7 +44,6 @@ data class PlayItemEntity(
         resource = resource.toDomain(),
         videoOwnerChannelId = videoOwnerChannelId,
         videoOwnerChannelTitle = videoOwnerChannelTitle,
-        startSeconds = startSeconds,
         isDeleted = isDeleted,
         platformType = platformType.toDomain(),
     )

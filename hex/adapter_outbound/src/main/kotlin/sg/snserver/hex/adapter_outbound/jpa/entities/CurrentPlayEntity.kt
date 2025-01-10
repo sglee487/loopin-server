@@ -9,18 +9,19 @@ data class CurrentPlayEntity(
     @Id
     val id: UUID = UUID.randomUUID(),
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     val userPlays: UserPlaysEntity,
 
     @JoinColumn
     @ManyToOne(cascade = [CascadeType.MERGE, CascadeType.PERSIST])
-    val nowPlayingItem: PlayItemEntity,
+    var nowPlayingItem: PlayItemEntity?,
+
+    var startSeconds: Float = 0.0F,
 
     @JoinColumn
     @ManyToOne(cascade = [CascadeType.MERGE, CascadeType.PERSIST])
     val playlist: PlaylistEntity,
-
     @Column(name = "sn_current_play_queues")
     val queuesId: String,
 
-    ) : BaseEntity()
+) : BaseEntity()

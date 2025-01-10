@@ -81,7 +81,7 @@ class YoutubeDataAdapter(
 
             items.addAll(playlistItemsResponse.items.map {
                 PlayItem(
-                    playItemId = it.id,
+                    playItemId = it.snippet.resourceId.videoId,
                     publishedAt = it.snippet.publishedAt.toStringRfc3339().toLocalDateTime().toInstant(
                         ZoneOffset.UTC
                     ),

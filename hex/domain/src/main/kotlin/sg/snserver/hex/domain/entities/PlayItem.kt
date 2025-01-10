@@ -17,7 +17,6 @@ data class PlayItem(
     val resource: Resource,
     val videoOwnerChannelId: String?,
     var videoOwnerChannelTitle: String?,
-    var startSeconds: Float = 0.0f,
     var isDeleted: Boolean = false,
     val platformType: PlatformType,
 ): Base()

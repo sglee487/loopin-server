@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 import sg.snserver.hex.adapter_outbound.jpa.entities.CurrentPlayEntity
+import sg.snserver.hex.adapter_outbound.jpa.entities.PlayItemEntity
 import sg.snserver.hex.adapter_outbound.jpa.entities.QueuesEntity
 import sg.snserver.hex.adapter_outbound.jpa.entities.UserPlaysEntity
 import sg.snserver.hex.adapter_outbound.jpa.interfaces.*
@@ -32,13 +33,15 @@ class UserPlaysRepository(
     override fun saveCurrentPlay(
         userId: UUID,
         playlistId: String,
-        nowPlayingItem: PlayItem,
+        nowPlayingItem: PlayItem?,
         prevItemIdList: List<String>,
         nextItemIdList: List<String>,
     ) {
-        val playItemEntity = playItemRepositoryJpa.findById(nowPlayingItem.playItemId)
-            .orElseThrow { IllegalArgumentException("PlayItem not found") }
-
+        val playItemEntity: PlayItemEntity? = nowPlayingItem?.let {
+            playItemRepositoryJpa.findById(it.playItemId).orElseThrow {
+                IllegalArgumentException("PlayItem not found")
+            }
+        }
         val playlistEntity = playlistRepositoryJpa.findById(playlistId)
             .orElseThrow { IllegalArgumentException("Playlist not found") }
 
@@ -65,25 +68,46 @@ class UserPlaysRepository(
             queuesRepositoryJpa.save(queuesEntity) // 변경된 경우에만 저장
         }
 
-        val currentPlayEntity = CurrentPlayEntity(
+        // 기존 CurrentPlayEntity 조회
+        val currentPlayEntity = currentPlayRepositoryJpa.findByUserPlaysAndPlaylist(
+            userPlaysEntity = userPlaysEntity,
+            playlistEntity = playlistEntity,
+        )?.apply {
+            // 필드 업데이트
+            this.nowPlayingItem = playItemEntity
+            this.startSeconds = 0.0F
+        } ?: CurrentPlayEntity(
             userPlays = userPlaysEntity,
             nowPlayingItem = playItemEntity,
             playlist = playlistEntity,
             queuesId = queuesEntity.id,
-        )
-
-        logger.debug(queuesEntity.id.toString())
-
-        // 중복 방지: 동일한 플레이리스트와 사용자에 대한 CurrentPlayEntity가 없는 경우에만 추가
-        if (userPlaysEntity.currentPlays.none { it.userPlays.userId == userId && it.playlist.playlistId == playlistId }) {
-            userPlaysEntity.currentPlays.add(currentPlayEntity)
+        ).also {
+            userPlaysEntity.currentPlays.add(it)
         }
+
+        // 저장
+        userPlaysRepositoryJpa.save(userPlaysEntity)
+    }
+
+
+    // n+1
+    override fun setCurrentPlayStartSeconds(userId: UUID, playlistId: String, startSeconds: Float) {
+        val userPlaysEntity =
+            userPlaysRepositoryJpa.findByUserId(userId) ?: throw NotExistsException("not user plays entity $userId")
+        val playlistEntity = playlistRepositoryJpa.findWithJoinsByPlaylistId(playlistId)
+            ?: throw NotExistsException("not playlist entity $playlistId")
+        val currentPlayEntity = currentPlayRepositoryJpa.findByUserPlaysAndPlaylist(
+            userPlaysEntity = userPlaysEntity,
+            playlistEntity = playlistEntity,
+        ) ?: throw NotExistsException("not playlist entity $playlistId")
+
+        currentPlayEntity.startSeconds = startSeconds
     }
 
     override fun getCurrentPlay(userId: UUID, playlistId: String): CurrentPlay {
         val userPlaysEntity =
             userPlaysRepositoryJpa.findByUserId(userId) ?: throw NotExistsException("not user plays entity $userId")
-        val playlistEntity = playlistRepositoryJpa.findByPlaylistId(playlistId)
+        val playlistEntity = playlistRepositoryJpa.findWithJoinsByPlaylistId(playlistId)
             ?: throw NotExistsException("not playlist entity $playlistId")
         val currentPlayEntity = currentPlayRepositoryJpa.findByUserPlaysAndPlaylist(
             userPlaysEntity = userPlaysEntity,
@@ -106,7 +130,7 @@ class UserPlaysRepository(
 
         return CurrentPlay(
             id = currentPlayEntity.id,
-            nowPlayingItem = currentPlayEntity.nowPlayingItem.toDomain(),
+            nowPlayingItem = currentPlayEntity.nowPlayingItem?.toDomain(),
             playlist = playlistEntity.toDomain(),
             prev = prevItemList,
             next = nextItemList,
@@ -123,7 +147,7 @@ class UserPlaysRepository(
 
             CurrentPlay(
                 id = it.id,
-                nowPlayingItem = it.nowPlayingItem.toDomain(),
+                nowPlayingItem = it.nowPlayingItem?.toDomain(),
                 playlist = it.playlist.toDomain(itemsNull = true),
                 prev = emptyList<PlayItem>().toMutableList(),
                 next = emptyList<PlayItem>().toMutableList(),
