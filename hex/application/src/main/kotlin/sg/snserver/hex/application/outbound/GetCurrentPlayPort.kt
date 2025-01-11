@@ -10,8 +10,11 @@ interface GetCurrentPlayPort {
         userId: UUID,
         playlistId: String,
     ): CurrentPlay
+//    fun getCurrentPlays(
+//        userId: UUID,
+//        pageable: Pageable,
+//    ): Page<CurrentPlay>
     fun getCurrentPlays(
         userId: UUID,
-        pageable: Pageable,
-    ): Page<CurrentPlay>
+    ): List<CurrentPlay>
 }

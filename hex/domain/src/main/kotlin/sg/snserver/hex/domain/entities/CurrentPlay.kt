@@ -8,7 +8,7 @@ data class CurrentPlay(
     val nowPlayingItem: PlayItem?,
     val playlist: Playlist,
 
-    var startSeconds: Float = 0.0F,
+    var startSeconds: Float,
     val prev: MutableList<PlayItem>,
     val next: MutableList<PlayItem>,
 )

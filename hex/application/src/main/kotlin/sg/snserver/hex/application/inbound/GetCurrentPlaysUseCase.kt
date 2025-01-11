@@ -7,8 +7,11 @@ import java.util.*
 
 interface GetCurrentPlaysUseCase {
     fun getCurrentPlayUseCase(userId: UUID, playlistId: String): CurrentPlay
+//    fun getCurrentPlayBatchUseCase(
+//        userId: UUID,
+////        pageable: Pageable,
+//    ): Page<CurrentPlay>
     fun getCurrentPlayBatchUseCase(
         userId: UUID,
-        pageable: Pageable,
-    ): Page<CurrentPlay>
+    ): List<CurrentPlay>
 }

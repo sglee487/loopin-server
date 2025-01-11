@@ -1,6 +1,5 @@
 package sg.snserver.hex.adapter_inbound.dto
 
-import org.springframework.data.domain.Page
 import sg.snserver.hex.domain.entities.CurrentPlay
 import sg.snserver.hex.domain.entities.PlayItem
 import sg.snserver.hex.domain.entities.Resource
@@ -52,26 +51,38 @@ data class SaveNowPlayingItemDTO(
     )
 }
 
-data class GetCurrentPlayRequestDTO(
-    val nowPlayingItem: GetNewPlayItemResponseDTO?,
-    val playlist: GetPlaylistResponseDTO,
-    val prev: List<GetNewPlayItemResponseDTO>?,
-    val next: List<GetNewPlayItemResponseDTO>?,
-    val prevLength: Int,
-    val nextLength: Int,
-)
-
-fun CurrentPlay.toResponseDTO() = GetCurrentPlayRequestDTO(
+fun CurrentPlay.toResponseDTO() = CurrentPlayResponseDTO(
     nowPlayingItem = nowPlayingItem?.toResponseDTO(),
     playlist = playlist.toResponseDTO(),
     prev = prev.map { it.toResponseDTO() },
     next = next.map { it.toResponseDTO() },
+    startSeconds = startSeconds,
+    prevLength = prev.size,
+    nextLength = next.size,
+)
+
+fun CurrentPlay.toBatchSingleResponseDTO() = CurrentPlayResponseDTO(
+    nowPlayingItem = nowPlayingItem?.toResponseDTO(),
+    playlist = playlist.toResponseDTO(),
+    prev = prev.map { it.toResponseDTO() },
+    next = next.map { it.toResponseDTO() },
+    startSeconds = startSeconds,
     prevLength = prev.size,
     nextLength = next.size
 )
 
 data class GetCurrentPlayBatchResponseDTO(
-    val currentPlays: Page<GetCurrentPlayRequestDTO>,
+    val currentPlayMap: Map<String, CurrentPlayResponseDTO>
+)
+
+data class CurrentPlayResponseDTO(
+    val nowPlayingItem: GetNewPlayItemResponseDTO?,
+    val playlist: GetPlaylistResponseDTO,
+    val prev: List<GetNewPlayItemResponseDTO>?,
+    val next: List<GetNewPlayItemResponseDTO>?,
+    val startSeconds: Float,
+    val prevLength: Int,
+    val nextLength: Int,
 )
 
 data class ResourceRequestDTO(

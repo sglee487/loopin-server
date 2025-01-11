@@ -1,7 +1,6 @@
 package sg.snserver.hex.adapter_inbound
 
 import org.slf4j.LoggerFactory
-import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
@@ -25,7 +24,8 @@ class CurrentPlaysController(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @PostMapping("/{playlistId}",
+    @PostMapping(
+        "/{playlistId}",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
     @Transactional(isolation = Isolation.SERIALIZABLE)
@@ -68,18 +68,38 @@ class CurrentPlaysController(
         )
     }
 
+    //    @GetMapping
+//    fun getCurrentPlays(
+//        pageable: Pageable,
+//    ): ApiResponseDTO.Success<GetCurrentPlayBatchResponseDTO> {
+//        val currentPlayPage = getCurrentPlaysUseCase.getCurrentPlayBatchUseCase(
+//            userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
+//            pageable = pageable,
+//        )
+//        return ApiResponseDTO.Success(
+//            message = "get current play success",
+//            data = GetCurrentPlayBatchResponseDTO(
+//                currentPlays = currentPlayPage.map { it.toResponseDTO() }
+//            )
+//        )
+//    }
+
     @GetMapping
     fun getCurrentPlays(
-        pageable: Pageable,
     ): ApiResponseDTO.Success<GetCurrentPlayBatchResponseDTO> {
-        val currentPlayPage = getCurrentPlaysUseCase.getCurrentPlayBatchUseCase(
+        val currentPlays = getCurrentPlaysUseCase.getCurrentPlayBatchUseCase(
             userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
-            pageable = pageable,
         )
+
+        val currentPlayMap = currentPlays.associateBy(
+            keySelector = { it.playlist.playlistId },
+            valueTransform = { it.toBatchSingleResponseDTO() }
+        )
+
         return ApiResponseDTO.Success(
             message = "get current play success",
             data = GetCurrentPlayBatchResponseDTO(
-                currentPlays = currentPlayPage.map { it.toResponseDTO() }
+                currentPlayMap = currentPlayMap
             )
         )
     }
@@ -87,7 +107,7 @@ class CurrentPlaysController(
     @GetMapping("/{playlistId}")
     fun getCurrentPlay(
         @PathVariable playlistId: String,
-    ): ApiResponseDTO.Success<GetCurrentPlayRequestDTO> {
+    ): ApiResponseDTO.Success<CurrentPlayResponseDTO> {
         val currentPlay = getCurrentPlaysUseCase.getCurrentPlayUseCase(
             userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
             playlistId = playlistId,

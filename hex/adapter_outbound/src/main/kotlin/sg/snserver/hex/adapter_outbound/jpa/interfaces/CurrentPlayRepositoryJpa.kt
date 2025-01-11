@@ -16,9 +16,14 @@ interface CurrentPlayRepositoryJpa: JpaRepository<CurrentPlayEntity, UUID> {
         playlistEntity: PlaylistEntity,
     ): CurrentPlayEntity?
 
+//    @EntityGraph(attributePaths = ["playlist"])
+//    @Query("SELECT c FROM CurrentPlayEntity c",
+//        countQuery = "select count(c) from CurrentPlayEntity c",
+//    )
+//    fun findAllByUserPlaysBatch(pageable: Pageable, userPlaysEntity: UserPlaysEntity): Page<CurrentPlayEntity>
     @EntityGraph(attributePaths = ["playlist"])
     @Query("SELECT c FROM CurrentPlayEntity c",
         countQuery = "select count(c) from CurrentPlayEntity c",
     )
-    fun findAllByUserPlaysBatch(pageable: Pageable, userPlaysEntity: UserPlaysEntity): Page<CurrentPlayEntity>
+    fun findAllByUserPlaysBatch(userPlaysEntity: UserPlaysEntity): List<CurrentPlayEntity>
 }

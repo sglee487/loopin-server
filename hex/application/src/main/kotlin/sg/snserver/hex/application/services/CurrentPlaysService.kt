@@ -48,7 +48,11 @@ class CurrentPlaysService(
         )
     }
 
-    override fun getCurrentPlayBatchUseCase(userId: UUID, pageable: Pageable): Page<CurrentPlay> {
-        return getCurrentPlayPort.getCurrentPlays(userId, pageable)
+//    override fun getCurrentPlayBatchUseCase(userId: UUID, pageable: Pageable): Page<CurrentPlay> {
+//        return getCurrentPlayPort.getCurrentPlays(userId, pageable)
+//    }
+    override fun getCurrentPlayBatchUseCase(userId: UUID): List<CurrentPlay> {
+        return getCurrentPlayPort.getCurrentPlays(userId)
     }
+
 }

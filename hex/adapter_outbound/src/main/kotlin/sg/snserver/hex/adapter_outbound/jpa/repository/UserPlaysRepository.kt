@@ -134,23 +134,41 @@ class UserPlaysRepository(
             playlist = playlistEntity.toDomain(),
             prev = prevItemList,
             next = nextItemList,
+            startSeconds = currentPlayEntity.startSeconds,
         )
     }
 
-    override fun getCurrentPlays(userId: UUID, pageable: Pageable): Page<CurrentPlay> {
+//    override fun getCurrentPlays(userId: UUID, pageable: Pageable): Page<CurrentPlay> {
+//        val userPlaysEntity =
+//            userPlaysRepositoryJpa.findByUserId(userId) ?: throw NotExistsException("not user plays entity $userId")
+//        val currentPlayEntityPage = currentPlayRepositoryJpa.findAllByUserPlaysBatch(pageable, userPlaysEntity)
+//        logger.debug(currentPlayEntityPage.toString())
+//
+//        return currentPlayEntityPage.map {
+//
+//            CurrentPlay(
+//                id = it.id,
+//                nowPlayingItem = it.nowPlayingItem?.toDomain(),
+//                playlist = it.playlist.toDomain(itemsNull = true),
+//                prev = emptyList<PlayItem>().toMutableList(),
+//                next = emptyList<PlayItem>().toMutableList(),
+//            )
+//        }
+//    }
+
+    override fun getCurrentPlays(userId: UUID): List<CurrentPlay> {
         val userPlaysEntity =
             userPlaysRepositoryJpa.findByUserId(userId) ?: throw NotExistsException("not user plays entity $userId")
-        val currentPlayEntityPage = currentPlayRepositoryJpa.findAllByUserPlaysBatch(pageable, userPlaysEntity)
-        logger.debug(currentPlayEntityPage.toString())
+        val currentPlayEntities = currentPlayRepositoryJpa.findAllByUserPlaysBatch(userPlaysEntity)
 
-        return currentPlayEntityPage.map {
-
+        return currentPlayEntities.map {
             CurrentPlay(
                 id = it.id,
                 nowPlayingItem = it.nowPlayingItem?.toDomain(),
                 playlist = it.playlist.toDomain(itemsNull = true),
                 prev = emptyList<PlayItem>().toMutableList(),
                 next = emptyList<PlayItem>().toMutableList(),
+                startSeconds = it.startSeconds,
             )
         }
     }
