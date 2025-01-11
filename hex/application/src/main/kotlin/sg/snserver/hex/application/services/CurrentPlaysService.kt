@@ -1,7 +1,5 @@
 package sg.snserver.hex.application.services
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import sg.snserver.hex.application.inbound.GetCurrentPlaysUseCase
 import sg.snserver.hex.application.inbound.SaveCurrentPlayUseCase
@@ -23,6 +21,7 @@ class CurrentPlaysService(
         nowPlayingItem: PlayItem?,
         prevItemIdList: List<String>,
         nextItemIdList: List<String>,
+        startSeconds: Float,
     ) {
         saveCurrentPlayPort.saveCurrentPlay(
             userId = userId,
@@ -30,6 +29,7 @@ class CurrentPlaysService(
             nowPlayingItem = nowPlayingItem,
             prevItemIdList = prevItemIdList,
             nextItemIdList = nextItemIdList,
+            startSeconds = startSeconds,
         )
     }
 

@@ -11,6 +11,7 @@ data class SaveCurrentPlayRequestDTO(
     val nowPlayingItem: SaveNowPlayingItemDTO?,
     val prevItemIdList: List<String>,
     val nextItemIdList: List<String>,
+    val startSeconds: Float,
 )
 
 data class SaveCurrentPlayStartSecondsRequestDTO(

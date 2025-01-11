@@ -10,6 +10,7 @@ interface SaveCurrentPlayUseCase {
         nowPlayingItem: PlayItem?,
         prevItemIdList: List<String>,
         nextItemIdList: List<String>,
+        startSeconds: Float,
     )
     fun setStartSeconds(
         userId: UUID,

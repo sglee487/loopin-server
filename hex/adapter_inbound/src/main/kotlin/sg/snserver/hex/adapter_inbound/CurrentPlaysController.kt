@@ -40,6 +40,7 @@ class CurrentPlaysController(
             nowPlayingItem = request.nowPlayingItem?.toDomain(),
             prevItemIdList = request.prevItemIdList,
             nextItemIdList = request.nextItemIdList,
+            startSeconds = request.startSeconds,
         )
 
         return ApiResponseDTO.emptySuccess(

@@ -1,8 +1,6 @@
 package sg.snserver.hex.adapter_outbound.jpa.repository
 
 import org.slf4j.LoggerFactory
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 import sg.snserver.hex.adapter_outbound.jpa.entities.CurrentPlayEntity
 import sg.snserver.hex.adapter_outbound.jpa.entities.PlayItemEntity
@@ -36,6 +34,7 @@ class UserPlaysRepository(
         nowPlayingItem: PlayItem?,
         prevItemIdList: List<String>,
         nextItemIdList: List<String>,
+        startSeconds: Float,
     ) {
         val playItemEntity: PlayItemEntity? = nowPlayingItem?.let {
             playItemRepositoryJpa.findById(it.playItemId).orElseThrow {
@@ -75,7 +74,7 @@ class UserPlaysRepository(
         )?.apply {
             // 필드 업데이트
             this.nowPlayingItem = playItemEntity
-            this.startSeconds = 0.0F
+            this.startSeconds = startSeconds
         } ?: CurrentPlayEntity(
             userPlays = userPlaysEntity,
             nowPlayingItem = playItemEntity,
