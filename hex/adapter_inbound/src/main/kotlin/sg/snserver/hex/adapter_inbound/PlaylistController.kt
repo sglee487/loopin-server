@@ -1,8 +1,10 @@
 package sg.snserver.hex.adapter_inbound
 
+import jakarta.annotation.security.PermitAll
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
@@ -26,6 +28,8 @@ class PlaylistController(
     val getPlaylistUseCase: GetPlaylistUseCase,
     val updateYoutubeDataUseCase: UpdateYoutubeDataUseCase,
 ) {
+
+    @PreAuthorize("hasRole('USER')")
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @PostMapping(
         consumes = [MediaType.APPLICATION_JSON_VALUE],
@@ -41,6 +45,7 @@ class PlaylistController(
         )
     }
 
+    @PermitAll
     @GetMapping
     fun getPlaylists(
         pageable: Pageable,
@@ -56,6 +61,7 @@ class PlaylistController(
         )
     }
 
+    @PermitAll
     @GetMapping(
         "/{playlistId}",
     )
@@ -72,6 +78,7 @@ class PlaylistController(
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @PatchMapping(
         "/{playlistId}",

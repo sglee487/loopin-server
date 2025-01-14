@@ -2,12 +2,14 @@ package sg.snserver.hex.adapter_inbound
 
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import sg.snserver.hex.adapter_inbound.dto.*
 import sg.snserver.hex.application.inbound.GetCurrentPlaysUseCase
 import sg.snserver.hex.application.inbound.SaveCurrentPlayUseCase
+import java.security.Principal
 import java.util.*
 
 @RestController
@@ -24,18 +26,20 @@ class CurrentPlaysController(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(
         "/{playlistId}",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
     @Transactional(isolation = Isolation.SERIALIZABLE)
     fun saveCurrentPlay(
-//        principal: Principal,
+        principal: Principal,
         @PathVariable playlistId: String,
         @RequestBody request: SaveCurrentPlayRequestDTO
     ): ApiResponseDTO.Success<Unit> {
+        logger.info(principal.name)
         saveCurrentPlayUseCase.saveCurrentPlay(
-            userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
+            userId = UUID.fromString(principal.name),
             playlistId = playlistId,
             nowPlayingItem = request.nowPlayingItem?.toDomain(),
             prevItemIdList = request.prevItemIdList,
@@ -48,18 +52,20 @@ class CurrentPlaysController(
         )
     }
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(
         "/{playlistId}/start-seconds",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
     @Transactional(isolation = Isolation.SERIALIZABLE)
     fun saveCurrentPlayStartSeconds(
-//        principal: Principal,
+        principal: Principal,
         @PathVariable playlistId: String,
         @RequestBody request: SaveCurrentPlayStartSecondsRequestDTO,
     ): ApiResponseDTO.Success<Unit> {
+        logger.info(principal.name)
         saveCurrentPlayUseCase.setStartSeconds(
-            userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
+            userId = UUID.fromString(principal.name),
             playlistId = playlistId,
             startSeconds = request.startSeconds,
         )
@@ -69,27 +75,14 @@ class CurrentPlaysController(
         )
     }
 
-    //    @GetMapping
-//    fun getCurrentPlays(
-//        pageable: Pageable,
-//    ): ApiResponseDTO.Success<GetCurrentPlayBatchResponseDTO> {
-//        val currentPlayPage = getCurrentPlaysUseCase.getCurrentPlayBatchUseCase(
-//            userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
-//            pageable = pageable,
-//        )
-//        return ApiResponseDTO.Success(
-//            message = "get current play success",
-//            data = GetCurrentPlayBatchResponseDTO(
-//                currentPlays = currentPlayPage.map { it.toResponseDTO() }
-//            )
-//        )
-//    }
-
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     fun getCurrentPlays(
+        principal: Principal,
     ): ApiResponseDTO.Success<GetCurrentPlayBatchResponseDTO> {
+        logger.info(principal.name)
         val currentPlays = getCurrentPlaysUseCase.getCurrentPlayBatchUseCase(
-            userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
+            userId = UUID.fromString(principal.name),
         )
 
         val currentPlayMap = currentPlays.associateBy(
@@ -105,12 +98,15 @@ class CurrentPlaysController(
         )
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{playlistId}")
     fun getCurrentPlay(
+        principal: Principal,
         @PathVariable playlistId: String,
     ): ApiResponseDTO.Success<CurrentPlayResponseDTO> {
+        logger.info(principal.name)
         val currentPlay = getCurrentPlaysUseCase.getCurrentPlayUseCase(
-            userId = UUID.fromString("e120807e-32b7-4284-914d-3638f5bf3c08"),
+            userId = UUID.fromString(principal.name),
             playlistId = playlistId,
         )
         return ApiResponseDTO.Success(
