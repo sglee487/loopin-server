@@ -26,15 +26,8 @@ data class PlaylistEntity(
 
     val publishedAt: Instant,
 
-    @OneToMany(
-        fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.MERGE]
-    )
-    @JoinTable(
-        name = "sn_playlist_items", // 조인 테이블 이름
-        joinColumns = [JoinColumn(name = "sn_playlist_id")],
-        inverseJoinColumns = [JoinColumn(name = "sn_play_item_video_id")]
-    )
-    var items: MutableList<PlayItemEntity>? = mutableListOf(),
+    @OneToMany(mappedBy = "playlist", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var items: MutableList<PlaylistItemEntity> = mutableListOf(),
 
     @Enumerated(EnumType.STRING)
     val platformType: PlatformTypeEntity,
@@ -53,7 +46,7 @@ data class PlaylistEntity(
             contentDetails = contentDetails.toDomain(),
             publishedAt = publishedAt,
             platformType = platformType.toDomain(),
-            items = if (itemsNull) null else items?.map { it.toDomain() }?.toMutableList(),
+            items = if (itemsNull) null else items.map { it.playItem.toDomain() }.toMutableList(),
         )
     }
 }

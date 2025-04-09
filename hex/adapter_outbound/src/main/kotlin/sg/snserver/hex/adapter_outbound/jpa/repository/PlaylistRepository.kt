@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 import sg.snserver.hex.adapter_outbound.jpa.entities.PlayItemEntity
 import sg.snserver.hex.adapter_outbound.jpa.entities.PlaylistEntity
+import sg.snserver.hex.adapter_outbound.jpa.entities.PlaylistItemEntity
 import sg.snserver.hex.adapter_outbound.jpa.interfaces.*
 import sg.snserver.hex.adapter_outbound.jpa.mapper.toEntity
 import sg.snserver.hex.application.NotExistsException
@@ -16,6 +17,7 @@ import sg.snserver.hex.domain.entities.Playlist
 
 @Repository
 class PlaylistRepository(
+    private val playItemRepositoryJpa: PlayItemRepositoryJpa,
     private val playlistRepositoryJpa: PlaylistRepositoryJpa,
     private val localizedRepositoryJpa: LocalizedRepositoryJpa,
     private val contentDetailsRepositoryJpa: ContentDetailsRepositoryJpa,
@@ -69,7 +71,22 @@ class PlaylistRepository(
             )
         }
 
-        newPlaylistEntity.items = playItemEntities.toMutableList()
+        // 먼저 PlayItemEntity 저장
+        playItemEntities.forEach {
+            playItemRepositoryJpa.save(it)
+        }
+
+        // 중간 테이블용 엔티티 생성
+        val playlistItemEntities = playItemEntities.map { playItemEntity ->
+            PlaylistItemEntity(
+                playlist = newPlaylistEntity,
+                playItem = playItemEntity,
+            )
+        }
+
+        newPlaylistEntity.items = playlistItemEntities.toMutableList()
+
+        // 최종 저장
         playlistRepositoryJpa.save(newPlaylistEntity)
     }
 
