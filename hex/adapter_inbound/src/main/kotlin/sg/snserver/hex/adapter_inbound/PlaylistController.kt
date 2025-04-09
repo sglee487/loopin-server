@@ -30,7 +30,7 @@ class PlaylistController(
 ) {
 
     @PreAuthorize("hasRole('USER')")
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional
     @PostMapping(
         consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
@@ -78,8 +78,8 @@ class PlaylistController(
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @PreAuthorize("hasRole('USER')")
+    @Transactional
     @PatchMapping(
         "/{playlistId}",
         consumes = [MediaType.APPLICATION_JSON_VALUE],

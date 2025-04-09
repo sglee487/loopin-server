@@ -24,8 +24,6 @@ class YoutubeDataAdapter(
     private val youtubeDataProperties: YoutubeDataProperties,
 ): LoadYoutubeDataPort {
 
-    private val log = LoggerFactory.getLogger(this.javaClass)
-
     private val APPLICATION_NAME = "API code samples"
 
     private val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()

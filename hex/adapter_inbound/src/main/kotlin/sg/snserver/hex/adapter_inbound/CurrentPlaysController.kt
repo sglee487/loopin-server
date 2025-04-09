@@ -31,7 +31,7 @@ class CurrentPlaysController(
         "/{playlistId}",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional
     fun saveCurrentPlay(
         principal: Principal,
         @PathVariable playlistId: String,
@@ -53,11 +53,11 @@ class CurrentPlaysController(
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PostMapping(
+    @PatchMapping(
         "/{playlistId}/start-seconds",
         consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional
     fun saveCurrentPlayStartSeconds(
         principal: Principal,
         @PathVariable playlistId: String,
@@ -100,7 +100,7 @@ class CurrentPlaysController(
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/{playlistId}")
-    fun getCurrentPlay(
+    fun getCurrentPlayInPlaylist(
         principal: Principal,
         @PathVariable playlistId: String,
     ): ApiResponseDTO.Success<CurrentPlayResponseDTO> {

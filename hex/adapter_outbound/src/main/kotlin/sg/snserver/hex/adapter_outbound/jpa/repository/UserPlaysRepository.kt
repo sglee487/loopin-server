@@ -9,7 +9,6 @@ import sg.snserver.hex.adapter_outbound.jpa.entities.UserPlaysEntity
 import sg.snserver.hex.adapter_outbound.jpa.interfaces.*
 import sg.snserver.hex.application.NotExistsException
 import sg.snserver.hex.application.outbound.GetCurrentPlayPort
-//import sg.snserver.hex.adapter_outbound.jpa.interfaces.PlayListItemsRepository
 import sg.snserver.hex.application.outbound.SaveCurrentPlayPort
 import sg.snserver.hex.domain.entities.CurrentPlay
 import sg.snserver.hex.domain.entities.PlayItem
@@ -18,7 +17,6 @@ import kotlin.jvm.optionals.getOrNull
 
 @Repository
 class UserPlaysRepository(
-//    private val playListItemsRepository: PlayListItemsRepository,
     private val playItemRepositoryJpa: PlayItemRepositoryJpa,
     private val playlistRepositoryJpa: PlaylistRepositoryJpa,
     private val currentPlayRepositoryJpa: CurrentPlayRepositoryJpa,
@@ -68,7 +66,7 @@ class UserPlaysRepository(
         }
 
         // 기존 CurrentPlayEntity 조회
-        val currentPlayEntity = currentPlayRepositoryJpa.findByUserPlaysAndPlaylist(
+        currentPlayRepositoryJpa.findByUserPlaysAndPlaylist(
             userPlaysEntity = userPlaysEntity,
             playlistEntity = playlistEntity,
         )?.apply {
@@ -136,24 +134,6 @@ class UserPlaysRepository(
             startSeconds = currentPlayEntity.startSeconds,
         )
     }
-
-//    override fun getCurrentPlays(userId: UUID, pageable: Pageable): Page<CurrentPlay> {
-//        val userPlaysEntity =
-//            userPlaysRepositoryJpa.findByUserId(userId) ?: throw NotExistsException("not user plays entity $userId")
-//        val currentPlayEntityPage = currentPlayRepositoryJpa.findAllByUserPlaysBatch(pageable, userPlaysEntity)
-//        logger.debug(currentPlayEntityPage.toString())
-//
-//        return currentPlayEntityPage.map {
-//
-//            CurrentPlay(
-//                id = it.id,
-//                nowPlayingItem = it.nowPlayingItem?.toDomain(),
-//                playlist = it.playlist.toDomain(itemsNull = true),
-//                prev = emptyList<PlayItem>().toMutableList(),
-//                next = emptyList<PlayItem>().toMutableList(),
-//            )
-//        }
-//    }
 
     override fun getCurrentPlays(userId: UUID): List<CurrentPlay> {
         val userPlaysEntity =
