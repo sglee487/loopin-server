@@ -1,3 +1,6 @@
 logging:
   level:
     web: debug
+
+server:
+  port: ${SPRING_PORT:8080}
