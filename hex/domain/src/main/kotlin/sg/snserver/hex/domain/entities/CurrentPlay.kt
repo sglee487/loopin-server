@@ -11,4 +11,6 @@ data class CurrentPlay(
     var startSeconds: Float,
     val prev: MutableList<PlayItem>,
     val next: MutableList<PlayItem>,
+    val prevItemCount: Int,
+    val nextItemCount: Int,
 )

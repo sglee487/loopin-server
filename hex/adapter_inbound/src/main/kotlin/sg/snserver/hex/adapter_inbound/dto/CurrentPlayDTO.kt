@@ -58,8 +58,8 @@ fun CurrentPlay.toResponseDTO() = CurrentPlayResponseDTO(
     prev = prev.map { it.toResponseDTO() },
     next = next.map { it.toResponseDTO() },
     startSeconds = startSeconds,
-    prevLength = prev.size,
-    nextLength = next.size,
+    prevItemCount = prevItemCount,
+    nextItemCount = nextItemCount,
 )
 
 fun CurrentPlay.toBatchSingleResponseDTO() = CurrentPlayResponseDTO(
@@ -68,8 +68,8 @@ fun CurrentPlay.toBatchSingleResponseDTO() = CurrentPlayResponseDTO(
     prev = prev.map { it.toResponseDTO() },
     next = next.map { it.toResponseDTO() },
     startSeconds = startSeconds,
-    prevLength = prev.size,
-    nextLength = next.size
+    prevItemCount = prevItemCount,
+    nextItemCount = nextItemCount,
 )
 
 data class GetCurrentPlayBatchResponseDTO(
@@ -82,8 +82,8 @@ data class CurrentPlayResponseDTO(
     val prev: List<GetNewPlayItemResponseDTO>?,
     val next: List<GetNewPlayItemResponseDTO>?,
     val startSeconds: Float,
-    val prevLength: Int,
-    val nextLength: Int,
+    val prevItemCount: Int,
+    val nextItemCount: Int,
 )
 
 data class ResourceRequestDTO(

@@ -129,9 +129,11 @@ class UserPlaysRepository(
             id = currentPlayEntity.id,
             nowPlayingItem = currentPlayEntity.nowPlayingItem?.toDomain(),
             playlist = playlistEntity.toDomain(),
+            startSeconds = currentPlayEntity.startSeconds,
             prev = prevItemList,
             next = nextItemList,
-            startSeconds = currentPlayEntity.startSeconds,
+            prevItemCount = prevItemList.size,
+            nextItemCount = nextItemList.size,
         )
     }
 
@@ -141,13 +143,25 @@ class UserPlaysRepository(
         val currentPlayEntities = currentPlayRepositoryJpa.findAllByUserPlaysBatch(userPlaysEntity)
 
         return currentPlayEntities.map {
+            val queuesEntity = queuesRepositoryJpa.findById(it.queuesId).getOrNull()
+                ?: throw NotExistsException("not queue entity ${it.queuesId}")
+
+            println(queuesEntity)
+            val prevIdList: List<String> = queuesEntity.prev
+            val nextIdList: List<String> = queuesEntity.next
+
+            println(prevIdList)
+            println(nextIdList)
+
             CurrentPlay(
                 id = it.id,
                 nowPlayingItem = it.nowPlayingItem?.toDomain(),
                 playlist = it.playlist.toDomain(itemsNull = true),
+                startSeconds = it.startSeconds,
                 prev = emptyList<PlayItem>().toMutableList(),
                 next = emptyList<PlayItem>().toMutableList(),
-                startSeconds = it.startSeconds,
+                prevItemCount = prevIdList.size,
+                nextItemCount = nextIdList.size,
             )
         }
     }
