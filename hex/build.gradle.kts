@@ -1,12 +1,22 @@
 plugins {
 	kotlin("jvm") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
-	id("org.springframework.boot") version "3.4.0"
-	id("io.spring.dependency-management") version "1.1.6"
+	id("org.springframework.boot") version "3.2.4"
+	id("io.spring.dependency-management") version "1.1.4"
 }
 
 group = "sg.snserver"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT" // 버전 업!
+
+java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(21))
+	}
+}
+
+repositories {
+	mavenCentral()
+}
 
 subprojects {
 	apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -15,17 +25,14 @@ subprojects {
 		mavenCentral()
 	}
 
-	// Apply plugins conditionally
 	if (name != "domain") {
 		apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 		apply(plugin = "org.springframework.boot")
 		apply(plugin = "io.spring.dependency-management")
 
-		// Add dependencies only for non-domain modules after plugins are applied
 		dependencies {
 			"implementation"("org.springframework.boot:spring-boot-starter")
 			"implementation"("org.springframework.boot:spring-boot-starter-web")
-			// "implementation"("org.springframework.boot:spring-boot-starter-webflux")
 			"implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 		}
 	}
@@ -34,8 +41,12 @@ subprojects {
 		"implementation"("org.jetbrains.kotlin:kotlin-reflect")
 	}
 
-	tasks.withType<Test> {
+	tasks.withType<Test>().configureEach {
 		useJUnitPlatform()
+		reports {
+			junitXml.required.set(true)
+			html.required.set(true)
+		}
 	}
 
 	kotlin {
@@ -43,30 +54,25 @@ subprojects {
 	}
 }
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
-}
-
-repositories {
-	mavenCentral()
-}
-
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-kotlin {
-	compilerOptions {
-		freeCompilerArgs.addAll("-Xjsr305=strict")
+tasks.withType<Test>().configureEach {
+	useJUnitPlatform()
+	reports {
+		junitXml.required.set(true)
+		html.required.set(true)
 	}
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+	kotlinOptions {
+		freeCompilerArgs = freeCompilerArgs + "-Xjsr305=strict"
+	}
 }
