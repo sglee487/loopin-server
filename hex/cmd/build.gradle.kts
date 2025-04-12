@@ -11,5 +11,5 @@ dependencies {
 }
 
 springBoot {
-    mainClass.set("sg.snserver.cmd.ApplicationKt")
+    mainClass.set("sg.snserver.cmd.command.ApplicationKt")
 }
