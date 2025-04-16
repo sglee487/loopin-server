@@ -8,6 +8,17 @@ plugins {
 group = "sg.snserver"
 version = "0.0.2-SNAPSHOT" // 버전 업!
 
+allprojects {
+	repositories {
+		mavenCentral()
+	}
+
+	tasks.withType<JavaCompile> {
+		options.isFork = true
+		options.forkOptions.javaHome = file(System.getProperty("java.home"))
+	}
+}
+
 java {
 	toolchain {
 		languageVersion.set(JavaLanguageVersion.of(21))
@@ -39,6 +50,16 @@ subprojects {
 
 	dependencies {
 		"implementation"("org.jetbrains.kotlin:kotlin-reflect")
+	}
+
+	if (name != "cmd" && tasks.findByName("bootJar") != null) {
+		tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+			enabled = false
+		}
+	}
+
+	tasks.withType<Test> {
+		useJUnitPlatform()
 	}
 
 	tasks.withType<Test>().configureEach {

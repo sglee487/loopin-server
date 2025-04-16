@@ -1,5 +1,6 @@
 .idea
 .env
+.env.docker
 .postgres_data
 
 hex/HELP.md
