@@ -13,3 +13,7 @@ dependencies {
 springBoot {
     mainClass.set("sg.snserver.cmd.command.ApplicationKt")
 }
+
+tasks.bootJar {
+    archiveFileName.set("app.jar")
+}
