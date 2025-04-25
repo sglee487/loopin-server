@@ -24,12 +24,16 @@ class YoutubeDataAdapter(
     private val youtubeDataProperties: YoutubeDataProperties,
 ): LoadYoutubeDataPort {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     private val APPLICATION_NAME = "API code samples"
 
     private val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
 
     override fun loadYoutubeData(playlistId: String): Playlist {
         val youtubeService = getService()
+
+        logger.info("load youtube playlist $playlistId")
 
         val playlistsRequest = youtubeService.playlists()
             .list(listOf("snippet", "contentDetails")).setKey(youtubeDataProperties.apiKey)
@@ -72,6 +76,9 @@ class YoutubeDataAdapter(
         var nextPageToken: String? = null
 
         do {
+
+            logger.info("load youtube playlist items $playlistId with nextPageToken $nextPageToken")
+
             val playlistItemsResponse = playlistItemsRequest.setKey(youtubeDataProperties.apiKey).setMaxResults(50L)
                 .setPlaylistId(playlistId)
                 .setPageToken(nextPageToken)
