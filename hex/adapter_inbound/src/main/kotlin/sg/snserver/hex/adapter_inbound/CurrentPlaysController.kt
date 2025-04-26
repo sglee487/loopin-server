@@ -18,7 +18,6 @@ import java.util.*
     consumes = [],
     produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-@CrossOrigin(origins = ["http://localhost:14200", "http://localhost:6006"])
 class CurrentPlaysController(
     private val saveCurrentPlayUseCase: SaveCurrentPlayUseCase,
     private val getCurrentPlaysUseCase: GetCurrentPlaysUseCase,

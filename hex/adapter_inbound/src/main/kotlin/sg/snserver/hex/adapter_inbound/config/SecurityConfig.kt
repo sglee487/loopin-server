@@ -15,6 +15,9 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
@@ -24,10 +27,14 @@ class SecurityConfig {
     @Value("\${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private val jwtIssuer: String? = null
 
+    @Value("\${cors.allowed-origins}")
+    private lateinit var allowedOrigins: String
+
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
 
         http
+            .cors { it.configurationSource(corsConfigurationSource()) } // CORS 설정 추가
             .csrf { it.disable() } // 선택적으로 CSRF 비활성화
             .oauth2ResourceServer { oauth2 ->
                 oauth2.jwt { jwt ->
@@ -74,6 +81,22 @@ class SecurityConfig {
         return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
             .restOperations(restTemplate)
             .build()
+    }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration()
+
+        val allowedOrigins = allowedOrigins.split(",").map { it.trim() }
+
+        configuration.allowedOriginPatterns = allowedOrigins // allowedOrigins 직접 사용
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")
+        configuration.allowedHeaders = listOf("*")
+        configuration.allowCredentials = true
+
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", configuration)
+        return source
     }
 
 }

@@ -22,7 +22,6 @@ import sg.snserver.hex.application.inbound.UpdateYoutubeDataUseCase
     consumes = [],
     produces = [MediaType.APPLICATION_JSON_VALUE],
 )
-@CrossOrigin(origins = ["http://localhost:14200", "http://localhost:6006"])
 class PlaylistController(
     val saveYoutubeDataUseCase: SaveYoutubeDataUseCase,
     val getPlaylistUseCase: GetPlaylistUseCase,
