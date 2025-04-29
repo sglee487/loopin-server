@@ -12,6 +12,12 @@ spring:
         jwt:
           issuer-uri: ${AUTH_URL}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
 #storage:
 #  name: ${STORAGE_NAME}
 #  prefix: ${STORAGE_PREFIX}
