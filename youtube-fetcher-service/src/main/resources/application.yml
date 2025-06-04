@@ -1,0 +1,13 @@
+server:
+  port: 9010
+  shutdown: graceful
+  netty:
+    connection-timeout: 5s
+    idle-timeout: 30s
+
+spring:
+  application:
+    name: youtube-fetcher-service
+
+youtube:
+  api-key: ${YOUTUBE_API_KEY}
