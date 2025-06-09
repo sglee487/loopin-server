@@ -6,6 +6,6 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("media_playlist_content_details")
 data class MediaPlaylistContentDetails(
-    @Id @Column("media_playlist_id") val mediaPlaylistId: String,
+    @Id @Column("media_playlist_id") val mediaPlaylistId: Long,
     @Column("item_count") val itemCount: Int,
 )

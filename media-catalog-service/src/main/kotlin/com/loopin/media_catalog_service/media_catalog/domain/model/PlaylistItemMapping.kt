@@ -5,7 +5,7 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("playlist_item_mapping")
 data class PlaylistItemMapping(
-    @Column("playlist_id") val playlistId: String,
-    @Column("media_item_id") val mediaItemId: String,
+    @Column("playlist_id") val playlistId: Long,
+    @Column("media_item_id") val mediaItemId: Long,
     val position: Int
 )

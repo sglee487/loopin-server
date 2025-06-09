@@ -1,6 +1,7 @@
 package com.loopin.youtube_fetcher_service.web
 
 import com.loopin.youtube_fetcher_service.domain.YoutubeFetcherService
+import com.loopin.youtube_fetcher_service.media_catalog.MediaItem
 import com.loopin.youtube_fetcher_service.media_catalog.MediaPlaylist
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -16,5 +17,12 @@ class YoutubeFetcherController(
         @PathVariable id: String,
     ): Mono<MediaPlaylist> {
         return svc.getMediaPlaylist(id)
+    }
+
+    @GetMapping("/item/{id}")
+    fun getPlayItem(
+        @PathVariable id: String,
+    ): Mono<MediaItem> {
+        return svc.getMediaItem(id)
     }
 }

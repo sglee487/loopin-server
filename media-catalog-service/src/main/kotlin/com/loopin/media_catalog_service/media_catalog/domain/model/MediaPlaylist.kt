@@ -8,9 +8,8 @@ import java.time.Instant
 @Table("media_playlist")
 data class MediaPlaylist(
     @Id val id: Long? = null,
-    val title: String,
-    val description: String?,
-    val thumbnail: String?,
+    @Column("resource_id") val resourceId: String,
+    @Column("thumbnail") val thumbnail: String?,
     @Column("channel_id") val channelId: String,
     @Column("channel_title") val channelTitle: String,
     @Column("published_at") val publishedAt: Instant,

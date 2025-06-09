@@ -10,4 +10,4 @@ spring:
     name: youtube-fetcher-service
 
 youtube:
-  api-key: ${YOUTUBE_API_KEY}
+  api-key: ${YOUTUBE_DATA_API_KEY}

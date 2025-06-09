@@ -8,6 +8,7 @@ import java.time.Instant
 @Table("media_item")
 data class MediaItem(
     @Id val id: Long? = null,
+    @Column("resource_id") val resourceId: String,
     @Column("created_at") val createdAt: Instant,
     @Column("uploader_channel_id") val uploaderChannelId: String,
     @Column("thumbnail") val thumbnail: String?,

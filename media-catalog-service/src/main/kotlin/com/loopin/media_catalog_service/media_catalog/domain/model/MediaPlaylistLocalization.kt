@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Table
 
 @Table("media_playlist_localization")
 data class MediaPlaylistLocalization(
-    @Id @Column("media_playlist_id") val mediaPlaylistId: String,
+    @Id @Column("media_playlist_id") val mediaPlaylistId: Long,
     @Column("language_code") val languageCode: String,
     val title: String,
     val description: String?
