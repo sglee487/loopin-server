@@ -1,7 +1,7 @@
 package com.loopin.youtube_fetcher_service.media_catalog
 
-data class MediaContentDetails(
+data class PlaylistItemMapping(
+    val playlistId: Long,
     val mediaItemId: Long,
-    val duration: Int,
-    val caption: Boolean,
+    val position: Int
 )

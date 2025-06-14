@@ -9,10 +9,17 @@ import java.time.Instant
 data class MediaItem(
     @Id val id: Long? = null,
     @Column("resource_id") val resourceId: String,
-    @Column("created_at") val createdAt: Instant,
-    @Column("uploader_channel_id") val uploaderChannelId: String,
+    @Column("title") val title: String,
+    @Column("description") val description: String?,
+    @Column("kind") val kind: String,
+    @Column("published_at") val publishedAt: Instant,
     @Column("thumbnail") val thumbnail: String?,
     @Column("video_owner_channel_id") val videoOwnerChannelId: String?,
     @Column("video_owner_channel_title") val videoOwnerChannelTitle: String?,
     @Column("platform_type") val platformType: String,
-)
+
+    override var createdAt: Instant? = null,
+    override var updatedAt: Instant? = null,
+    override var createdBy: String? = null,
+    override var updatedBy: String? = null,
+) : AuditTimeUser

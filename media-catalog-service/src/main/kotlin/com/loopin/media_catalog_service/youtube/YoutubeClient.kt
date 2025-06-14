@@ -2,7 +2,7 @@ package com.loopin.media_catalog_service.youtube
 
 import com.loopin.media_catalog_service.config.WebClientFactory
 import com.loopin.media_catalog_service.media_catalog.domain.model.MediaItem
-import com.loopin.media_catalog_service.media_catalog.domain.model.MediaPlaylist
+import com.loopin.media_catalog_service.media_catalog.domain.model.PlaylistWithItems
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -18,17 +18,29 @@ class YoutubeClient(factory: WebClientFactory) {
 
     private val webClient: WebClient = factory.youtubeClient()
 
-    fun getMediaPlaylist(playlistId: String): Mono<MediaPlaylist> {
+    fun getPlaylistWithItems(playlistId: String): Mono<PlaylistWithItems> {
         return webClient
             .get()
             .uri("/playlists/{id}", playlistId)
             .retrieve()
-            .bodyToMono(MediaPlaylist::class.java)
+            .bodyToMono(PlaylistWithItems::class.java)
             .timeout(Duration.ofSeconds(3), Mono.empty())
-            .retryWhen(Retry.backoff(3, Duration.ofMillis(100)))
+            .retryWhen(
+                Retry.backoff(3, Duration.ofMillis(100))
+                    .doBeforeRetry { retrySignal ->
+                        logger.warn(
+                            "Retrying playlist fetch. Attempt: {}, due to: {}",
+                            retrySignal.totalRetries() + 1,
+                            retrySignal.failure().message
+                        )
+                    }
+            )
             .onErrorResume(WebClientResponseException.NotFound::class.java) { Mono.empty() }
             .onErrorResume(IOException::class.java) { Mono.empty() }
-            .onErrorResume { t -> logger.warn("Unhandled error: {}", t); Mono.empty() }
+            .onErrorResume { t ->
+                logger.warn("Unhandled error during playlist fetch: {}", t.message)
+                Mono.empty()
+            }
     }
 
     fun getMediaItem(mediaItemId: String): Mono<MediaItem> {

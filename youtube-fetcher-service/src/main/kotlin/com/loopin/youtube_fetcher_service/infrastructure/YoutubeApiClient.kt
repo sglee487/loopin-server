@@ -1,6 +1,5 @@
 package com.loopin.youtube_fetcher_service.infrastructure
 
-import org.springframework.stereotype.Component
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.jackson2.JacksonFactory
@@ -10,16 +9,16 @@ import com.google.api.services.youtube.model.ThumbnailDetails
 import com.loopin.youtube_fetcher_service.config.YoutubeDataProperties
 import com.loopin.youtube_fetcher_service.media_catalog.MediaItem
 import com.loopin.youtube_fetcher_service.media_catalog.MediaPlaylist
+import com.loopin.youtube_fetcher_service.media_catalog.MediaPlaylistContentDetails
+import com.loopin.youtube_fetcher_service.media_catalog.PlaylistWithItems
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import java.io.IOException
 import java.net.URI
 import java.net.URL
 import java.security.GeneralSecurityException
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 @Component
 class YoutubeApiClient(
@@ -31,25 +30,37 @@ class YoutubeApiClient(
 
     private val JSON_FACTORY: JsonFactory = JacksonFactory.getDefaultInstance()
 
-    fun getMediaPlaylist(id: String): Mono<MediaPlaylist> {
+    fun getMediaPlaylist(id: String): Mono<PlaylistWithItems> {
         val youtubeService = getService()
 
         val playlistsRequest = youtubeService.playlists()
             .list(listOf("snippet", "contentDetails")).setKey(youtubeDataProperties.apiKey)
 
-        val mediaPlaylist: MediaPlaylist = playlistsRequest.setId(listOf(id)).execute().let {
-                response ->
+        val (mediaPlaylist, mediaPlaylistContentDetails) = playlistsRequest.setId(
+            listOf(id)
+        ).execute().let { response ->
             println(response)
             println(response.items)
-            return@let MediaPlaylist(
-                resourceId = response.items[0].id,
-                thumbnail = response.items[0].snippet.thumbnails.getHighestThumbnail().toString(),
-                channelId = response.items[0].snippet.channelId,
-                channelTitle = response.items[0].snippet.channelTitle,
-                publishedAt = response.items[0].snippet.publishedAt.toInstant(),
-                platformType = response.items[0].kind
+            response.items[0].contentDetails
+            return@let Pair(
+                MediaPlaylist(
+                    resourceId = response.items[0].id,
+                    title = response.items[0].snippet.title,
+                    description = response.items[0].snippet.description,
+                    kind = response.items[0].kind,
+                    thumbnail = response.items[0].snippet.thumbnails.getHighestThumbnail().toString(),
+                    channelId = response.items[0].snippet.channelId,
+                    channelTitle = response.items[0].snippet.channelTitle,
+                    publishedAt = response.items[0].snippet.publishedAt.toInstant(),
+                    platformType = response.items[0].kind
+                ),
+                MediaPlaylistContentDetails(
+                    itemCount = response.items[0].contentDetails.itemCount.toInt()
+                )
             )
         }
+
+        logger.info(mediaPlaylist.toString())
 
 
         val playlistItemsRequest = youtubeService.playlistItems()
@@ -66,26 +77,33 @@ class YoutubeApiClient(
                 .setPageToken(nextPageToken)
                 .execute()
 
+            logger.info(playlistItemsResponse.toString())
+
             println(playlistItemsResponse.items)
 
-//            items.addAll(playlistItemsResponse.items.map {
-//                MediaItem(
-//                    resourceId = it.snippet.resourceId.videoId,
-//                    publishedAt = it.snippet.publishedAt.toInstant(),
-////                    channelId = it.snippet.channelId,
-////                    channelTitle = it.snippet.channelTitle,
-////                    uploaderChannelId = it.snippet.videoOwnerChannelId,
-//                    videoOwnerChannelId = it.snippet.videoOwnerChannelId,
-//                    videoOwnerChannelTitle = it.snippet.videoOwnerChannelTitle,
-//                    platformType = it.kind,
-//
-//
-//                )
-//            })
+            items.addAll(playlistItemsResponse.items.map {
+                MediaItem(
+                    resourceId = it.snippet.resourceId.videoId,
+                    title = it.snippet.title,
+                    description = it.snippet.description,
+                    kind = it.kind,
+                    publishedAt = it.snippet.publishedAt.toInstant(),
+                    thumbnail = it.snippet.thumbnails.getHighestThumbnail().toString(),
+                    videoOwnerChannelId = it.snippet.videoOwnerChannelId,
+                    videoOwnerChannelTitle = it.snippet.videoOwnerChannelTitle,
+                    platformType = it.kind,
+                )
+            })
             nextPageToken = playlistItemsResponse.nextPageToken
         } while (nextPageToken != null)
 
-        return TODO()
+        return Mono.just(
+            PlaylistWithItems(
+                playlist = mediaPlaylist,
+                mediaItem = items.toList(),
+                mediaPlaylistContentDetails = mediaPlaylistContentDetails
+            )
+        )
     }
 
 
