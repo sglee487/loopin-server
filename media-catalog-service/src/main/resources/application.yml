@@ -1,5 +1,5 @@
 server:
-  port: 9001
+  port: 59001
   shutdown: graceful
   netty:
     connection-timeout: 2s
@@ -22,6 +22,11 @@ spring:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
     url: jdbc:postgresql://localhost:5432/loopin_media_catalog
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:59020/realms/loopin
 
 
 logging:

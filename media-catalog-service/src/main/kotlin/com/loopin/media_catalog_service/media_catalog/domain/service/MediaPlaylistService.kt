@@ -29,11 +29,7 @@ class MediaPlaylistService(
     }
 
     fun getByResourceId(resourceId: String): Mono<MediaPlaylist> {
-        return youtubeClient.getPlaylistWithItems(resourceId)
-            .map {
-                logger.info(it.toString())
-                TODO()
-            }
+        return mediaPlaylistRepository.findByResourceId(resourceId)
     }
 
     fun createByResourceId(resourceId: String): Mono<MediaPlaylist> {

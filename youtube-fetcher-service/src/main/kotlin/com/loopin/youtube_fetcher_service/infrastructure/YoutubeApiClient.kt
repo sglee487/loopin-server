@@ -101,7 +101,7 @@ class YoutubeApiClient(
             PlaylistWithItems(
                 playlist = mediaPlaylist,
                 mediaItem = items.toList(),
-                mediaPlaylistContentDetails = mediaPlaylistContentDetails
+                playlistContentDetails = mediaPlaylistContentDetails
             )
         )
     }
