@@ -1,0 +1,37 @@
+server:
+  port: 59002
+  shutdown: graceful
+  netty:
+    connection-timeout: 2s
+    idle-timeout: 15s
+
+spring:
+  application:
+    name: playback-service
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+  r2dbc:
+    username: user
+    password: password
+    url: r2dbc:postgresql://localhost:5432/loopin_playback
+    pool:
+      max-create-connection-time: 2s
+      initial-size: 5
+      max-size: 10
+  flyway:
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    url: jdbc:postgresql://localhost:5432/loopin_playback
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:59020/realms/loopin
+
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+loopin:
+  media-catalog-service-uri: "http://localhost:59001"

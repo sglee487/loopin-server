@@ -1,2 +1,2 @@
-
 CREATE DATABASE loopin_media_catalog;
+CREATE DATABASE loopin_playback;

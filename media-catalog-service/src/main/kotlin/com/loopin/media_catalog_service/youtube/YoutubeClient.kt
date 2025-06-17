@@ -1,8 +1,8 @@
 package com.loopin.media_catalog_service.youtube
 
 import com.loopin.media_catalog_service.config.WebClientFactory
-import com.loopin.media_catalog_service.media_catalog.domain.model.MediaItem
-import com.loopin.media_catalog_service.media_catalog.domain.model.PlaylistWithItems
+import com.loopin.media_catalog_service.domain.model.MediaItem
+import com.loopin.media_catalog_service.domain.model.PlaylistWithItems
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
