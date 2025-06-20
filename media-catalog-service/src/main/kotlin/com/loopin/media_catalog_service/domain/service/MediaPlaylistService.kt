@@ -7,6 +7,7 @@ import com.loopin.media_catalog_service.domain.repository.MediaPlaylistContentDe
 import com.loopin.media_catalog_service.domain.repository.MediaPlaylistRepository
 import com.loopin.media_catalog_service.domain.repository.PlaylistItemMappingRepository
 import com.loopin.media_catalog_service.youtube.YoutubeClient
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -80,4 +81,15 @@ class MediaPlaylistService(
             }
     }
 
+    fun getSlice(
+        size: Int,
+        sortBy: String,
+        direction: String,
+        offset: Long,
+    ): Mono<Slice<MediaPlaylist>> = mediaPlaylistRepository.findAllBy(
+        size = size,
+        sortBy = sortBy,
+        direction = direction,
+        offset = offset,
+    )
 }
