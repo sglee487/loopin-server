@@ -56,6 +56,19 @@ spring:
                   maxBackOff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: 'http://localhost:1420'
+                allow-credentials: true
+                allowedHeaders: '*'
+                allowedMethods:
+                  - PUT
+                  - GET
+                  - POST
+                  - DELETE
+                  - OPTIONS
+
   session:
     timeout: 10m
     redis:
@@ -99,6 +112,7 @@ logging:
     circuitbreaker: io.github.resilience4j, org.springframework.cloud.circuitbreaker
   level:
     circuitbreaker: info
+    org.springframework.security: debug
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
