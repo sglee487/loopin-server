@@ -46,7 +46,7 @@ class YoutubeApiClient(
                 MediaPlaylist(
                     resourceId = response.items[0].id,
                     title = response.items[0].snippet.title,
-                    description = response.items[0].snippet.description,
+                    description = response.items[0].snippet.description?.takeIf { it.isNotEmpty() },
                     kind = response.items[0].kind,
                     thumbnail = response.items[0].snippet.thumbnails.getHighestThumbnail().toString(),
                     channelId = response.items[0].snippet.channelId,
