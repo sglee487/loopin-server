@@ -20,7 +20,6 @@ class MediaPlaylistService(
     private val mediaPlaylistRepository: MediaPlaylistRepository,
     private val mediaItemRepository: MediaItemRepository,
     private val playlistItemMappingRepository: PlaylistItemMappingRepository,
-    private val mediaPlaylistContentDetailsRepository: MediaPlaylistContentDetailsRepository,
 ) {
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)
@@ -67,16 +66,7 @@ class MediaPlaylistService(
                                                 )
                                             )
                                     }
-                            }
-                            .then(
-                                mediaPlaylistContentDetailsRepository.findByMediaPlaylistId(playlist.id!!)
-                                    .switchIfEmpty(
-                                        mediaPlaylistContentDetailsRepository.save(
-                                            youtubeData.playlistContentDetails
-                                        )
-                                    )
-                            )
-                            .thenReturn(playlist)
+                            }.then(Mono.just(playlist))
                     }
             }
     }

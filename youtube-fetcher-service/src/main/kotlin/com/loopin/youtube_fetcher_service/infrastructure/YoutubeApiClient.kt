@@ -9,7 +9,6 @@ import com.google.api.services.youtube.model.ThumbnailDetails
 import com.loopin.youtube_fetcher_service.config.YoutubeDataProperties
 import com.loopin.youtube_fetcher_service.media_catalog.MediaItem
 import com.loopin.youtube_fetcher_service.media_catalog.MediaPlaylist
-import com.loopin.youtube_fetcher_service.media_catalog.MediaPlaylistContentDetails
 import com.loopin.youtube_fetcher_service.media_catalog.PlaylistWithItems
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -36,27 +35,21 @@ class YoutubeApiClient(
         val playlistsRequest = youtubeService.playlists()
             .list(listOf("snippet", "contentDetails")).setKey(youtubeDataProperties.apiKey)
 
-        val (mediaPlaylist, mediaPlaylistContentDetails) = playlistsRequest.setId(
+        val mediaPlaylist = playlistsRequest.setId(
             listOf(id)
         ).execute().let { response ->
-            println(response)
-            println(response.items)
-            response.items[0].contentDetails
-            return@let Pair(
-                MediaPlaylist(
-                    resourceId = response.items[0].id,
-                    title = response.items[0].snippet.title,
-                    description = response.items[0].snippet.description?.takeIf { it.isNotEmpty() },
-                    kind = response.items[0].kind,
-                    thumbnail = response.items[0].snippet.thumbnails.getHighestThumbnail().toString(),
-                    channelId = response.items[0].snippet.channelId,
-                    channelTitle = response.items[0].snippet.channelTitle,
-                    publishedAt = response.items[0].snippet.publishedAt.toInstant(),
-                    platformType = response.items[0].kind
-                ),
-                MediaPlaylistContentDetails(
-                    itemCount = response.items[0].contentDetails.itemCount.toInt()
-                )
+            MediaPlaylist(
+                resourceId = response.items[0].id,
+                title = response.items[0].snippet.title,
+                description = response.items[0].snippet.description?.takeIf { it.isNotEmpty() },
+                kind = response.items[0].kind,
+                thumbnail = response.items[0].snippet.thumbnails.getHighestThumbnail().toString(),
+                channelId = response.items[0].snippet.channelId,
+                channelTitle = response.items[0].snippet.channelTitle,
+                publishedAt = response.items[0].snippet.publishedAt.toInstant(),
+                platformType = response.items[0].kind,
+                itemCount = response.items[0].contentDetails.itemCount.toInt()
+
             )
         }
 
@@ -100,8 +93,7 @@ class YoutubeApiClient(
         return Mono.just(
             PlaylistWithItems(
                 playlist = mediaPlaylist,
-                mediaItem = items.toList(),
-                playlistContentDetails = mediaPlaylistContentDetails
+                mediaItem = items.toList()
             )
         )
     }

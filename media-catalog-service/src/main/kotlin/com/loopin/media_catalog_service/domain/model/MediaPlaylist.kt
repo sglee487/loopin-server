@@ -18,8 +18,10 @@ data class MediaPlaylist(
     @Column("published_at") val publishedAt: Instant,
     @Column("platform_type") val platformType: String,
 
+    @Column("item_count") val itemCount: Int,
+
     override var createdAt: Instant? = null,
     override var updatedAt: Instant? = null,
     override var createdBy: String? = null,
     override var updatedBy: String? = null,
-): AuditTimeUser
+) : AuditTimeUser

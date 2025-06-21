@@ -12,4 +12,5 @@ data class MediaPlaylist(
     val channelTitle: String,
     val publishedAt: Instant,
     val platformType: String,
+    val itemCount: Int,
 )
