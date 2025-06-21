@@ -1,6 +1,7 @@
 package com.loopin.gateway_service.config
 
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.config.Customizer
@@ -18,6 +19,7 @@ import org.springframework.security.web.server.csrf.CsrfToken
 import org.springframework.web.server.WebFilter
 import reactor.core.publisher.Mono
 
+@Configuration
 @EnableWebFluxSecurity
 class SecurityConfig {
 
