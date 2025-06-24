@@ -17,6 +17,7 @@ import java.io.IOException
 import java.net.URI
 import java.net.URL
 import java.security.GeneralSecurityException
+import java.time.Duration
 import java.time.Instant
 
 @Component
@@ -74,17 +75,21 @@ class YoutubeApiClient(
 
             println(playlistItemsResponse.items)
 
-            items.addAll(playlistItemsResponse.items.map {
+            val videoListResponse = youtubeService.videos().list(listOf("snippet,contentDetails")).setKey(youtubeDataProperties.apiKey)
+                .setId(playlistItemsResponse.items.map { it.snippet.resourceId.videoId }).execute()
+
+            items.addAll(videoListResponse.items.map {
                 MediaItem(
-                    resourceId = it.snippet.resourceId.videoId,
+                    resourceId = it.id,
                     title = it.snippet.title,
                     description = it.snippet.description,
                     kind = it.kind,
                     publishedAt = it.snippet.publishedAt.toInstant(),
                     thumbnail = it.snippet.thumbnails.getHighestThumbnail().toString(),
-                    videoOwnerChannelId = it.snippet.videoOwnerChannelId,
-                    videoOwnerChannelTitle = it.snippet.videoOwnerChannelTitle,
+                    videoOwnerChannelId = it.snippet.channelId,
+                    videoOwnerChannelTitle = it.snippet.channelTitle,
                     platformType = it.kind,
+                    durationSeconds = Duration.parse(it.contentDetails.duration).seconds,
                 )
             })
             nextPageToken = playlistItemsResponse.nextPageToken

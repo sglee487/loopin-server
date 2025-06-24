@@ -17,6 +17,7 @@ data class MediaItem(
     @Column("video_owner_channel_id") val videoOwnerChannelId: String?,
     @Column("video_owner_channel_title") val videoOwnerChannelTitle: String?,
     @Column("platform_type") val platformType: String,
+    @Column("duration_seconds") val durationSeconds: Long,
 
     override var createdAt: Instant? = null,
     override var updatedAt: Instant? = null,

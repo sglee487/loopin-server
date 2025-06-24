@@ -10,10 +10,12 @@ CREATE TABLE media_item
     video_owner_channel_id    TEXT,
     video_owner_channel_title TEXT,
     platform_type             TEXT      NOT NULL,
+    duration_seconds          BIGINT    NOT NULL,
     created_at                TIMESTAMP,
     updated_at                TIMESTAMP,
     created_by                TEXT,
-    updated_by                TEXT
+    updated_by                TEXT,
+    CHECK (duration_seconds >= 0)
 );
 COMMENT
 ON COLUMN media_item.thumbnail IS 'URL of the thumbnail image';
@@ -30,6 +32,7 @@ CREATE TABLE media_playlist
     channel_title TEXT      NOT NULL,
     published_at  TIMESTAMP NOT NULL,
     platform_type TEXT      NOT NULL,
+    item_count    INT       NOT NULL,
     created_at    TIMESTAMP,
     updated_at    TIMESTAMP,
     created_by    TEXT,
@@ -47,12 +50,4 @@ CREATE TABLE playlist_item_mapping
     created_at    TIMESTAMP,
     updated_at    TIMESTAMP,
     UNIQUE (playlist_id, media_item_id)
-);
-
-CREATE TABLE media_playlist_content_details
-(
-    media_playlist_id BIGSERIAL PRIMARY KEY REFERENCES media_playlist (id),
-    item_count        INT NOT NULL,
-    created_at        TIMESTAMP,
-    updated_at        TIMESTAMP
 );

@@ -12,4 +12,5 @@ data class MediaItem(
     val videoOwnerChannelId: String?,
     val videoOwnerChannelTitle: String?,
     val platformType: String,
+    val durationSeconds: Long,
 )

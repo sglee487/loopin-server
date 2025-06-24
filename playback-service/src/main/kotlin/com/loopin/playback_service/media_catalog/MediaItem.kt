@@ -1,7 +1,5 @@
 package com.loopin.playback_service.media_catalog
 
-import org.springframework.data.annotation.Id
-import org.springframework.data.relational.core.mapping.Column
 import java.time.Instant
 
 data class MediaItem(
@@ -15,4 +13,5 @@ data class MediaItem(
     val videoOwnerChannelId: String?,
     val videoOwnerChannelTitle: String?,
     val platformType: String,
+    val durationSeconds: Long,
 )
