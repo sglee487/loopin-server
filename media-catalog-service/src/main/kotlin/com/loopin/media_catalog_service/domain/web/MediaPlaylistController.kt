@@ -3,6 +3,7 @@ package com.loopin.media_catalog_service.domain.web
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.service.MediaPlaylistService
 import com.loopin.media_catalog_service.domain.web.dto.CreatePlaylistRequestDto
+import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
 import com.loopin.media_catalog_service.domain.web.dto.SliceResponse
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
@@ -36,8 +37,8 @@ class MediaPlaylistController(
 
     /** 내부 PK로 조회 */
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): Mono<MediaPlaylist> =
-        svc.getById(id)
+    fun getByIdWithItems(@PathVariable id: Long): Mono<PlaylistResponseDto> =
+        svc.getByIdWithItems(id)
 
     /** YouTube ID로 조회 */
     @GetMapping("/youtube/{resourceId}")

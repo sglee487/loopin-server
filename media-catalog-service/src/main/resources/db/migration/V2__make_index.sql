@@ -1,0 +1,1 @@
+CREATE INDEX idx_pim_playlist_position ON playlist_item_mapping (playlist_id, position);

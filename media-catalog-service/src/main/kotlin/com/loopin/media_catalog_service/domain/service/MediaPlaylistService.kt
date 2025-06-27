@@ -2,10 +2,10 @@ package com.loopin.media_catalog_service.domain.service
 
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.model.PlaylistItemMapping
-import com.loopin.media_catalog_service.domain.repository.MediaItemRepository
-import com.loopin.media_catalog_service.domain.repository.MediaPlaylistContentDetailsRepository
-import com.loopin.media_catalog_service.domain.repository.MediaPlaylistRepository
-import com.loopin.media_catalog_service.domain.repository.PlaylistItemMappingRepository
+import com.loopin.media_catalog_service.domain.repository.*
+import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
+import com.loopin.media_catalog_service.domain.web.mapper.toDto
+import com.loopin.media_catalog_service.domain.web.mapper.toResponseDto
 import com.loopin.media_catalog_service.youtube.YoutubeClient
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
@@ -20,13 +20,23 @@ class MediaPlaylistService(
     private val mediaPlaylistRepository: MediaPlaylistRepository,
     private val mediaItemRepository: MediaItemRepository,
     private val playlistItemMappingRepository: PlaylistItemMappingRepository,
+    private val mediaItemWIthPositionRepository: MediaItemWIthPositionRepository,
 ) {
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)
 
-    fun getById(id: Long): Mono<MediaPlaylist> {
-        return mediaPlaylistRepository.findById(id)
-    }
+    fun getByIdWithItems(id: Long): Mono<PlaylistResponseDto> =
+        mediaPlaylistRepository.findById(id)
+            .switchIfEmpty(Mono.error(IllegalArgumentException("playlist $id not found")))
+            .flatMap { playlist ->
+                mediaItemWIthPositionRepository
+                    .findByPlaylistId(playlist.id!!)
+                    .map {
+                        logger.info("Found ${it.id} ${it.title} ${it.playlistPosition}")
+                        it.toDto(position = it.playlistPosition) }
+                    .collectList()
+                    .map { items -> playlist.toResponseDto(items) }
+            }
 
     fun getByResourceId(resourceId: String): Mono<MediaPlaylist> {
         return mediaPlaylistRepository.findByResourceId(resourceId)
