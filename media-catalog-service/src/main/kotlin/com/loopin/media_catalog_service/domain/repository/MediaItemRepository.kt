@@ -7,6 +7,6 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-interface MediaItemRepository : ReactiveCrudRepository<MediaItem, Long> {
+interface MediaItemRepository : ReactiveCrudRepository<MediaItem, Long>, MediaItemRepositoryCustom {
     fun findByResourceId(resourceId: String): Mono<MediaItem> // nullable 제거
 }

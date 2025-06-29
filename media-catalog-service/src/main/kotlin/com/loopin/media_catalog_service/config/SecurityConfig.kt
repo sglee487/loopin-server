@@ -21,9 +21,15 @@ class SecurityConfig {
             .authorizeExchange { exchange ->
                 exchange
                     .pathMatchers("/actuator/**").permitAll()
-                    .pathMatchers(HttpMethod.GET,
+                    .pathMatchers(
+                        HttpMethod.GET,
                         "/api/v1/playlists",
-                        "/api/v1/playlists/**").permitAll()
+                        "/api/v1/playlists/**"
+                    ).permitAll()
+                    .pathMatchers(
+                        HttpMethod.POST,
+                        "/api/v1/items/**"
+                    ).permitAll()
                     .anyExchange().authenticated()
             }
             .oauth2ResourceServer { oauth2 ->

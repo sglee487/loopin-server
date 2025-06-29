@@ -1,8 +1,12 @@
 package com.loopin.media_catalog_service.domain.service
 
+import com.loopin.media_catalog_service.domain.model.MediaItem
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.model.PlaylistItemMapping
-import com.loopin.media_catalog_service.domain.repository.*
+import com.loopin.media_catalog_service.domain.repository.MediaItemRepository
+import com.loopin.media_catalog_service.domain.repository.MediaItemWIthPositionRepository
+import com.loopin.media_catalog_service.domain.repository.MediaPlaylistRepository
+import com.loopin.media_catalog_service.domain.repository.PlaylistItemMappingRepository
 import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
 import com.loopin.media_catalog_service.domain.web.mapper.toDto
 import com.loopin.media_catalog_service.domain.web.mapper.toResponseDto
@@ -33,7 +37,8 @@ class MediaPlaylistService(
                     .findByPlaylistId(playlist.id!!)
                     .map {
                         logger.info("Found ${it.id} ${it.title} ${it.playlistPosition}")
-                        it.toDto(position = it.playlistPosition) }
+                        it.toDto(position = it.playlistPosition)
+                    }
                     .collectList()
                     .map { items -> playlist.toResponseDto(items) }
             }
