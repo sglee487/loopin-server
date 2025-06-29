@@ -2,7 +2,11 @@ package com.loopin.media_catalog_service.domain.web
 
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.service.MediaPlaylistService
-import com.loopin.media_catalog_service.domain.web.dto.*
+import com.loopin.media_catalog_service.domain.web.dto.CreatePlaylistRequestDto
+import com.loopin.media_catalog_service.domain.web.dto.IdListDto
+import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
+import com.loopin.media_catalog_service.domain.web.dto.SliceResponse
+import com.loopin.media_catalog_service.domain.web.mapper.toDto
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
@@ -38,6 +42,15 @@ class MediaPlaylistController(
     @GetMapping("/{id}")
     fun getByIdWithItems(@PathVariable id: Long): Mono<PlaylistResponseDto> =
         svc.getByIdWithItems(id)
+
+    @PostMapping("/batch")
+    fun getListsBatch(@RequestBody ids: IdListDto): Flux<PlaylistResponseDto> =
+        svc.findAllById(ids.ids)
+            .map {
+                it.toDto(
+                    items = emptyList()
+                )
+            }
 
     /** YouTube ID로 조회 */
     @GetMapping("/youtube/{resourceId}")

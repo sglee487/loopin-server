@@ -4,7 +4,7 @@ import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.web.dto.MediaItemDto
 import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
 
-fun MediaPlaylist.toResponseDto(items: List<MediaItemDto>) =
+fun MediaPlaylist.toDto(items: List<MediaItemDto>) =
     PlaylistResponseDto(
         id = id!!,
         resourceId = resourceId,

@@ -1,6 +1,5 @@
 package com.loopin.media_catalog_service.domain.service
 
-import com.loopin.media_catalog_service.domain.model.MediaItem
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.model.PlaylistItemMapping
 import com.loopin.media_catalog_service.domain.repository.MediaItemRepository
@@ -9,7 +8,6 @@ import com.loopin.media_catalog_service.domain.repository.MediaPlaylistRepositor
 import com.loopin.media_catalog_service.domain.repository.PlaylistItemMappingRepository
 import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
 import com.loopin.media_catalog_service.domain.web.mapper.toDto
-import com.loopin.media_catalog_service.domain.web.mapper.toResponseDto
 import com.loopin.media_catalog_service.youtube.YoutubeClient
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
@@ -40,7 +38,7 @@ class MediaPlaylistService(
                         it.toDto(position = it.playlistPosition)
                     }
                     .collectList()
-                    .map { items -> playlist.toResponseDto(items) }
+                    .map { items -> playlist.toDto(items) }
             }
 
     fun getByResourceId(resourceId: String): Mono<MediaPlaylist> {
@@ -97,4 +95,6 @@ class MediaPlaylistService(
         direction = direction,
         offset = offset,
     )
+
+    fun findAllById(ids: List<Long>): Flux<MediaPlaylist> = mediaPlaylistRepository.findAllById(ids)
 }

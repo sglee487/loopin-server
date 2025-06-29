@@ -28,7 +28,8 @@ class SecurityConfig {
                     ).permitAll()
                     .pathMatchers(
                         HttpMethod.POST,
-                        "/api/v1/items/**"
+                        "/api/v1/playlists/batch",
+                        "/api/v1/items/batch"
                     ).permitAll()
                     .anyExchange().authenticated()
             }
