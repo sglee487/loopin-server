@@ -2,21 +2,26 @@ CREATE TABLE play_session
 (
     id                  BIGSERIAL PRIMARY KEY,
 
+    -- 식별자 ---------------------------------------
     user_id             VARCHAR(255) NOT NULL,
-    media_playlist_id   VARCHAR(255) NOT NULL,
-    now_playing_item_id VARCHAR(255) NOT NULL,
+    media_playlist_id   BIGINT       NOT NULL,
+    now_playing_item_id BIGINT       NOT NULL,
 
-    start_seconds       BIGINT       NOT NULL DEFAULT 0,
+    -- 재생 위치 ------------------------------------
+    start_seconds       INTEGER      NOT NULL DEFAULT 0,
 
-    prev_items          TEXT[]       NOT NULL DEFAULT '{}',
-    next_items          TEXT[]       NOT NULL DEFAULT '{}',
+    -- 큐(배열) -------------------------------------
+    prev_items          BIGINT[]     NOT NULL DEFAULT '{}', -- 빈 bigint 배열
+    next_items          BIGINT[]     NOT NULL DEFAULT '{}',
 
+    -- 감사 정보 ------------------------------------
     created_at          TIMESTAMP,
     updated_at          TIMESTAMP,
-    created_by          TEXT,
-    updated_by          TEXT,
+    created_by          VARCHAR(255),
+    updated_by          VARCHAR(255),
 
-    UNIQUE (user_id, media_playlist_id)
+    -- 한 유저가 같은 플레이리스트에 대해 세션 하나만
+    CONSTRAINT uq_play_session_user_playlist UNIQUE (user_id, media_playlist_id)
 );
 
 -- ▶︎ 조회 성능용 인덱스 (필요에 따라 선택)

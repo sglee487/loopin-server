@@ -9,11 +9,11 @@ import java.time.Instant
 data class PlaySession(
     @Id val id: Long? = null,
     @Column("user_id") val userId: String,
-    @Column("media_playlist_id") val mediaPlaylistId: String,
-    @Column("now_playing_item_id") val nowPlayingItemId: String,
+    @Column("media_playlist_id") val mediaPlaylistId: Long,
+    @Column("now_playing_item_id") val nowPlayingItemId: Long,
     @Column("start_seconds") val startSeconds: Int = 0,
-    @Column("prev_items") val prevItems: List<String> = emptyList(),
-    @Column("next_items") val nextItems: List<String> = emptyList(),
+    @Column("prev_items") val prevItems: List<Long> = emptyList(),
+    @Column("next_items") val nextItems: List<Long> = emptyList(),
 
     override var createdAt: Instant? = null,
     override var updatedAt: Instant? = null,
