@@ -12,9 +12,23 @@ class MediaCatalogClient(
 
     private val webClient = factory.mediaCatalogServiceClient()
 
-    fun getMediaPlaylist(playlistId: String) = webClient.get()
-        .uri("/playlist/{id}", playlistId)
-        .retrieve()
-        .bodyToMono(String::class.java)
-        .doOnError { logger.error("Failed to fetch playlist: $it") }
+    /** 플레이리스트 여러 개 */
+    fun getMediaPlaylistBatch(ids: List<Long>) =
+        webClient.post()
+            .uri("/api/v1/playlists/batch")
+            .bodyValue(ids)
+            .retrieve()
+            .bodyToFlux(MediaPlaylist::class.java)   // 배열 수신
+            .collectList()                           // Mono<List<MediaPlaylist>>
+            .doOnError { logger.error("Failed to fetch playlists", it) }
+
+    /** 미디어 아이템 여러 개 */
+    fun getMediaItemBatch(ids: List<Long>) =
+        webClient.post()
+            .uri("/api/v1/items/batch")
+            .bodyValue(ids)
+            .retrieve()
+            .bodyToFlux(MediaItem::class.java)       // 배열 수신
+            .collectList()                           // Mono<List<MediaItem>>
+            .doOnError { logger.error("Failed to fetch items", it) }
 }

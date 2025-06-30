@@ -1,9 +1,9 @@
-package com.loopin.playback_service.media_catalog
+package com.loopin.playback_service.domain.web.dto
 
 import java.time.Instant
 
-data class MediaPlaylist(
-    val id: Long? = null,
+data class MediaPlaylistDto(
+    val id: Long,
     val resourceId: String,
     val title: String,
     val description: String?,
@@ -13,11 +13,10 @@ data class MediaPlaylist(
     val channelTitle: String,
     val publishedAt: Instant,
     val platformType: String,
-
     val itemCount: Int,
-
-    var createdAt: Instant? = null,
-    var updatedAt: Instant? = null,
-    var createdBy: String? = null,
-    var updatedBy: String? = null,
+    val createdAt: Instant?,
+    val updatedAt: Instant?,
+    val createdBy: String?,
+    val updatedBy: String?,
+    val items: List<MediaItemDto>,
 )
