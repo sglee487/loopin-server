@@ -62,12 +62,7 @@ spring:
                 allowedOrigins: 'http://localhost:1420'
                 allow-credentials: true
                 allowedHeaders: '*'
-                allowedMethods:
-                  - PUT
-                  - GET
-                  - POST
-                  - DELETE
-                  - OPTIONS
+                allowedMethods: '*'
 
   session:
     timeout: 10m
@@ -79,7 +74,7 @@ spring:
         registration:
           keycloak:
             client-id: gateway-service
-            client-secret: loopin-keycloak-secret
+            client-secret: Pa7pQ5t2pN7YqDYcCjmMeFWGBOy9EyUL
             scope: openid,roles
         provider:
           keycloak:

@@ -13,10 +13,16 @@ import org.springframework.security.oauth2.client.web.server.ServerOAuth2Authori
 import org.springframework.security.oauth2.client.web.server.WebSessionServerOAuth2AuthorizedClientRepository
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository
 import org.springframework.security.web.server.csrf.CsrfToken
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.reactive.CorsConfigurationSource
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 import org.springframework.web.server.WebFilter
+import org.springframework.web.server.session.CookieWebSessionIdResolver
+import org.springframework.web.server.session.WebSessionIdResolver
 import reactor.core.publisher.Mono
 
 @Configuration
@@ -27,6 +33,15 @@ class SecurityConfig {
     @Bean
     fun authorizedClientRepository(): ServerOAuth2AuthorizedClientRepository =
         WebSessionServerOAuth2AuthorizedClientRepository()
+
+//    @Bean
+//    fun webSessionIdResolver(): WebSessionIdResolver {
+//        val resolver = CookieWebSessionIdResolver()
+//        resolver.addCookieInitializer { builder ->
+//            builder.sameSite("None").secure(true)
+//        }
+//        return resolver
+//    }
 
     /**
      * Spring Security 필터 체인.
@@ -39,6 +54,7 @@ class SecurityConfig {
     ): SecurityWebFilterChain = http
         .authorizeExchange { exchange ->
             exchange
+                .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()   // ★추가
                 .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/", "/*.css", "/*.js", "/favicon.ico").permitAll()
                 // ⬇️ 프로젝트에 맞춰 공개 GET 엔드포인트가 있으면 추가
@@ -48,7 +64,11 @@ class SecurityConfig {
         .exceptionHandling { handlers ->
             handlers.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
         }
-        .oauth2Login(Customizer.withDefaults())
+        .oauth2Login { login ->
+            val success =
+                RedirectServerAuthenticationSuccessHandler("http://localhost:1420/") // SPA 홈
+            login.authenticationSuccessHandler(success)
+        }
         .logout { logout ->
             logout.logoutSuccessHandler(oidcLogoutSuccessHandler(clientRegistrationRepository))
         }
@@ -78,5 +98,18 @@ class SecurityConfig {
             }
         }
         chain.filter(exchange)
+    }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val config = CorsConfiguration().apply {
+            allowedOrigins = listOf("http://localhost:1420")
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            allowedHeaders = listOf("x-xsrf-token", "content-type", "authorization")
+            allowCredentials = true                     // SESSION 쿠키 전송 허용
+        }
+        return UrlBasedCorsConfigurationSource().apply {
+            registerCorsConfiguration("/**", config)    // Gateway 자체 엔드포인트 전부
+        }
     }
 }
