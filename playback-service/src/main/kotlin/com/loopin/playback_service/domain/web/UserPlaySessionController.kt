@@ -1,8 +1,7 @@
 package com.loopin.playback_service.domain.web
 
 import com.loopin.playback_service.domain.service.UserPlaySessionService
-import com.loopin.playback_service.domain.web.dto.CreateUserPlaySessionRequestDto
-import com.loopin.playback_service.domain.web.dto.UpdateUserPlaySessionRequestDto
+import com.loopin.playback_service.domain.web.dto.PutUserPlaySessionRequestDto
 import com.loopin.playback_service.domain.web.dto.UserPlaySessionDto
 import org.slf4j.LoggerFactory
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
@@ -15,58 +14,32 @@ import reactor.core.publisher.Mono
 class UserPlaySessionController(
     private val svc: UserPlaySessionService
 ) {
-
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    /** 세션 목록 */
+    /** 세션 전체 목록 */
     @GetMapping("/sessions")
-    fun getUserPlaySessions(
-        principal: JwtAuthenticationToken,
-    ): Flux<UserPlaySessionDto> {
-        logger.info("principal: $principal")
-        logger.info("principal.name: ${principal.name}")
-        return svc.getUserPlaySessions(principal.name)
-            .doOnNext { logger.info(it.toString()) }
-    }
+    fun getUserPlaySessions(principal: JwtAuthenticationToken): Flux<UserPlaySessionDto> =
+        svc.getUserPlaySessions(principal.name)
 
-    /** 특정 플레이리스트 세션(큐 포함) */
+    /** 세션 1건 + 큐 포함 조회 */
     @GetMapping("/sessions/{playlistId}")
-    fun getUserPlaySessionByPlaylistIdWithItems(
+    fun getUserPlaySessionByPlaylistId(
         principal: JwtAuthenticationToken,
         @PathVariable playlistId: Long,
-    ): Mono<UserPlaySessionDto> {
-        logger.info("principal: $principal")
-        logger.info("principal.name: ${principal.name}")
-        return svc.getUserPlaySessionByPlaylistIdWithItems(principal.name, playlistId)
-            .doOnNext { logger.info(it.toString()) }
-    }
+    ): Mono<UserPlaySessionDto> =
+        svc.getUserPlaySessionByPlaylistIdWithItems(principal.name, playlistId)
 
-    /** 특정 플레이리스트 세션(큐 포함) */
-    @PostMapping("/sessions/{playlistId}")
-    fun createUserPlaySessionByPlaylistId(
+    /** ▶️  Upsert (없으면 생성, 있으면 전부 덮어쓰기)  */
+    @PutMapping("/sessions/{playlistId}")
+    fun putUserPlaySession(
         principal: JwtAuthenticationToken,
         @PathVariable playlistId: Long,
-        @RequestBody req: CreateUserPlaySessionRequestDto,
-    ): Mono<Void> {
-        return svc.createUserPlaySessionByPlaylistId(
+        @RequestBody req: PutUserPlaySessionRequestDto,   // ← 새 DTO 하나로 통일
+    ): Mono<Void> =
+        svc.upsertUserPlaySession(
             playSession = req.toDomain(
                 userId = principal.name,
                 mediaPlaylistId = playlistId,
             )
         )
-    }
-
-    @PatchMapping("/sessions/{playlistId}")
-    fun updateUserPlaySessionByPlaylistId(
-        principal: JwtAuthenticationToken,
-        @PathVariable playlistId: Long,
-        @RequestBody req: UpdateUserPlaySessionRequestDto,
-    ): Mono<Void> {
-        return svc.updateUserPlaySessionByPlaylistId(
-            playSession = req.toDomain(
-                userId = principal.name,
-                mediaPlaylistId = playlistId,
-            )
-        )
-    }
 }

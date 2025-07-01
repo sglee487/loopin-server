@@ -2,7 +2,7 @@ package com.loopin.playback_service.domain.web.dto
 
 import com.loopin.playback_service.domain.model.PlaySession
 
-data class CreateUserPlaySessionRequestDto(
+data class PutUserPlaySessionRequestDto(
     val nowPlayingItemId: Long,
     val startSeconds: Int = 0,
     val prevItems: List<Long>,

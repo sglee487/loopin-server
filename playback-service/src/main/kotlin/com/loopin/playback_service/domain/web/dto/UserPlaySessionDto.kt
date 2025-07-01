@@ -8,10 +8,12 @@ data class UserPlaySessionDto(
     val id: Long,
     val userId: String,
     val startSeconds: Int,
-    val playlist: MediaPlaylist,      // 간단히 재사용
+    val playlist: MediaPlaylist,
     val nowPlaying: MediaItem,
-    val prevItems: List<MediaItem>,
-    val nextItems: List<MediaItem>,
+    val prevItems: List<MediaItem>?,
+    val nextItems: List<MediaItem>?,
+    val prevItemsLength: Int,
+    val nextItemsLength: Int,
     val createdAt: Instant?,
     val updatedAt: Instant?
 )

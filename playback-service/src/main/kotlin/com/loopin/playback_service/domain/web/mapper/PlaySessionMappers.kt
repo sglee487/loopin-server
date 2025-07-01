@@ -38,8 +38,10 @@ fun PlaySession.toDetailDto(
 fun PlaySession.toDto(
     playlist: MediaPlaylist,
     now: MediaItem,
-    prev: List<MediaItem>,
-    next: List<MediaItem>
+    prev: List<MediaItem>?,
+    next: List<MediaItem>?,
+    prevItemsLength: Int,
+    nextItemsLength: Int,
 ) = UserPlaySessionDto(
     id           = id!!,
     userId       = userId,
@@ -48,6 +50,8 @@ fun PlaySession.toDto(
     nowPlaying   = now,
     prevItems    = prev,
     nextItems    = next,
+    prevItemsLength = prevItemsLength,
+    nextItemsLength = nextItemsLength,
     createdAt    = createdAt,
     updatedAt    = updatedAt
 )
