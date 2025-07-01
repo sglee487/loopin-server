@@ -13,13 +13,15 @@ fun MediaItem.toDto(position: Int? = null): MediaItemDto =
         kind = kind,
         publishedAt = publishedAt,
         thumbnail = thumbnail,
-        channelId = videoOwnerChannelId,
-        channelTitle = videoOwnerChannelTitle,
+        videoOwnerChannelId = videoOwnerChannelId,
+        videoOwnerChannelTitle = videoOwnerChannelTitle,
         platformType = platformType,
         durationSeconds = durationSeconds,
         position = position,
         createdAt = createdAt,
         updatedAt = updatedAt,
+        createdBy = createdBy,
+        updatedBy = updatedBy,
     )
 
 fun MediaItemWithPosition.toDto(position: Int?) =
@@ -31,9 +33,13 @@ fun MediaItemWithPosition.toDto(position: Int?) =
         kind = kind,
         publishedAt = publishedAt,
         thumbnail = thumbnail,
-        channelId = videoOwnerChannelId,
-        channelTitle = videoOwnerChannelTitle,
+        videoOwnerChannelId = videoOwnerChannelId,
+        videoOwnerChannelTitle = videoOwnerChannelTitle,
         platformType = platformType,
         durationSeconds = durationSeconds,
-        position = position ?: -1   // null 방지
+        position = position ?: -1,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+        createdBy = createdBy,
+        updatedBy = updatedBy,
     )

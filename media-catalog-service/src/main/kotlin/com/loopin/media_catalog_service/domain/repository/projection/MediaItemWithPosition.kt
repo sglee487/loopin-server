@@ -14,5 +14,10 @@ data class MediaItemWithPosition(
     val videoOwnerChannelTitle: String?,
     val platformType: String,
     val durationSeconds: Long,
-    val playlistPosition: Int?
+    val playlistPosition: Int?,
+
+    var createdAt: Instant?,
+    var updatedAt: Instant?,
+    var createdBy: String?,
+    var updatedBy: String?,
 )
