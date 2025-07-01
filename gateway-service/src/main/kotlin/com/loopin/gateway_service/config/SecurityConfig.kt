@@ -17,6 +17,7 @@ import org.springframework.security.web.server.authentication.RedirectServerAuth
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository
 import org.springframework.security.web.server.csrf.CsrfToken
+import org.springframework.security.web.server.csrf.ServerCsrfTokenRequestAttributeHandler
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.reactive.CorsConfigurationSource
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
@@ -72,8 +73,25 @@ class SecurityConfig {
         .logout { logout ->
             logout.logoutSuccessHandler(oidcLogoutSuccessHandler(clientRegistrationRepository))
         }
+//        .csrf { csrf ->
+//            csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+//        }
+//        .csrf { csrf ->
+//            // (1) 헤더 이름을 프런트와 맞추고 싶다면
+//            val repo = CookieServerCsrfTokenRepository.withHttpOnlyFalse()
+//            repo.setHeaderName("X-CSRF-TOKEN")
+//            csrf.csrfTokenRepository(repo)
+//
+//            // (2) 특정 API는 CSRF 검사 제외
+//            // csrf.ignoringRequestMatchers("/api/v1/user-play-session/**")
+//
+//            // (3) JWT/Token 기반이면 통째로 끄기
+//            // csrf.disable()
+//        }
         .csrf { csrf ->
             csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+            csrf.csrfTokenRequestHandler(ServerCsrfTokenRequestAttributeHandler())
+            // ↑ 옛날 핸들러로 교체 → 평문 토큰 허용
         }
         .build()
 
