@@ -122,7 +122,7 @@ class SecurityConfig {
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration().apply {
             allowedOrigins = listOf("http://localhost:1420")
-            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE", "CONNECT")
             allowedHeaders = listOf("x-xsrf-token", "content-type", "authorization")
             allowCredentials = true                     // SESSION 쿠키 전송 허용
         }

@@ -110,4 +110,12 @@ class UserPlaySessionService(
                 playSessionRepository.save(playSession)
             )
             .then()
+
+    fun updateStartSeconds(userId: String, mediaPlaylistId: Long, startSeconds: Int): Mono<Void> =
+        playSessionRepository
+            .updateStartSeconds(userId, mediaPlaylistId, startSeconds)
+            .flatMap { updatedRows ->
+                if (updatedRows == 0) Mono.error(NoSuchElementException("session not found"))
+                else Mono.empty()
+            }
 }

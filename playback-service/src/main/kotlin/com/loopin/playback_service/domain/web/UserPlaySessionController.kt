@@ -2,6 +2,7 @@ package com.loopin.playback_service.domain.web
 
 import com.loopin.playback_service.domain.service.UserPlaySessionService
 import com.loopin.playback_service.domain.web.dto.PutUserPlaySessionRequestDto
+import com.loopin.playback_service.domain.web.dto.UpdateStartSecondsRequestDto
 import com.loopin.playback_service.domain.web.dto.UserPlaySessionDto
 import org.slf4j.LoggerFactory
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
@@ -41,5 +42,17 @@ class UserPlaySessionController(
                 userId = principal.name,
                 mediaPlaylistId = playlistId,
             )
+        )
+
+    @PatchMapping("/sessions/{playlistId}/start-seconds")
+    fun patchStartSeconds(
+        principal: JwtAuthenticationToken,
+        @PathVariable playlistId: Long,
+        @RequestBody req: UpdateStartSecondsRequestDto,
+    ): Mono<Void> =
+        svc.updateStartSeconds(
+            userId = principal.name,
+            mediaPlaylistId = playlistId,
+            startSeconds = req.startSeconds
         )
 }
