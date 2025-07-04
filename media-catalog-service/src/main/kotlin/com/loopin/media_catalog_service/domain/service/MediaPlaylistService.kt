@@ -1,5 +1,6 @@
 package com.loopin.media_catalog_service.domain.service
 
+import com.loopin.media_catalog_service.domain.exception.AlreadyExistsException
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.model.PlaylistItemMapping
 import com.loopin.media_catalog_service.domain.repository.MediaItemRepository
@@ -45,44 +46,49 @@ class MediaPlaylistService(
         return mediaPlaylistRepository.findByResourceId(resourceId)
     }
 
-    fun createByResourceId(resourceId: String): Mono<MediaPlaylist> {
-        return youtubeClient.getPlaylistWithItems(resourceId)
-            .flatMap { youtubeData ->
-                logger.info(youtubeData.toString())
-
-                mediaPlaylistRepository.findByResourceId(youtubeData.playlist.resourceId)
-                    .switchIfEmpty(mediaPlaylistRepository.save(youtubeData.playlist))
-                    .flatMap { playlist ->
-                        Flux.fromIterable(youtubeData.mediaItem)
-                            .index()
-                            .flatMap { indexedItem ->
-                                val (index, item) = indexedItem
-                                mediaItemRepository.findByResourceId(item.resourceId)
-                                    .switchIfEmpty(mediaItemRepository.save(item))
-                                    .flatMap { savedItem ->
-                                        logger.info(
-                                            "Saving playlist item mapping for playlist ${playlist.id} " +
-                                                    "${playlist.resourceId} ${playlist.title} and media item ${savedItem.id} " +
-                                                    "${savedItem.resourceId} ${savedItem.title} "
-                                        )
-                                        playlistItemMappingRepository.findByPlaylistIdAndMediaItemId(
-                                            playlistId = playlist.id!!,
-                                            mediaItemId = savedItem.id!!
-                                        )
-                                            .switchIfEmpty(
-                                                playlistItemMappingRepository.save(
-                                                    PlaylistItemMapping(
-                                                        playlistId = playlist.id,
-                                                        mediaItemId = savedItem.id,
-                                                        position = index.toInt()
-                                                    )
-                                                )
-                                            )
-                                    }
-                            }.then(Mono.just(playlist))
-                    }
+    fun createByResourceId(resourceId: String): Mono<MediaPlaylist> =
+        mediaPlaylistRepository.findByResourceId(resourceId)
+            .flatMap {
+                Mono.error<MediaPlaylist>(AlreadyExistsException("playlist already exists for $resourceId"))
             }
-    }
+            .switchIfEmpty(
+                youtubeClient.getPlaylistWithItems(resourceId)
+                    .flatMap { youtubeData ->
+                        logger.info(youtubeData.toString())
+
+                        mediaPlaylistRepository.findByResourceId(youtubeData.playlist.resourceId)
+                            .switchIfEmpty(mediaPlaylistRepository.save(youtubeData.playlist))
+                            .flatMap { playlist ->
+                                Flux.fromIterable(youtubeData.mediaItem)
+                                    .index()
+                                    .flatMap { indexedItem ->
+                                        val (index, item) = indexedItem
+                                        mediaItemRepository.findByResourceId(item.resourceId)
+                                            .switchIfEmpty(mediaItemRepository.save(item))
+                                            .flatMap { savedItem ->
+                                                logger.info(
+                                                    "Saving playlist item mapping for playlist ${playlist.id} " +
+                                                            "${playlist.resourceId} ${playlist.title} and media item ${savedItem.id} " +
+                                                            "${savedItem.resourceId} ${savedItem.title} "
+                                                )
+                                                playlistItemMappingRepository.findByPlaylistIdAndMediaItemId(
+                                                    playlistId = playlist.id!!,
+                                                    mediaItemId = savedItem.id!!
+                                                )
+                                                    .switchIfEmpty(
+                                                        playlistItemMappingRepository.save(
+                                                            PlaylistItemMapping(
+                                                                playlistId = playlist.id,
+                                                                mediaItemId = savedItem.id,
+                                                                position = index.toInt()
+                                                            )
+                                                        )
+                                                    )
+                                            }
+                                    }.then(Mono.just(playlist))
+                            }
+                    }
+            )
 
     fun getSlice(
         size: Int,
