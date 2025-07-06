@@ -5,7 +5,7 @@ import com.loopin.media_catalog_service.domain.exception.NotExistsException
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
 import com.loopin.media_catalog_service.domain.model.PlaylistItemMapping
 import com.loopin.media_catalog_service.domain.repository.MediaItemRepository
-import com.loopin.media_catalog_service.domain.repository.MediaItemWIthPositionRepository
+import com.loopin.media_catalog_service.domain.repository.MediaItemWithPositionRepository
 import com.loopin.media_catalog_service.domain.repository.MediaPlaylistRepository
 import com.loopin.media_catalog_service.domain.repository.PlaylistItemMappingRepository
 import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
@@ -24,24 +24,13 @@ class MediaPlaylistService(
     private val mediaPlaylistRepository: MediaPlaylistRepository,
     private val mediaItemRepository: MediaItemRepository,
     private val playlistItemMappingRepository: PlaylistItemMappingRepository,
-    private val mediaItemWIthPositionRepository: MediaItemWIthPositionRepository,
+//    private val mediaItemWIthPositionRepository: MediaItemWithPositionRepository,
 ) {
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)
 
     fun getByIdWithItems(id: Long): Mono<PlaylistResponseDto> =
-        mediaPlaylistRepository.findById(id)
-            .switchIfEmpty(Mono.error(IllegalArgumentException("playlist $id not found")))
-            .flatMap { playlist ->
-                mediaItemWIthPositionRepository
-                    .findByPlaylistId(playlist.id!!)
-                    .map {
-                        logger.info("Found ${it.id} ${it.title} ${it.playlistPosition}")
-                        it.toDto(position = it.playlistPosition)
-                    }
-                    .collectList()
-                    .map { items -> playlist.toDto(items) }
-            }
+        TODO()
 
     fun getByResourceId(resourceId: String): Mono<MediaPlaylist> {
         return mediaPlaylistRepository.findByResourceId(resourceId)
