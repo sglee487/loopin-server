@@ -66,6 +66,7 @@ dependencies {
 	// implementation("com.bucket4j:bucket4j_jdk17-redis-common:8.14.0") // <- bucket4j-redis가 포함하므로 삭제
 	// implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive") // 필요 없으면 삭제
 
+	implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter-context:0.12.10")
 
 	implementation("io.micrometer:context-propagation")
 

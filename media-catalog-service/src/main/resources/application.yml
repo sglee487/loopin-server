@@ -20,6 +20,8 @@ spring:
     allow-bean-definition-overriding: true
   lifecycle:
     timeout-per-shutdown-phase: 15s
+  reactor:
+    context-propagation: auto
   r2dbc:
     username: user
     password: password
@@ -33,38 +35,56 @@ spring:
     password: ${spring.r2dbc.password}
     url: jdbc:postgresql://localhost:5432/loopin_media_catalog
   security:
+    context:
+      strategy: MODE_REACTIVE
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:59020/realms/loopin
 
+#bucket4j:
+#  enabled: true
+#  cache-to-use: redis-lettuce
+#  filters:
+#    - id: youtube-sync-per-user
+#      filter-method: webflux
+#      filter-order: 330          # UsernameHeaderFilter(329) 바로 뒤
+#      url: /api/v1/playlists/youtube/.*
+#      http-status-code: TOO_MANY_REQUESTS
+#      cache-name: buckets
+#      rate-limits:
+#        - cache-key: |
+#            #request.headers.getFirst('X-Username')
+#              ?: #request.remoteAddress?.address?.hostAddress
+#              ?: 'anonymous'
+#          num-tokens: 1
+#          bandwidths:
+#            - capacity: 5
+#              time: 1
+#              unit: days
+#              refill-speed: interval
 bucket4j:
   enabled: true
-  cache-to-use: redis-lettuce
+  cache-to-use: redis-lettuce      # ← Redis 백엔드 사용 시 필수
   filters:
-    - id: youtube-sync-per-user
+    - cache-name: buckets
       filter-method: webflux
-      filter-order: 330          # Security(-100) 뒤
-      url: /api/v1/playlists/youtube/.*
-      http-status-code: TOO_MANY_REQUESTS
-      cache-name: buckets
+      filter-order: 350
+      url: .*
       rate-limits:
-        - cache-key: |
-            @securityService.username() ?:
-            getRemoteAddress()?.address?.hostAddress ?:
-            'anonymous'
-          num-tokens: 1
+        - execute-condition: "headers.getFirst('X-Username') != 'admin'"
+          cache-key: "headers.getFirst('X-Username') ?: #request.remoteAddress?.address?.hostAddress"
           bandwidths:
-            - capacity: 5
+            - capacity: 1          # 1회
               time: 1
-              unit: days
-              refill-speed: interval
+              unit: minutes
+
 
 logging:
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
-    com.giffing.bucket4j: debug
+    com.giffing.bucket4j: trace
 
 loopin:
   youtube-service-uri: "http://localhost:59011"
