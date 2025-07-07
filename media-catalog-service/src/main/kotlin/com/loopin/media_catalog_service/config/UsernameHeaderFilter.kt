@@ -1,8 +1,6 @@
 package com.loopin.media_catalog_service.config
 
-import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
-import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.stereotype.Component
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
@@ -21,10 +19,11 @@ class UsernameHeaderFilter : WebFilter {
     }
 
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> =
-        exchange.getPrincipal<java.security.Principal>()
+        exchange.getPrincipal<Principal>()
             .map {
-                logger.info("User ${it.name} accessed ${exchange.request.path}")
-                it.name }
+                logger.debug("User {} accessed {}", it.name, exchange.request.path)
+                it.name
+            }
             .defaultIfEmpty("anonymous")
             .flatMap { username ->
 
