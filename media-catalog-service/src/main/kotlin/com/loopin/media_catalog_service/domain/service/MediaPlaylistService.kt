@@ -24,13 +24,24 @@ class MediaPlaylistService(
     private val mediaPlaylistRepository: MediaPlaylistRepository,
     private val mediaItemRepository: MediaItemRepository,
     private val playlistItemMappingRepository: PlaylistItemMappingRepository,
-//    private val mediaItemWIthPositionRepository: MediaItemWithPositionRepository,
+    private val mediaItemWithPositionRepository: MediaItemWithPositionRepository,
 ) {
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)
 
     fun getByIdWithItems(id: Long): Mono<PlaylistResponseDto> =
-        TODO()
+        mediaPlaylistRepository.findById(id)
+            .switchIfEmpty(Mono.error(IllegalArgumentException("playlist $id not found")))
+            .flatMap { playlist ->
+                mediaItemWithPositionRepository
+                    .findByPlaylistId(playlist.id!!)
+                    .map {
+                        logger.info("Found ${it.id} ${it.title} ${it.playlistPosition}")
+                        it.toDto(position = it.playlistPosition)
+                    }
+                    .collectList()
+                    .map { items -> playlist.toDto(items) }
+            }
 
     fun getByResourceId(resourceId: String): Mono<MediaPlaylist> {
         return mediaPlaylistRepository.findByResourceId(resourceId)

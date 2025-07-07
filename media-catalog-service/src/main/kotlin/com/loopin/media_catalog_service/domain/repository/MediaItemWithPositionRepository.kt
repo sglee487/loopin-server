@@ -2,10 +2,10 @@ package com.loopin.media_catalog_service.domain.repository
 
 import com.loopin.media_catalog_service.domain.repository.projection.MediaItemWithPosition
 import org.springframework.data.r2dbc.repository.Query
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.data.r2dbc.repository.R2dbcRepository
 import reactor.core.publisher.Flux
 
-interface MediaItemWithPositionRepository : ReactiveCrudRepository<MediaItemWithPosition, Long> {
+interface MediaItemWithPositionRepository : R2dbcRepository<MediaItemWithPosition, Long> {
     @Query(
         """
     SELECT mi.*,
