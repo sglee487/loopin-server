@@ -13,7 +13,7 @@ interface MediaItemWithPositionRepository : R2dbcRepository<MediaItemWithPositio
       FROM playlist_item_mapping pim
       JOIN media_item mi ON mi.id = pim.media_item_id
      WHERE pim.playlist_id = :playlistId
-     ORDER BY pim.position
+     ORDER BY pim.position DESC
     """
     )
     fun findByPlaylistId(playlistId: Long): Flux<MediaItemWithPosition>
