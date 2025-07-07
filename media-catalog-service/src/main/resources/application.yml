@@ -42,43 +42,26 @@ spring:
         jwt:
           issuer-uri: http://localhost:59020/realms/loopin
 
-#bucket4j:
-#  enabled: true
-#  cache-to-use: redis-lettuce
-#  filters:
-#    - id: youtube-sync-per-user
-#      filter-method: webflux
-#      filter-order: 330          # UsernameHeaderFilter(329) 바로 뒤
-#      url: /api/v1/playlists/youtube/.*
-#      http-status-code: TOO_MANY_REQUESTS
-#      cache-name: buckets
-#      rate-limits:
-#        - cache-key: |
-#            #request.headers.getFirst('X-Username')
-#              ?: #request.remoteAddress?.address?.hostAddress
-#              ?: 'anonymous'
-#          num-tokens: 1
-#          bandwidths:
-#            - capacity: 5
-#              time: 1
-#              unit: days
-#              refill-speed: interval
 bucket4j:
   enabled: true
-  cache-to-use: redis-lettuce      # ← Redis 백엔드 사용 시 필수
+  cache-to-use: redis-lettuce
   filters:
     - cache-name: buckets
       filter-method: webflux
       filter-order: 350
-      url: .*
+      url: /api/v1/playlists/youtube/.*
       rate-limits:
         - execute-condition: "headers.getFirst('X-Username') != 'admin'"
-          cache-key: "headers.getFirst('X-Username') ?: #request.remoteAddress?.address?.hostAddress"
+          execute-predicates:
+            - METHOD=POST,PATCH
+          cache-key: >
+            headers.getFirst('X-Username')
+              ?: #request.remoteAddress?.address?.hostAddress
           bandwidths:
-            - capacity: 1          # 1회
+            - capacity: 5
               time: 1
-              unit: minutes
-
+              unit: days
+              refill-speed: interval
 
 logging:
   pattern:
