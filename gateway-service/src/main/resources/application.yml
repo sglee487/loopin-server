@@ -20,10 +20,6 @@ spring:
               max-idle-time: 15s
               type: elastic
           routes:
-            #        - id: spa-route
-            #          uri: ${SPA_URL:http://localhost:9004}
-            #          predicates:
-            #            - Path=/,/*.css,/*.js,/favicon.ico
             - id: playback-route
               uri: ${PLAYBACK_SERVICE_URL:http://localhost:59002}
               predicates:

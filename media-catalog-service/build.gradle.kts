@@ -31,6 +31,13 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework:spring-jdbc")
+
+	// bucket4j
+	implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.12.10")
+	implementation("com.bucket4j:bucket4j-redis:8.10.1")
+	implementation("io.lettuce:lettuce-core")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("org.postgresql:r2dbc-postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
