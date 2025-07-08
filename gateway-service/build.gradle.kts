@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+
 plugins {
 	kotlin("jvm") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
@@ -48,6 +50,16 @@ dependencyManagement {
 kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict")
+	}
+}
+
+tasks.named<BootBuildImage>("bootBuildImage") {
+	imageName.set(project.name)
+
+	docker.publishRegistry {
+		username.set(project.findProperty("registryUsername")?.toString())
+		password.set(project.findProperty("registryToken")?.toString())
+		url.set(project.findProperty("registryUrl")?.toString())
 	}
 }
 
