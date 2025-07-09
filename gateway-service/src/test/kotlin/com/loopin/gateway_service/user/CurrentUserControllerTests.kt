@@ -31,6 +31,7 @@ class CurrentUserControllerTests {
             .expectStatus().isUnauthorized
     }
 
+    // test
     @Test
     fun whenAuthenticatedThenReturnUser() {
         val expectedUser = User(
