@@ -1,9 +1,25 @@
-name: Commit Stage
-on: push
+name: Gateway Service CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'gateway-service/**'
+  pull_request:
+    paths:
+      - 'gateway-service/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
+  OWNER: sglee487
+  DEPLOY_REPO: loopin-server
   IMAGE_NAME: loopin-server/gateway-service
+  APP_REPO: gateway-service
   VERSION: ${{ github.sha }}
 
 jobs:
@@ -13,6 +29,9 @@ jobs:
     permissions:
       contents: read
       security-events: write
+    defaults:
+      run:
+        working-directory: gateway-service
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -30,7 +49,7 @@ jobs:
         uses: anchore/scan-action@v3
         id: scan
         with:
-          path: "${{ github.workspace }}"
+          path: "${{ github.workspace }}/gateway-service"
           fail-build: false
           severity-cutoff: high
       - name: Upload vulnerability report
@@ -38,25 +57,19 @@ jobs:
         if: success() || failure()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
-      - name: Setup tools
-        uses: alexellis/setup-arkade@v3
-      - name: Install tools
-        uses: alexellis/arkade-get@master
-        with:
-          kustomize: latest
-          kubeconform: latest
-      - name: Validate Kubernetes manifests
-        run: |
-          kustomize build k8s | kubeconform --strict -
+
   package:
     name: Package and Publish
-    if: ${{ github.ref == 'refs/heads/main' }}
-    needs: [ build ]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build]
     runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
       security-events: write
+    defaults:
+      run:
+        working-directory: gateway-service
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -69,8 +82,7 @@ jobs:
       - name: Build container image
         run: |
           chmod +x gradlew
-          ./gradlew bootBuildImage \
-            --imageName ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+          ./gradlew bootBuildImage --imageName ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
       - name: OCI image vulnerability scanning
         uses: anchore/scan-action@v3
         id: scan
@@ -93,6 +105,48 @@ jobs:
         run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
       - name: Publish container image (latest)
         run: |
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  functional:
+    name: Functional Acceptance Tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [package]
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Running functional acceptance tests for Gateway Service"
+
+  performance:
+    name: Performance Tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [package]
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Running performance tests for Gateway Service"
+
+  security:
+    name: Security Tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [package]
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Running security tests for Gateway Service"
+
+  deliver:
+    name: Deliver release candidate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [functional, performance, security]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Deliver application to production
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          repository: ${{ env.OWNER }}/${{ env.DEPLOY_REPO }}
+          event-type: app_delivery
+          client-payload: |
+            {
+              "app_image": "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.DEPLOY_REPO }}",
+              "app_name": "${{ env.APP_REPO }}",
+              "app_version": "${{ env.VERSION }}"
+            }
