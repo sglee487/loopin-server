@@ -39,6 +39,10 @@ dependencies {
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
+	testImplementation("org.testcontainers:junit-jupiter")
+	testImplementation("com.redis.testcontainers:testcontainers-redis:1.6.4")
+	testImplementation("org.springframework.security:spring-security-test")
 }
 
 dependencyManagement {
