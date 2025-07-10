@@ -3,7 +3,7 @@ name: Youtube Fetcher Service CI
 on:
   push:
     branches:
-      - main
+      - '**'
     paths:
       - 'youtube-fetcher-service/**'
   pull_request:
