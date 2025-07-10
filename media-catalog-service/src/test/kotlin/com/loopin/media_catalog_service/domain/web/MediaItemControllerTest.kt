@@ -4,7 +4,6 @@ import com.loopin.media_catalog_service.config.SecurityConfig
 import com.loopin.media_catalog_service.domain.model.MediaItem
 import com.loopin.media_catalog_service.domain.service.MediaItemService
 import com.loopin.media_catalog_service.domain.web.dto.IdListDto
-import com.loopin.media_catalog_service.domain.web.dto.MediaItemDto
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -89,21 +88,23 @@ class MediaItemControllerTest {
         fun `무토큰 요청도 200`() {
             val ids = listOf(10L)
             whenever(svc.findAllByIdPreserveOrder(ids))
-                .thenReturn(Flux.just(
-                    MediaItem(
-                        id = 10L,
-                        resourceId = "XYZ",
-                        title = "Sample",
-                        description = null,
-                        kind = "youtube#video",
-                        publishedAt = Instant.now(),
-                        thumbnail = null,
-                        videoOwnerChannelId = null,
-                        videoOwnerChannelTitle = null,
-                        platformType = "YOUTUBE",
-                        durationSeconds = 60L
+                .thenReturn(
+                    Flux.just(
+                        MediaItem(
+                            id = 10L,
+                            resourceId = "XYZ",
+                            title = "Sample",
+                            description = null,
+                            kind = "youtube#video",
+                            publishedAt = Instant.now(),
+                            thumbnail = null,
+                            videoOwnerChannelId = null,
+                            videoOwnerChannelTitle = null,
+                            platformType = "YOUTUBE",
+                            durationSeconds = 60L
+                        )
                     )
-                ))
+                )
 
             webTestClient.post()
                 .uri("/api/v1/items/batch")
