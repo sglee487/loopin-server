@@ -3,7 +3,7 @@ name: Gateway Service CI
 on:
   push:
     branches:
-      - main
+      - '**'
     paths:
       - 'gateway-service/**'
   pull_request:

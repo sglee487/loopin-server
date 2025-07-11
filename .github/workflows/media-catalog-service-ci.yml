@@ -3,7 +3,7 @@ name: Media Catalog Service CI
 on:
   push:
     branches:
-      - main
+      - '**'
     paths:
       - 'media-catalog-service/**'
   pull_request:

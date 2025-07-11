@@ -3,7 +3,7 @@ name: Playback Service CI
 on:
   push:
     branches:
-      - main
+      - '**'
     paths:
       - 'playback-service/**'
   pull_request:

@@ -43,6 +43,9 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:postgresql")
 	testImplementation("org.testcontainers:r2dbc")
+	testImplementation("org.springframework.security:spring-security-test")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
