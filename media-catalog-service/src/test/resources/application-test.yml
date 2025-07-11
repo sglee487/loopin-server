@@ -1,0 +1,26 @@
+loopin:
+  youtube-service-uri: http://test-youtube-service
+
+spring:
+  application:
+    name: media-catalog-service-test
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          enabled: false
+
+  r2dbc:
+    username: testuser
+    password: testpassword
+
+  main:
+    allow-bean-definition-overriding: true
+
+bucket4j:
+  enabled: false
+
+logging:
+  pattern:
+    level: "%5p [media-catalog-service-test,%X{trace_id},%X{span_id}]"
