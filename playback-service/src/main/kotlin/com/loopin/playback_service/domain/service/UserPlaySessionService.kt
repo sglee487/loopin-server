@@ -16,67 +16,72 @@ class UserPlaySessionService(
     private val playSessionRepository: PlaySessionRepository,
 ) {
 
+    companion object {
+        private const val BATCH_LIMIT = 300
+    }
+
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    /** 유저의 모든 세션 + 관련 메타 / 현재곡만 매핑 */
+    /** 300개 단위로 끊어서 병렬-호출 후 합치기 */
+    private fun <ID, DTO> fetchInChunks(
+        ids: List<ID>,
+        fetcher: (List<ID>) -> Mono<out List<DTO>>,
+    ): Mono<List<DTO>> =
+        Flux.fromIterable(ids.distinct().chunked(BATCH_LIMIT))   // 중복 제거 + chunk
+            .flatMapSequential(fetcher)                           // 각 chunk 호출
+            .collectList()                                        // List<List<DTO>>
+            .map { it.flatten() }                                 // 평탄화
+
+    /** 유저의 모든 세션 + 관련 메타 (현재곡만) */
     fun getUserPlaySessions(userId: String): Flux<UserPlaySessionDto> =
         playSessionRepository.findAllByUserId(userId)
             .collectList()
             .flatMapMany { sessions ->
-                logger.info("sessions: ${sessions.size}")
                 if (sessions.isEmpty()) return@flatMapMany Flux.empty()
 
-                // 1) 필요한 ID 집계
-                val playlistIds = sessions.map { it.mediaPlaylistId }.distinct()
-                val itemIds = sessions.flatMap {
-                    listOf(it.nowPlayingItemId)
-                }.distinct()
+                val playlistIds = sessions.map { it.mediaPlaylistId }
+                val itemIds = sessions.map { it.nowPlayingItemId }
 
-                // 2) 외부 서비스 호출(batch)
                 Mono.zip(
-                    mediaCatalogClient.getMediaPlaylistBatch(playlistIds),
-                    mediaCatalogClient.getMediaItemBatch(itemIds)
-                ) { playlists, items -> Pair(playlists, items) }
+                    fetchInChunks(playlistIds, mediaCatalogClient::getMediaPlaylistBatch),
+                    fetchInChunks(itemIds, mediaCatalogClient::getMediaItemBatch)
+                ) { playlists, items -> playlists to items }
                     .flatMapMany { (playlists, items) ->
-                        logger.info("playlists: ${playlists.size}, items: ${items.size}")
-
                         val playlistMap = playlists.associateBy { it.id }
                         val itemMap = items.associateBy { it.id }
 
-                        val dtoList = sessions.map { ps ->
-                            ps.toDto(
-                                playlist = playlistMap[ps.mediaPlaylistId]
-                                    ?: error("playlist ${ps.mediaPlaylistId} not found"),
-                                now = itemMap[ps.nowPlayingItemId]
-                                    ?: error("item ${ps.nowPlayingItemId} not found"),
-                                prev = null,
-                                next = null,
-                                prevItemsLength = ps.prevItems.size,
-                                nextItemsLength = ps.nextItems.size,
-                            )
-                        }
-                        Flux.fromIterable(dtoList)
+                        Flux.fromIterable(
+                            sessions.map { ps ->
+                                ps.toDto(
+                                    playlist = playlistMap[ps.mediaPlaylistId]
+                                        ?: error("playlist ${ps.mediaPlaylistId} not found"),
+                                    now = itemMap[ps.nowPlayingItemId]
+                                        ?: error("item ${ps.nowPlayingItemId} not found"),
+                                    prev = null,
+                                    next = null,
+                                    prevItemsLength = ps.prevItems.size,
+                                    nextItemsLength = ps.nextItems.size,
+                                )
+                            }
+                        )
                     }
             }
 
-    /** 특정 플레이리스트 세션 1건 + 큐 포함 반환 */
+    /** 특정 플레이리스트 세션 1건 + 큐 포함 */
     fun getUserPlaySessionByPlaylistIdWithItems(
         userId: String,
-        playlistId: Long
+        playlistId: Long,
     ): Mono<UserPlaySessionDto> =
         playSessionRepository.findByUserIdAndMediaPlaylistId(userId, playlistId)
             .switchIfEmpty(Mono.error(NoSuchElementException("session not found")))
             .flatMap { ps ->
-                val idsToFetch = listOf(ps.nowPlayingItemId) +
-                        ps.prevItems + ps.nextItems
-
-                logger.info(ps.toString())
+                val idsToFetch = listOf(ps.nowPlayingItemId) + ps.prevItems + ps.nextItems
 
                 Mono.zip(
-                    mediaCatalogClient.getMediaPlaylistBatch(listOf(ps.mediaPlaylistId))
-                        .map { it.first() },
-                    mediaCatalogClient.getMediaItemBatch(idsToFetch)
-                ) { playlist, items -> Pair(playlist, items.associateBy { it.id }) }
+                    fetchInChunks(listOf(ps.mediaPlaylistId), mediaCatalogClient::getMediaPlaylistBatch)
+                        .map { it.first() },                // 단일 플레이리스트
+                    fetchInChunks(idsToFetch, mediaCatalogClient::getMediaItemBatch)
+                ) { playlist, items -> playlist to items.associateBy { it.id } }
                     .map { (playlist, itemMap) ->
                         ps.toDto(
                             playlist = playlist,
