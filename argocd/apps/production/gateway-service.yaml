@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gateway-service-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/sglee487/loopin-server.git'
+    targetRevision: main
+    path: gateway-service/k8s/overlays/production
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtube-fetcher-service
+  labels:
+    app: youtube-fetcher-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: youtube-fetcher-service
+  template:
+    metadata:
+      labels:
+        app: youtube-fetcher-service
+    spec:
+      containers:
+      - name: youtube-fetcher-service
+        image: ghcr.io/sglee487/loopin-server/youtube-fetcher-service:latest
+        ports:
+        - containerPort: 8080 # TODO: Change port if needed

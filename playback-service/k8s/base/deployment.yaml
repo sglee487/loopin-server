@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playback-service
+  labels:
+    app: playback-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: playback-service
+  template:
+    metadata:
+      labels:
+        app: playback-service
+    spec:
+      containers:
+      - name: playback-service
+        image: ghcr.io/sglee487/loopin-server/playback-service:latest
+        ports:
+        - containerPort: 8080 # TODO: Change port if needed
