@@ -9,3 +9,4 @@ class GatewayServiceApplication
 fun main(args: Array<String>) {
 	runApplication<GatewayServiceApplication>(*args)
 }
+// temp comment for test ci/cd
