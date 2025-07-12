@@ -18,4 +18,14 @@ spec:
       - name: playback-service
         image: ghcr.io/sglee487/loopin-server/playback-service:latest
         ports:
-        - containerPort: 8080 # TODO: Change port if needed
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        volumeMounts:
+        - name: playback-config-volume
+          mountPath: /workspace/config
+      volumes:
+      - name: playback-config-volume
+        configMap:
+          name: playback-service-config
