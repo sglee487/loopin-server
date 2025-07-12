@@ -12,3 +12,4 @@ fun main(args: Array<String>) {
     runApplication<MediaCatalogServiceApplication>(*args)
 }
 // temp comment for test ci/cd
+// temp comment for test ci/cd
