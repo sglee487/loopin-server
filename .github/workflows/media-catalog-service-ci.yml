@@ -59,7 +59,7 @@ jobs:
         if: success() || failure()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
-
+  
   ################################################################################
   # 2) PACKAGE + PUBLISH
   ################################################################################
@@ -90,7 +90,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
 
       # 2) Buildpacks로 이미지 **빌드만** (푸시는 안 함)
       - name: Build image (local only)
@@ -126,7 +126,7 @@ jobs:
         if: success() || failure()
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
-
+  
   ################################################################################
   # 3) FUNCTIONAL / PERFORMANCE / SECURITY
   ################################################################################
@@ -150,7 +150,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running security tests for Media Catalog Service"
-
+  
   ################################################################################
   # 4) DELIVER
   ################################################################################
