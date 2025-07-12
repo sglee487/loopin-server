@@ -20,17 +20,13 @@ env:
   APP_REPO: catalog-service
   VERSION: ${{ github.sha }}
 
-################################################################################
-# 1) BUILD + TEST
-################################################################################
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: media-catalog-service
+    defaults: { run: { working-directory: media-catalog-service } }
     permissions:
       contents: read
+      packages: write
       security-events: write
 
     steps:
@@ -47,9 +43,9 @@ jobs:
           chmod +x gradlew
           ./gradlew build
 
-      - name: Scan source (Anchore)
+      - name: Source scan (Anchore)
         uses: anchore/scan-action@v3
-        id: scan
+        id: src-scan
         with:
           path: "${{ github.workspace }}/media-catalog-service"
           fail-build: false
@@ -58,42 +54,19 @@ jobs:
       - uses: github/codeql-action/upload-sarif@v3
         if: success() || failure()
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
-  
-  ################################################################################
-  # 2) PACKAGE + PUBLISH
-  ################################################################################
-  package:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: media-catalog-service
-    permissions:
-      contents: read
-      packages: write
-      security-events: write
+          sarif_file: ${{ steps.src-scan.outputs.sarif }}
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: gradle
-
-      # 1) GHCR 로그인
+      # ──────────────────────── main 브랜치 push 전용 단계 ────────────────────────
       - name: Log in to GHCR
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.REGISTRY_TOKEN }}
 
-      # 2) Buildpacks로 이미지 **빌드만** (푸시는 안 함)
       - name: Build image (local only)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           BP_OCI_LABELS: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -102,72 +75,72 @@ jobs:
           ./gradlew bootBuildImage \
             --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
 
-      # 3) SHA 태그 push
       - name: Push image (SHA tag)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
 
-      # 4) latest 태그 생성 & push
       - name: Tag & push image (latest)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
                      ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
           docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
 
-      # 5) OCI 이미지 스캔
       - name: Scan image (Anchore)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: anchore/scan-action@v3
-        id: scan
+        id: img-scan
         with:
           image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           fail-build: false
           severity-cutoff: high
 
       - uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && ( success() || failure() )
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
-  
-  ################################################################################
-  # 3) FUNCTIONAL / PERFORMANCE / SECURITY
-  ################################################################################
+          sarif_file: ${{ steps.img-scan.outputs.sarif }}
+
+  ###############################################################################
+  # 2) FUNCTIONAL / PERFORMANCE / SECURITY 테스트 (main push 시)
+  ###############################################################################
   functional:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: package
+    needs: ci
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running functional acceptance tests for Media Catalog Service"
 
   performance:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: package
+    needs: ci
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running performance tests for Media Catalog Service"
 
   security:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: package
+    needs: ci
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running security tests for Media Catalog Service"
-  
-  ################################################################################
-  # 4) DELIVER
-  ################################################################################
-  deliver:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [ functional, performance, security ]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Notify deploy repo
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: ${{ env.OWNER }}/${{ env.DEPLOY_REPO }}
-          event-type: app_delivery
-          client-payload: |
-            {
-              "app_image": "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}",
-              "app_name": "${{ env.APP_REPO }}",
-              "app_version": "${{ env.VERSION }}"
-            }
+
+  ###############################################################################
+  # 3) DELIVER
+  ###############################################################################
+#  deliver:
+#    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#    needs: [ functional, performance, security ]
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - name: Notify deploy repo
+#        uses: peter-evans/repository-dispatch@v3
+#        with:
+#          token: ${{ secrets.DISPATCH_TOKEN }}
+#          repository: ${{ env.OWNER }}/${{ env.DEPLOY_REPO }}
+#          event-type: app_delivery
+#          client-payload: |
+#            {
+#              "app_image": "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}",
+#              "app_name": "${{ env.APP_REPO }}",
+#              "app_version": "${{ env.VERSION }}"
+#            }
