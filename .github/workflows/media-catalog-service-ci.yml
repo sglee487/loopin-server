@@ -15,69 +15,24 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   OWNER: sglee487
-  DEPLOY_REPO: loopin-server
   IMAGE_NAME: loopin-server/media-catalog-service
+  DEPLOY_REPO: loopin-server
   APP_REPO: catalog-service
   VERSION: ${{ github.sha }}
 
+################################################################################
+# 1) BUILD + TEST
+################################################################################
 jobs:
-  ########################################################################
-  # 1) BUILD + TEST
-  ########################################################################
   build:
-    name: Build and Test
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      security-events: write
     defaults:
       run:
         working-directory: media-catalog-service
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-          cache: gradle
-
-      - name: Build, unit tests and integration tests
-        run: |
-          chmod +x gradlew
-          ./gradlew build
-
-      - name: Code vulnerability scanning
-        uses: anchore/scan-action@v3
-        id: scan
-        with:
-          path: "${{ github.workspace }}/media-catalog-service"
-          fail-build: false
-          severity-cutoff: high
-
-      - name: Upload vulnerability report
-        uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
-        with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
-
-  ########################################################################
-  # 2) PACKAGE + PUBLISH (main 브랜치 push 일 때만)
-  ########################################################################
-  package:
-    name: Package and Publish
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [ build ]
-    runs-on: ubuntu-22.04
     permissions:
       contents: read
-      packages: write        # ★ GHCR에 푸시하려면 필요
       security-events: write
-    defaults:
-      run:
-        working-directory: media-catalog-service
+
     steps:
       - uses: actions/checkout@v4
 
@@ -87,27 +42,80 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      # 1) GHCR 로그인 (REGISTRY_TOKEN)
-      - name: Log in to GitHub Container Registry
+      - name: Unit & integration tests
+        run: |
+          chmod +x gradlew
+          ./gradlew build
+
+      - name: Scan source (Anchore)
+        uses: anchore/scan-action@v3
+        id: scan
+        with:
+          path: "${{ github.workspace }}/media-catalog-service"
+          fail-build: false
+          severity-cutoff: high
+
+      - uses: github/codeql-action/upload-sarif@v3
+        if: success() || failure()
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+
+  ################################################################################
+  # 2) PACKAGE + PUBLISH
+  ################################################################################
+  package:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: media-catalog-service
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      # 1) GHCR 로그인
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2) Build image (로컬)
-      - name: Build container image
+      # 2) Buildpacks로 이미지 **빌드만** (푸시는 안 함)
+      - name: Build image (local only)
         env:
-          # 선택: 레포소스 라벨 → GHCR가 레포 자동 연결 (REGISTRY_TOKEN 만으로도 연결됨)
-          BP_OCI_LABELS: "org.opencontainers.image.source=https://github.com/${{ github.repository }}"
+          BP_OCI_LABELS: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
         run: |
           chmod +x gradlew
           ./gradlew bootBuildImage \
-            --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
-            --publishImage
+            --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
 
-      # 3) 취약점 스캔
-      - uses: anchore/scan-action@v3
+      # 3) SHA 태그 push
+      - name: Push image (SHA tag)
+        run: docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+
+      # 4) latest 태그 생성 & push
+      - name: Tag & push image (latest)
+        run: |
+          docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
+                     ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
+          docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
+
+      # 5) OCI 이미지 스캔
+      - name: Scan image (Anchore)
+        uses: anchore/scan-action@v3
         id: scan
         with:
           image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
@@ -119,49 +127,39 @@ jobs:
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
 
-  ########################################################################
-  # 3) FUNCTIONAL TESTS
-  ########################################################################
+  ################################################################################
+  # 3) FUNCTIONAL / PERFORMANCE / SECURITY
+  ################################################################################
   functional:
-    name: Functional Acceptance Tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [ package ]
+    needs: package
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running functional acceptance tests for Media Catalog Service"
 
-  ########################################################################
-  # 4) PERFORMANCE TESTS
-  ########################################################################
   performance:
-    name: Performance Tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [ package ]
+    needs: package
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running performance tests for Media Catalog Service"
 
-  ########################################################################
-  # 5) SECURITY TESTS
-  ########################################################################
   security:
-    name: Security Tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [ package ]
+    needs: package
     runs-on: ubuntu-22.04
     steps:
       - run: echo "Running security tests for Media Catalog Service"
 
-  ########################################################################
-  # 6) DELIVER
-  ########################################################################
+  ################################################################################
+  # 4) DELIVER
+  ################################################################################
   deliver:
-    name: Deliver release candidate
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [ functional, performance, security ]
     runs-on: ubuntu-22.04
     steps:
-      - name: Deliver application to production
+      - name: Notify deploy repo
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
@@ -169,7 +167,7 @@ jobs:
           event-type: app_delivery
           client-payload: |
             {
-              "app_image": "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.DEPLOY_REPO }}",
+              "app_image": "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}",
               "app_name": "${{ env.APP_REPO }}",
               "app_version": "${{ env.VERSION }}"
             }
