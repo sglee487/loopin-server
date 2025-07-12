@@ -87,18 +87,18 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      # 1) GHCR 로그인 (GITHUB_TOKEN)
+      # 1) GHCR 로그인 (REGISTRY_TOKEN)
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
 
       # 2) Build image (로컬)
       - name: Build container image
         env:
-          # 선택: 레포소스 라벨 → GHCR가 레포 자동 연결 (GITHUB_TOKEN 만으로도 연결됨)
+          # 선택: 레포소스 라벨 → GHCR가 레포 자동 연결 (REGISTRY_TOKEN 만으로도 연결됨)
           BP_OCI_LABELS: "org.opencontainers.image.source=https://github.com/${{ github.repository }}"
         run: |
           chmod +x gradlew
