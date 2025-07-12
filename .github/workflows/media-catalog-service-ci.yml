@@ -8,16 +8,10 @@ on:
     paths: [ 'media-catalog-service/**' ]
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 env:
   REGISTRY: ghcr.io
   OWNER: sglee487
   IMAGE_NAME: loopin-server/media-catalog-service
-  DEPLOY_REPO: loopin-server
-  APP_REPO: catalog-service
   VERSION: ${{ github.sha }}
 
 jobs:
@@ -26,10 +20,13 @@ jobs:
     defaults: { run: { working-directory: media-catalog-service } }
     permissions:
       contents: read
-      packages: write
+      packages: write       # GHCR push
       security-events: write
 
     steps:
+      # ──────────────────────────────────────────────────────────────────
+      # 1) 소스 빌드 + 테스트 + SARIF 업로드
+      # ──────────────────────────────────────────────────────────────────
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
@@ -43,20 +40,23 @@ jobs:
           chmod +x gradlew
           ./gradlew build
 
-      - name: Source scan (Anchore)
+      - name: Source scan (Anchore / Grype)
         uses: anchore/scan-action@v3
         id: src-scan
         with:
-          path: "${{ github.workspace }}/media-catalog-service"
+          path: .
           fail-build: false
           severity-cutoff: high
 
-      - uses: github/codeql-action/upload-sarif@v3
-        if: success() || failure()
+      - name: Upload SARIF (src)
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.src-scan.outputs.sarif }}
+          category: anchore-src           # ← 충돌 방지를 위해 category 지정
 
-      # ──────────────────────── main 브랜치 push 전용 단계 ────────────────────────
+      # ──────────────────────────────────────────────────────────────────
+      # 2) main 브랜치 push 일 때만 이미지 빌드·푸시·스캔
+      # ──────────────────────────────────────────────────────────────────
       - name: Log in to GHCR
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: docker/login-action@v3
@@ -68,25 +68,24 @@ jobs:
       - name: Build image (local only)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
-          BP_OCI_LABELS: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          # ✅ Buildpacks가 `org.opencontainers.image.source` 라벨 자동 생성
+          BP_OCI_SOURCE: https://github.com/${{ github.repository }}
         run: |
           chmod +x gradlew
           ./gradlew bootBuildImage \
             --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
 
-      - name: Push image (SHA tag)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-
-      - name: Tag & push image (latest)
+      - name: Tag latest & push both tags
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
+          # 1) SHA → latest 태그 복사
           docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
                      ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
-          docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
 
-      - name: Scan image (Anchore)
+          # 2) 두 태그를 한 번에 푸시
+          docker push --all-tags ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}
+
+      - name: Scan image (Anchore / Grype)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: anchore/scan-action@v3
         id: img-scan
@@ -95,52 +94,9 @@ jobs:
           fail-build: false
           severity-cutoff: high
 
-      - uses: github/codeql-action/upload-sarif@v3
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && ( success() || failure() )
+      - name: Upload SARIF (image)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.img-scan.outputs.sarif }}
-
-  ###############################################################################
-  # 2) FUNCTIONAL / PERFORMANCE / SECURITY 테스트 (main push 시)
-  ###############################################################################
-  functional:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: ci
-    runs-on: ubuntu-22.04
-    steps:
-      - run: echo "Running functional acceptance tests for Media Catalog Service"
-
-  performance:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: ci
-    runs-on: ubuntu-22.04
-    steps:
-      - run: echo "Running performance tests for Media Catalog Service"
-
-  security:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: ci
-    runs-on: ubuntu-22.04
-    steps:
-      - run: echo "Running security tests for Media Catalog Service"
-
-  ###############################################################################
-  # 3) DELIVER
-  ###############################################################################
-#  deliver:
-#    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-#    needs: [ functional, performance, security ]
-#    runs-on: ubuntu-22.04
-#    steps:
-#      - name: Notify deploy repo
-#        uses: peter-evans/repository-dispatch@v3
-#        with:
-#          token: ${{ secrets.DISPATCH_TOKEN }}
-#          repository: ${{ env.OWNER }}/${{ env.DEPLOY_REPO }}
-#          event-type: app_delivery
-#          client-payload: |
-#            {
-#              "app_image": "${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}",
-#              "app_name": "${{ env.APP_REPO }}",
-#              "app_version": "${{ env.VERSION }}"
-#            }
+          category: anchore-image         # ✅ category 다르게
