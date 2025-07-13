@@ -8,6 +8,8 @@ server:
 spring:
   application:
     name: playback-service
+  config:
+    import: "optional:kubernetes:"
   lifecycle:
     timeout-per-shutdown-phase: 15s
   r2dbc:

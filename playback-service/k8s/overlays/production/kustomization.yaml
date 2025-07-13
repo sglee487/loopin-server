@@ -6,6 +6,7 @@ resources:
 
 configMapGenerator:
   - name: playback-service-config
+    behavior: merge
     files:
       - application-prod.yml
 

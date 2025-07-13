@@ -6,6 +6,7 @@ resources:
 
 configMapGenerator:
   - name: youtube-fetcher-service-config
+    behavior: merge
     files:
       - application-prod.yml
 

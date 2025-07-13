@@ -8,6 +8,8 @@ server:
 spring:
   application:
     name: youtube-fetcher-service
+  config:
+    import: "optional:kubernetes:"
 
 youtube:
   api-key: ${YOUTUBE_DATA_API_KEY}

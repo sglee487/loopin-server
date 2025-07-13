@@ -6,6 +6,7 @@ resources:
 
 configMapGenerator:
   - name: media-catalog-service-config
+    behavior: merge
     files:
       - application-prod.yml
 

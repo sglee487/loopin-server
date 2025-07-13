@@ -8,6 +8,8 @@ server:
 spring:
   application:
     name: media-catalog-service
+  config:
+    import: "optional:kubernetes:"
   cache:
     type: redis
   data:
