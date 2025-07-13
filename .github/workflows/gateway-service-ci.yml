@@ -16,6 +16,7 @@ env:
 
   SHOULD_RELEASE: ${{ github.event_name == 'push' && (
     github.ref_name == 'main' ||
+    github.ref_name == 'argocd' ||
     github.ref_name == 'deploy') }}
 
 
