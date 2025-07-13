@@ -14,6 +14,10 @@ env:
   IMAGE_NAME: loopin-server/media-catalog-service
   VERSION: ${{ github.sha }}
 
+  SHOULD_RELEASE: ${{ github.event_name == 'push' && (
+    github.ref_name == 'main' ||
+    github.ref_name == 'deploy') }}
+
 jobs:
   ci:
     runs-on: ubuntu-22.04
@@ -58,7 +62,7 @@ jobs:
       # 2) main 브랜치 push 일 때만 이미지 빌드·푸시·스캔
       # ──────────────────────────────────────────────────────────────────
       - name: Log in to GHCR
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -66,7 +70,7 @@ jobs:
           password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Build image (local only)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         env:
           # ✅ Buildpacks가 `org.opencontainers.image.source` 라벨 자동 생성
           BP_OCI_SOURCE: https://github.com/${{ github.repository }}
@@ -76,7 +80,7 @@ jobs:
             --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
 
       - name: Tag latest & push both tags
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         run: |
           # 1) SHA → latest 태그 복사
           docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
@@ -86,7 +90,7 @@ jobs:
           docker push --all-tags ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}
 
       - name: Scan image (Anchore / Grype)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         uses: anchore/scan-action@v3
         id: img-scan
         with:
@@ -95,14 +99,14 @@ jobs:
           severity-cutoff: high
 
       - name: Upload SARIF (image)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.img-scan.outputs.sarif }}
           category: anchore-image         # ✅ category 다르게
       # ───────────────────────────────────────
       - name: Update and Push Kubernetes Manifest
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         run: |
           # The default working directory is 'media-catalog-service'. Go to the repo root.
           cd ..
