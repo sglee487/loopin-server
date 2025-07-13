@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-catalog-service
+spec:
+  template:
+    spec:
+      volumes:
+        - name: media-catalog-config-volume
+          configMap:
+            name: media-catalog-service-config

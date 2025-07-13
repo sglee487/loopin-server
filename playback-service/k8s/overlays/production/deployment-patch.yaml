@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playback-service
+spec:
+  template:
+    spec:
+      volumes:
+        - name: playback-config-volume
+          configMap:
+            name: playback-service-config

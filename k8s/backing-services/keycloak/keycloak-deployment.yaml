@@ -24,6 +24,14 @@ spec:
               value: "user"
             - name: KEYCLOAK_ADMIN_PASSWORD
               value: "password"
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: jdbc:postgresql://keycloak-postgres-service:5432/keycloak
+            - name: KC_DB_USERNAME
+              value: keycloak
+            - name: KC_DB_PASSWORD
+              value: password
           ports:
             - containerPort: 8080
           volumeMounts:

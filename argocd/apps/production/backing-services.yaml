@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backing-services
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/sglee487/loopin-server.git'
+    targetRevision: HEAD
+    path: k8s/backing-services
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default # Or your desired namespace
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
