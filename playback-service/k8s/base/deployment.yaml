@@ -14,6 +14,8 @@ spec:
       labels:
         app: playback-service
     spec:
+      imagePullSecrets:
+        - name: ghcr-creds
       containers:
       - name: playback-service
         image: ghcr.io/sglee487/loopin-server/playback-service:latest

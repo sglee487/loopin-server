@@ -14,6 +14,8 @@ spec:
       labels:
         app: gateway-service
     spec:
+      imagePullSecrets:
+        - name: ghcr-creds
       containers:
       - name: gateway-service
         image: ghcr.io/sglee487/loopin-server/gateway-service:latest
