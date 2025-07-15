@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: gateway-service-prod
-  namespace: argocd
+  namespace: production
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
