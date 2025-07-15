@@ -105,25 +105,3 @@ jobs:
         with:
           sarif_file: ${{ steps.img-scan.outputs.sarif }}
           category: anchore-image         # ✅ category 다르게
-      # ───────────────────────────────────────
-      - name: Update and Push Kubernetes Manifest
-        if: ${{ env.SHOULD_RELEASE == 'true' }}
-        run: |
-          # The default working directory is 'media-catalog-service'. Go to the repo root.
-          cd ..
-
-          # Update the image tag in the deployment manifest
-          sed -i "s|image: .*|image: ghcr.io/sglee487/loopin-server/media-catalog-service:${{ github.sha }}|g" media-catalog-service/k8s/deployment.yaml
-
-          # Configure git user
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Commit and push if there are changes
-          if ! git diff --quiet media-catalog-service/k8s/base/deployment.yaml; then
-            git add media-catalog-service/k8s/base/deployment.yaml
-            git commit -m "ci(media-catalog-service): update image to ${{ github.sha }}"
-            git push
-          else
-            echo "Manifest is already up-to-date."
-          fi
