@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-catalog-redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media-catalog-redis
+  template:
+    metadata:
+      labels:
+        app: media-catalog-redis
+    spec:
+      containers:
+        - name: media-catalog-redis
+          image: redis:8.0.2
+          ports:
+            - containerPort: 6379

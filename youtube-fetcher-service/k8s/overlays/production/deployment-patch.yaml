@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtube-fetcher-service
+spec:
+  template:
+    spec:
+      volumes:
+        - name: youtube-fetcher-config-volume
+          configMap:
+            name: youtube-fetcher-service-config

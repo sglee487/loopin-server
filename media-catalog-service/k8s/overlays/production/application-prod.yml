@@ -1,5 +1,5 @@
 server:
-  port: 59001
+  port: 8080
   shutdown: graceful
   netty:
     connection-timeout: 2s
@@ -8,14 +8,12 @@ server:
 spring:
   application:
     name: media-catalog-service
-  config:
-    import: "optional:kubernetes:"
   cache:
     type: redis
   data:
     redis:
-      host: localhost
-      port: 56371
+      host: loopin-media-catalog-redis
+      port: 6379
       repositories:
         enabled: off
   main:
@@ -27,7 +25,7 @@ spring:
   r2dbc:
     username: user
     password: password
-    url: r2dbc:postgresql://localhost:5432/loopin_media_catalog
+    url: r2dbc:postgresql://loopin-postgres:5432/loopin_media_catalog
     pool:
       max-create-connection-time: 2s
       initial-size: 5
@@ -35,14 +33,12 @@ spring:
   flyway:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
-    url: jdbc:postgresql://localhost:5432/loopin_media_catalog
+    url: jdbc:postgresql://loopin-postgres:5432/loopin_media_catalog
   security:
-    context:
-      strategy: MODE_REACTIVE
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:59020/realms/loopin
+          issuer-uri: http://loopin-keycloak:8080/realms/loopin
 
 bucket4j:
   enabled: true
@@ -72,5 +68,4 @@ logging:
     com.giffing.bucket4j: trace
 
 loopin:
-  youtube-service-uri: "http://localhost:59011"
-#debug: true
+  youtube-service-uri: "http://youtube-fetcher-service:8080"

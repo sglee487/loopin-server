@@ -14,8 +14,20 @@ spec:
       labels:
         app: media-catalog-service
     spec:
+      imagePullSecrets:
+        - name: ghcr-creds
       containers:
       - name: media-catalog-service
         image: ghcr.io/sglee487/loopin-server/media-catalog-service:latest
         ports:
-        - containerPort: 8080 # TODO: Change port if needed
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        volumeMounts:
+        - name: media-catalog-config-volume
+          mountPath: /workspace/config
+      volumes:
+      - name: media-catalog-config-volume
+        configMap:
+          name: media-catalog-service-config

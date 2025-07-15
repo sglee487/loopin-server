@@ -1,5 +1,5 @@
 server:
-  port: 59011
+  port: 8080
   shutdown: graceful
   netty:
     connection-timeout: 5s
@@ -8,8 +8,6 @@ server:
 spring:
   application:
     name: youtube-fetcher-service
-  config:
-    import: "optional:kubernetes:"
 
 youtube:
   api-key: ${YOUTUBE_DATA_API_KEY}

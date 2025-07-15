@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - keycloak/keycloak-deployment.yaml
+  - keycloak/keycloak-realm-configmap.yaml
+  - keycloak/keycloak-service.yaml
+  - media-catalog-redis/redis-deployment.yaml
+  - media-catalog-redis/redis-service.yaml
+  - postgres/postgres-deployment.yaml
+  - postgres/postgres-init-db-configmap.yaml
+  - postgres/postgres-pvc.yaml
+  - postgres/postgres-service.yaml
+  - redis/redis-deployment.yaml
+  - redis/redis-service.yaml
+  - keycloak-postgres/keycloak-postgres-deployment.yaml
+  - keycloak-postgres/keycloak-postgres-service.yaml
+  - keycloak-postgres/keycloak-postgres-pvc.yaml
+  - ../../gateway-service/k8s/overlays/production
+  - ../../media-catalog-service/k8s/overlays/production
+  - ../../playback-service/k8s/overlays/production
+  - ../../youtube-fetcher-service/k8s/overlays/production
