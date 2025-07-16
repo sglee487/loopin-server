@@ -14,27 +14,31 @@ env:
   IMAGE_NAME: loopin-server/media-catalog-service
   VERSION: ${{ github.sha }}
 
+  # main‧argocd‧deploy 브랜치에 push 될 때만 릴리스
   SHOULD_RELEASE: ${{ github.event_name == 'push' && (
     github.ref_name == 'main' ||
     github.ref_name == 'argocd' ||
     github.ref_name == 'deploy') }}
 
 jobs:
+  # ──────────────────────────────────────────────────────────
+  # 1) 각 아키텍처별 이미지 빌드・푸시
+  # ──────────────────────────────────────────────────────────
   ci:
     strategy:
       matrix:
-        os: [ ubuntu-22.04, ubuntu-22.04-arm ]
+        os: [ ubuntu-22.04, ubuntu-22.04-arm ]   # amd64, arm64
     runs-on: ${{ matrix.os }}
-    defaults: { run: { working-directory: media-catalog-service } }
+    defaults:
+      run:
+        working-directory: media-catalog-service
     permissions:
       contents: read
-      packages: write       # GHCR push
+      packages: write
       security-events: write
 
     steps:
-      # ──────────────────────────────────────────────────────────────────
-      # 1) 소스 빌드 + 테스트 + SARIF 업로드
-      # ──────────────────────────────────────────────────────────────────
+      # ── 소스 빌드 & 테스트 ───────────────────────────────
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
@@ -48,6 +52,7 @@ jobs:
           chmod +x gradlew
           ./gradlew build
 
+      # ── 소스 스캔 (SARIF) ───────────────────────────────
       - name: Source scan (Anchore / Grype)
         uses: anchore/scan-action@v3
         id: src-scan
@@ -60,41 +65,39 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.src-scan.outputs.sarif }}
-          category: anchore-src           # ← 충돌 방지를 위해 category 지정
+          category: anchore-src
 
-      # ──────────────────────────────────────────────────────────────────
-      # 2) main 브랜치 push 일 때만 이미지 빌드·푸시·스캔
-      # ──────────────────────────────────────────────────────────────────
+      # ── 이미지 빌드 & 푸시 ───────────────────────────────
       - name: Log in to GHCR
-        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        if: env.SHOULD_RELEASE == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.REGISTRY_TOKEN }}
 
-      - name: Build image (local only)
-        if: ${{ env.SHOULD_RELEASE == 'true' }}
+      - name: Build image (bootBuildImage)
+        if: env.SHOULD_RELEASE == 'true'
         env:
-          # ✅ Buildpacks가 `org.opencontainers.image.source` 라벨 자동 생성
           BP_OCI_SOURCE: https://github.com/${{ github.repository }}
         run: |
           chmod +x gradlew
           ./gradlew bootBuildImage \
             --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
 
-      - name: Tag latest & push both tags
-        if: ${{ env.SHOULD_RELEASE == 'true' }}
+      - name: Tag & push (version + latest, single arch)
+        if: env.SHOULD_RELEASE == 'true'
         run: |
-          # 1) SHA → latest 태그 복사
+          # latest-${os} 태그 복사
           docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }} \
                      ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.os }}
 
-          # 2) 두 태그를 한 번에 푸시
-          docker push --all-tags ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}
+          # 두 태그 모두 푸시
+          docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
+          docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.os }}
 
       - name: Scan image (Anchore / Grype)
-        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        if: env.SHOULD_RELEASE == 'true'
         uses: anchore/scan-action@v3
         id: img-scan
         with:
@@ -103,8 +106,38 @@ jobs:
           severity-cutoff: high
 
       - name: Upload SARIF (image)
-        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        if: env.SHOULD_RELEASE == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.img-scan.outputs.sarif }}
-          category: anchore-image         # ✅ category 다르게
+          category: anchore-image
+
+  # ──────────────────────────────────────────────────────────
+  # 2) 두 아키텍처 이미지를 하나의 매니페스트로 병합
+  # ──────────────────────────────────────────────────────────
+  manifest:
+    if: env.SHOULD_RELEASE == 'true'
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Create & push multi-arch manifest
+        run: |
+          # buildx가 없으면 생성
+          docker buildx create --use --name tmpbuilder || true
+
+          # VERSION 태그 + latest 태그에 매니페스트 작성
+          docker buildx imagetools create \
+            -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
+            -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest \
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
