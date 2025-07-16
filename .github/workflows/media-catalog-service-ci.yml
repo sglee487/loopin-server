@@ -21,7 +21,10 @@ env:
 
 jobs:
   ci:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os: [ ubuntu-22.04, ubuntu-22.04-arm ]
+    runs-on: ${{ matrix.os }}
     defaults: { run: { working-directory: media-catalog-service } }
     permissions:
       contents: read
@@ -78,24 +81,24 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew bootBuildImage \
-            --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+            --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
 
       - name: Tag latest & push both tags
         if: ${{ env.SHOULD_RELEASE == 'true' }}
         run: |
           # 1) SHA → latest 태그 복사
-          docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
-                     ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
+          docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }} \
+                     ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.os }}
 
           # 2) 두 태그를 한 번에 푸시
-          docker push --all-tags ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}
+          docker push --all-tags ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-${{ matrix.os }}
 
       - name: Scan image (Anchore / Grype)
         if: ${{ env.SHOULD_RELEASE == 'true' }}
         uses: anchore/scan-action@v3
         id: img-scan
         with:
-          image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+          image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
           fail-build: false
           severity-cutoff: high
 
