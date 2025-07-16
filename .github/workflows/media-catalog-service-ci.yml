@@ -22,7 +22,7 @@ env:
 
 jobs:
   # ──────────────────────────────────────────────────────────
-  # 1) 각 아키텍처별 이미지 빌드・푸시
+  # 1) 각 아키텍처별 이미지 빌드·푸시
   # ──────────────────────────────────────────────────────────
   ci:
     strategy:
@@ -69,7 +69,7 @@ jobs:
 
       # ── 이미지 빌드 & 푸시 ───────────────────────────────
       - name: Log in to GHCR
-        if: env.SHOULD_RELEASE == 'true'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -77,7 +77,7 @@ jobs:
           password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Build image (bootBuildImage)
-        if: env.SHOULD_RELEASE == 'true'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         env:
           BP_OCI_SOURCE: https://github.com/${{ github.repository }}
         run: |
@@ -86,7 +86,7 @@ jobs:
             --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
 
       - name: Tag & push (version + latest, single arch)
-        if: env.SHOULD_RELEASE == 'true'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         run: |
           # latest-${os} 태그 복사
           docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }} \
@@ -97,7 +97,7 @@ jobs:
           docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.os }}
 
       - name: Scan image (Anchore / Grype)
-        if: env.SHOULD_RELEASE == 'true'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         uses: anchore/scan-action@v3
         id: img-scan
         with:
@@ -106,7 +106,7 @@ jobs:
           severity-cutoff: high
 
       - name: Upload SARIF (image)
-        if: env.SHOULD_RELEASE == 'true'
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.img-scan.outputs.sarif }}
@@ -116,7 +116,11 @@ jobs:
   # 2) 두 아키텍처 이미지를 하나의 매니페스트로 병합
   # ──────────────────────────────────────────────────────────
   manifest:
-    if: env.SHOULD_RELEASE == 'true'
+    # env 컨텍스트를 쓸 수 없으므로 조건을 직접 다시 작성
+    if: ${{ github.event_name == 'push' && (
+      github.ref_name == 'main' ||
+      github.ref_name == 'argocd' ||
+      github.ref_name == 'deploy') }}
     needs: ci
     runs-on: ubuntu-latest
     permissions:
@@ -135,7 +139,7 @@ jobs:
           # buildx가 없으면 생성
           docker buildx create --use --name tmpbuilder || true
 
-          # VERSION 태그 + latest 태그에 매니페스트 작성
+          # VERSION·latest 태그에 매니페스트 작성
           docker buildx imagetools create \
             -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
             -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest \
