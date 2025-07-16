@@ -91,7 +91,7 @@ jobs:
                      ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.os }}
 
           # 2) 두 태그를 한 번에 푸시
-          docker push --all-tags ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}-${{ matrix.os }}
+          docker push --all-tags ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}
 
       - name: Scan image (Anchore / Grype)
         if: ${{ env.SHOULD_RELEASE == 'true' }}
