@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - gateway-rbac.yaml
+  - gateway-sa.yaml
 
 configMapGenerator:
   - name: gateway-service-config
