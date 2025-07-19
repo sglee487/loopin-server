@@ -32,6 +32,16 @@ spec:
               value: keycloak
             - name: KC_DB_PASSWORD
               value: password
+            - name: KC_PROXY
+              value: edge
+            - name: KC_PROXY_ADDRESS_FORWARDING
+              value: "true"
+            - name: KC_PROXY_HEADERS
+              value: xforwarded
+            - name: KC_HOSTNAME
+              value: https://auth.loopin.bid
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
           ports:
             - containerPort: 8080
           volumeMounts:
