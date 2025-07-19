@@ -14,6 +14,7 @@ spec:
       labels:
         app: youtube-fetcher-service
     spec:
+      serviceAccountName: youtube-fetcher-sa
       imagePullSecrets:
         - name: ghcr-creds
       containers:

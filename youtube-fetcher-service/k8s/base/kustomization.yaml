@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - youtube-fetcher-sa.yaml
+  - youtube-fetcher-rbac.yaml
 
 configMapGenerator:
   - name: youtube-fetcher-service-config

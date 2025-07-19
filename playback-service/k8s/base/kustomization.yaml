@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - playback-sa.yaml
+  - playback-rbac.yaml
 
 configMapGenerator:
   - name: playback-service-config

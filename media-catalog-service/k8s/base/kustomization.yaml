@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
+  - media-catalog-sa.yaml
+  - media-catalog-rbac.yaml
 
 configMapGenerator:
   - name: media-catalog-service-config
