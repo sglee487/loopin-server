@@ -18,22 +18,20 @@ spec:
       imagePullSecrets:
         - name: ghcr-creds
       containers:
-      - name: youtube-fetcher-service
-        image: ghcr.io/sglee487/loopin-server/youtube-fetcher-service:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "prod"
-        - name: YOUTUBE_DATA_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: youtube-api-key-secret
-              key: api-key
-        volumeMounts:
-        - name: youtube-fetcher-config-volume
-          mountPath: /workspace/config
+        - name: youtube-fetcher-service
+          image: ghcr.io/sglee487/loopin-server/youtube-fetcher-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          envFrom:
+            - secretRef:
+                name: youtube-api-key-secret
+          volumeMounts:
+            - name: youtube-fetcher-config-volume
+              mountPath: /workspace/config
       volumes:
-      - name: youtube-fetcher-config-volume
-        configMap:
-          name: youtube-fetcher-service-config
+        - name: youtube-fetcher-config-volume
+          configMap:
+            name: youtube-fetcher-service-config
