@@ -54,7 +54,9 @@ spring:
           globalcors:
             cors-configurations:
               '[/**]':
-                allowedOrigins: 'http://localhost:1420'
+                allowedOrigins:
+                 - 'http://localhost:1420'
+                 - 'https://web.loopin.bid'
                 allow-credentials: true
                 allowedHeaders: '*'
                 allowedMethods: '*'
@@ -73,7 +75,7 @@ spring:
             scope: openid,roles
         provider:
           keycloak:
-            issuer-uri: http://loopin-keycloak:8080/realms/loopin
+            issuer-uri: https://auth.loopin.bid/realms/loopin
   data:
     redis:
       connect-timeout: 2s
