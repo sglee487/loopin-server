@@ -7,5 +7,5 @@ spec:
     app: media-catalog-service
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080 # TODO: Change port if needed
+      port: 80
+      targetPort: 8080
