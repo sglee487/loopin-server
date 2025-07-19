@@ -20,6 +20,12 @@ repositories {
 	mavenCentral()
 }
 
+dependencyManagement {
+	imports {
+		mavenBom("com.google.api-client:google-api-client-bom:2.6.0")
+	}
+}
+
 dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -35,7 +41,7 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
 	// google api (youtube)
-	implementation("com.google.api-client:google-api-client:2.6.0")
+	implementation("com.google.api-client:google-api-client")
 	implementation("com.google.oauth-client:google-oauth-client:1.36.0")
 	implementation("com.google.apis:google-api-services-youtube:v3-rev20240514-2.0.0")
 	implementation("com.google.http-client:google-http-client-jackson2:1.44.2")
