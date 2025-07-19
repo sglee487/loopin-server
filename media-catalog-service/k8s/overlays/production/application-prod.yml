@@ -38,7 +38,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://loopin-keycloak:8080/realms/loopin
+          issuer-uri: https://auth.loopin.bid/realms/loopin
 
 bucket4j:
   enabled: true
