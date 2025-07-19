@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+	implementation ("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-client-config:3.3.0")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
