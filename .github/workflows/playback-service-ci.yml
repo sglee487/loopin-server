@@ -85,16 +85,10 @@ jobs:
           ./gradlew bootBuildImage \
             --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
 
-      - name: Tag & push (version + latest, single arch)
+      - name: Push image (version tag only)
         if: ${{ env.SHOULD_RELEASE == 'true' }}
         run: |
-          # latest-${os} 태그 복사
-          docker tag ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }} \
-                     ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.os }}
-
-          # 두 태그 모두 푸시
           docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
-          docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest-${{ matrix.os }}
 
       - name: Scan image (Anchore / Grype)
         if: ${{ env.SHOULD_RELEASE == 'true' }}
