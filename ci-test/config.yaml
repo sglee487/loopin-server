@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: my-config
 data:
-  image_tag: "ci-test"
+  image_tag: "09c1040cdab3a3d5b710f5b0d42d014818c032e9"
