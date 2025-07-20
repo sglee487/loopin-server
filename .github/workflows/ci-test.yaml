@@ -32,7 +32,7 @@ jobs:
 
       - name: Commit and push changes
         env:
-          SHORT_SHA: ${{ format('{0}...', substring(github.sha, 0, 7)) }}
+          SHORT_SHA: ${{ slice(github.sha, 0, 7) }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
