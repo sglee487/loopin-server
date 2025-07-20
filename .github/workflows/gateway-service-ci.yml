@@ -145,11 +145,14 @@ jobs:
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
 
+      - name: Check folder pwd
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        run: |
+          pwd
+
       - name: Update and Push Kubernetes Manifest
         if: ${{ env.SHOULD_RELEASE == 'true' }}
         run: |
-          # The default working directory is 'gateway-service'. Go to the repo root.
-          cd ..
 
           # Update the image tag in the deployment manifest
           sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}|g" gateway-service/k8s/base/deployment.yaml
