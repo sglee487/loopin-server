@@ -3,9 +3,14 @@ name: Gateway Service CI
 on:
   push:
     branches: [ '**' ]
-    paths: [ 'gateway-service/**' ]
+    paths:
+      - 'gateway-service/**'
+      # ↓ 자동 생성되는 매니페스트는 제외
+      - '!gateway-service/k8s/base/**'
   pull_request:
-    paths: [ 'gateway-service/**' ]
+    paths:
+      - 'gateway-service/**'
+      - '!gateway-service/k8s/base/**'
   workflow_dispatch:
 
 env:
@@ -139,3 +144,25 @@ jobs:
             -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
+
+      - name: Update and Push Kubernetes Manifest
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        run: |
+          # The default working directory is 'gateway-service'. Go to the repo root.
+          cd ..
+
+          # Update the image tag in the deployment manifest
+          sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}|g" gateway-service/k8s/base/deployment.yaml
+
+          # Configure git user
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Commit and push if there are changes
+          if ! git diff --quiet gateway-service/k8s/base/deployment.yaml; then
+            git add gateway-service/k8s/base/deployment.yaml
+            git commit -m "ci(gateway-service): update image to ${{ env.VERSION }}"
+            git push
+          else
+            echo "Manifest is already up-to-date."
+          fi
