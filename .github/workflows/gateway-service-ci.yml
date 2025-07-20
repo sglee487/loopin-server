@@ -152,11 +152,6 @@ jobs:
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
 
-      - name: Check folder pwd
-        if: ${{ env.SHOULD_RELEASE == 'true' }}
-        run: |
-          pwd
-
       - name: Update and push Kubernetes manifest
         run: |
           # 이미지 태그 교체
