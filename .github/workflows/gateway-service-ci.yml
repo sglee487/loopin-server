@@ -3,9 +3,14 @@ name: Gateway Service CI
 on:
   push:
     branches: [ '**' ]
-    paths: [ 'gateway-service/**' ]
+    paths:
+      - 'gateway-service/**'
+      # ↓ 자동 생성되는 매니페스트는 제외
+      - '!gateway-service/k8s/base/**'
   pull_request:
-    paths: [ 'gateway-service/**' ]
+    paths:
+      - 'gateway-service/**'
+      - '!gateway-service/k8s/base/**'
   workflow_dispatch:
 
 env:
@@ -118,9 +123,16 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       packages: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -139,3 +151,22 @@ jobs:
             -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
+
+      - name: Update and push Kubernetes manifest
+        run: |
+          # 이미지 태그 교체
+          sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}|g" \
+            gateway-service/k8s/base/deployment.yaml
+
+          # Git 설정
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 변경 사항 커밋 & 푸시
+          if ! git diff --quiet gateway-service/k8s/base/deployment.yaml; then
+            git add gateway-service/k8s/base/deployment.yaml
+            git commit -m "ci(gateway-service): update image to ${{ env.VERSION }}"
+            git push
+          else
+            echo "Manifest is already up-to-date."
+          fi
