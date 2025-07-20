@@ -122,6 +122,9 @@ jobs:
       github.ref_name == 'deploy') }}
     needs: ci
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.ref_name }}-manifest-update
+      cancel-in-progress: false
     permissions:
       contents: write
       packages: write
@@ -161,6 +164,10 @@ jobs:
           # Git 설정
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 원격 변경 사항 가져와서 리베이스
+          git fetch origin main
+          git pull --rebase --autostash origin main
 
           # 변경 사항 커밋 & 푸시
           if ! git diff --quiet media-catalog-service/k8s/base/deployment.yaml; then
