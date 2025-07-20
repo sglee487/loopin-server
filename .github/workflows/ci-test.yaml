@@ -31,15 +31,16 @@ jobs:
       #          password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Commit and push changes
-        env:
-          SHORT_SHA: ${{ slice(github.sha, 0, 7) }}
         run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add ci-test/config.yaml
+          
           # 변경 사항이 있을 때만 커밋하도록 수정
           if ! git diff --staged --quiet; then
-            git commit -m "CI: Update image tag in config.yaml to ${{ env.SHORT_SHA }}"
+            git commit -m "CI: Update image tag in config.yaml to $SHORT_SHA"
             git push
           else
             echo "No changes to commit."
