@@ -34,4 +34,4 @@ logging:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
 loopin:
-  media-catalog-service-uri: "http://media-catalog-service:8080"
+  media-catalog-service-uri: "http://media-catalog-service"

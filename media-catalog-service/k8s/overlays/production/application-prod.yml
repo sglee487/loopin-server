@@ -68,4 +68,4 @@ logging:
     com.giffing.bucket4j: trace
 
 loopin:
-  youtube-service-uri: "http://youtube-fetcher-service:8080"
+  youtube-service-uri: "http://youtube-fetcher-service"
