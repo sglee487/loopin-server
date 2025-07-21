@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.client.oidc.web.server.logout.OidcClientInitiatedServerLogoutSuccessHandler
@@ -22,8 +21,6 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.reactive.CorsConfigurationSource
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 import org.springframework.web.server.WebFilter
-import org.springframework.web.server.session.CookieWebSessionIdResolver
-import org.springframework.web.server.session.WebSessionIdResolver
 import reactor.core.publisher.Mono
 
 @Configuration
@@ -117,6 +114,12 @@ class SecurityConfig {
         }
         chain.filter(exchange)
     }
+
+    @Bean
+    fun csrfTokenRepository(): CookieServerCsrfTokenRepository =
+        CookieServerCsrfTokenRepository.withHttpOnlyFalse().apply {
+            setCookieCustomizer { builder -> builder.sameSite("None").secure(true) }
+        }
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
