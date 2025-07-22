@@ -64,6 +64,12 @@ spring:
                 allow-credentials: true
                 allowedHeaders: '*'
                 allowedMethods: '*'
+            corsConfigurations:
+              '[/**]':
+                allowedOrigins: "https://web.loopin.bid"
+                allow-credentials: true
+                allowedHeaders: '*'
+                allowedMethods: '*'
             add-to-simple-url-handler-mapping: true
 
   session:
