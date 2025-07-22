@@ -8,7 +8,7 @@ server:
         secure: true
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4012}
+  allowed-origins: "https://web.loopin.bid"
 
 spring:
   application:
@@ -61,8 +61,8 @@ spring:
             cors-configurations:
               '[/**]':
                 allowedOrigins:
-                  - 'http://localhost:1420'
                   - 'https://web.loopin.bid'
+                  - 'http://localhost:1420'
                 allow-credentials: true
                 allowedHeaders: '*'
                 allowedMethods: '*'

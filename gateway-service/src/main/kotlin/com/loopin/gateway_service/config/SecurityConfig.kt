@@ -1,5 +1,6 @@
 package com.loopin.gateway_service.config
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -25,7 +26,9 @@ import reactor.core.publisher.Mono
 
 @Configuration
 @EnableWebFluxSecurity
-class SecurityConfig {
+class SecurityConfig(
+    @Value("\${cors.allowed-origins}") private val allowedOrigins: String
+) {
 
     /** OAuth2 Client 정보를 WebSession에 보관하도록 설정 */
     @Bean
@@ -64,7 +67,7 @@ class SecurityConfig {
         }
         .oauth2Login { login ->
             val success =
-                RedirectServerAuthenticationSuccessHandler("http://localhost:1420/") // SPA 홈
+                RedirectServerAuthenticationSuccessHandler(allowedOrigins) // SPA 홈
             login.authenticationSuccessHandler(success)
         }
         .logout { logout ->
@@ -124,7 +127,7 @@ class SecurityConfig {
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:1420")
+            allowedOrigins = listOf(allowedOrigins.toString(), "http://localhost:1420")
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE", "CONNECT")
             allowedHeaders = listOf("x-xsrf-token", "content-type", "authorization")
             allowCredentials = true                     // SESSION 쿠키 전송 허용
