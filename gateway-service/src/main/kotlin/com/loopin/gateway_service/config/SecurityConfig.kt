@@ -53,6 +53,7 @@ class SecurityConfig(
         http: ServerHttpSecurity,
         clientRegistrationRepository: ReactiveClientRegistrationRepository
     ): SecurityWebFilterChain = http
+        .cors { }
         .authorizeExchange { exchange ->
             exchange
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()   // ★추가
