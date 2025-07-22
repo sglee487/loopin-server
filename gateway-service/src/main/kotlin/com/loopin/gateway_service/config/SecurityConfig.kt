@@ -128,17 +128,4 @@ class SecurityConfig(
         CookieServerCsrfTokenRepository.withHttpOnlyFalse().apply {
             setCookieCustomizer { builder -> builder.sameSite("None").secure(true) }
         }
-
-    @Bean
-    fun corsConfigurationSource(): CorsConfigurationSource {
-        val config = CorsConfiguration().apply {
-            allowedOrigins = listOf(allowedOrigins.toString(), "http://localhost:1420")
-            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE", "CONNECT")
-            allowedHeaders = listOf("x-xsrf-token", "content-type", "authorization")
-            allowCredentials = true                     // SESSION 쿠키 전송 허용
-        }
-        return UrlBasedCorsConfigurationSource().apply {
-            registerCorsConfiguration("/**", config)    // Gateway 자체 엔드포인트 전부
-        }
-    }
 }

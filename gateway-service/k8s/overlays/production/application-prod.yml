@@ -58,12 +58,6 @@ spring:
                   factor: 2
                   basedOnPreviousValue: false
           globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: "https://web.loopin.bid"
-                allow-credentials: true
-                allowedHeaders: '*'
-                allowedMethods: '*'
             corsConfigurations:
               '[/**]':
                 allowedOrigins: "https://web.loopin.bid"
