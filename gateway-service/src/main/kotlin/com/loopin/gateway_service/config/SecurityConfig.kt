@@ -60,7 +60,11 @@ class SecurityConfig(
                 .pathMatchers("/actuator/**").permitAll()
                 .pathMatchers("/", "/*.css", "/*.js", "/favicon.ico").permitAll()
                 // ⬇️ 프로젝트에 맞춰 공개 GET 엔드포인트가 있으면 추가
-                .pathMatchers(HttpMethod.GET, "/api/v1/playlists/**").permitAll()
+                .pathMatchers(
+                    HttpMethod.GET,
+                    "/api/v1/playlists",
+                    "/api/v1/playlists/**"
+                ).permitAll()
                 .anyExchange().authenticated()
         }
         .exceptionHandling { handlers ->
