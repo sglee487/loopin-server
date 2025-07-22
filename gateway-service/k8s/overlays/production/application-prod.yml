@@ -114,6 +114,7 @@ logging:
   group:
     circuitbreaker: io.github.resilience4j, org.springframework.cloud.circuitbreaker
   level:
+    root: debug
     circuitbreaker: info
     org.springframework.security: debug
   pattern:
