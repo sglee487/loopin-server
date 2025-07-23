@@ -18,7 +18,7 @@ spec:
         - name: ghcr-creds
       containers:
       - name: gateway-service
-        image: ghcr.io/sglee487/loopin-server/gateway-service:da191bb28bdc6e79784a234ecdacd5b816c8e540
+        image: ghcr.io/sglee487/loopin-server/gateway-service:1b084afec3574a2dc7cf1d590650886ba046dc52
         ports:
         - containerPort: 8080
         env:
