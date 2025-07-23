@@ -3,19 +3,12 @@ name: loopin-system
 
 services:
   # Backing Services
-  loopin-postgres:
-    image: "postgres:14.12"
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-    volumes:
-      - ./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  loopin-keycloak:
+  keycloak:
     image: quay.io/keycloak/keycloak:26.2.5
+    container_name: keycloak
     command: start-dev --import-realm
+    depends_on:
+      - keycloak-postgres
     volumes:
       - ./keycloak:/opt/keycloak/data/import
     environment:
@@ -28,8 +21,20 @@ services:
     ports:
       - 59020:8080
 
+  loopin-postgres:
+    image: "postgres:14.12"
+    container_name: loopin-postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - ./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
   keycloak-postgres:
     image: "postgres:14.12"
+    container_name: keycloak-postgres
     environment:
       - POSTGRES_DB=keycloak
       - POSTGRES_USER=keycloak
@@ -39,12 +44,14 @@ services:
     ports:
       - 5433:5432 # Use a different port to avoid conflict with loopin-postgres
 
-  loopin-redis:
+  gateway-redis:
     image: "redis:8.0.2"
+    container_name: gateway-redis
     ports:
       - 6379:6379
 
-  loopin-media-catalog-redis:
+  media-catalog-redis:
     image: "redis:8.0.2"
+    container_name: media-catalog-redis
     ports:
       - 56371:6379
