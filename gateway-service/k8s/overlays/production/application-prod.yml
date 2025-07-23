@@ -8,7 +8,10 @@ server:
         secure: true
 
 cors:
-  allowed-origins: "https://web.loopin.bid"
+  allowed-origins: "https://web.loopin.bid,http://localhost:1420"
+
+loopin:
+  redirect-url: https://web.loopin.bid
 
 spring:
   application:

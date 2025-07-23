@@ -18,16 +18,13 @@ import org.springframework.security.web.server.authentication.logout.ServerLogou
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository
 import org.springframework.security.web.server.csrf.CsrfToken
 import org.springframework.security.web.server.csrf.ServerCsrfTokenRequestAttributeHandler
-import org.springframework.web.cors.CorsConfiguration
-import org.springframework.web.cors.reactive.CorsConfigurationSource
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 import org.springframework.web.server.WebFilter
 import reactor.core.publisher.Mono
 
 @Configuration
 @EnableWebFluxSecurity
 class SecurityConfig(
-    @Value("\${cors.allowed-origins}") private val allowedOrigins: String
+    @Value("\${loopin.redirect-url}") private val redirectUrl: String
 ) {
 
     /** OAuth2 Client 정보를 WebSession에 보관하도록 설정 */
@@ -53,7 +50,6 @@ class SecurityConfig(
         http: ServerHttpSecurity,
         clientRegistrationRepository: ReactiveClientRegistrationRepository
     ): SecurityWebFilterChain = http
-        .cors { }
         .authorizeExchange { exchange ->
             exchange
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()   // ★추가
@@ -72,7 +68,7 @@ class SecurityConfig(
         }
         .oauth2Login { login ->
             val success =
-                RedirectServerAuthenticationSuccessHandler(allowedOrigins) // SPA 홈
+                RedirectServerAuthenticationSuccessHandler(redirectUrl) // SPA 홈
             login.authenticationSuccessHandler(success)
         }
         .logout { logout ->
