@@ -19,7 +19,7 @@ spec:
         - name: ghcr-creds
       containers:
       - name: media-catalog-service
-        image: ghcr.io/sglee487/loopin-server/media-catalog-service:ba9107386514a9507b08f85ed3679aa5b0bfd37a
+        image: ghcr.io/sglee487/loopin-server/media-catalog-service:89af1d70ec136a728bedfa53db62acc9a2478b2b
         ports:
         - containerPort: 8080
         env:
