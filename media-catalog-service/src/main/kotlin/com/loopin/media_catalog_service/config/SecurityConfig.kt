@@ -18,6 +18,7 @@ class SecurityConfig {
     @Bean
     fun filterChain(http: ServerHttpSecurity): SecurityWebFilterChain =
         http
+            .csrf { it.disable() }
             .authorizeExchange { exchange ->
                 exchange
                     .pathMatchers("/actuator/**").permitAll()
@@ -43,7 +44,6 @@ class SecurityConfig {
             }
 
             .requestCache { it.requestCache(NoOpServerRequestCache.getInstance()) }
-            .csrf { it.disable() }
             .build()
 
     @Bean

@@ -50,6 +50,7 @@ class SecurityConfig(
         http: ServerHttpSecurity,
         clientRegistrationRepository: ReactiveClientRegistrationRepository
     ): SecurityWebFilterChain = http
+        .csrf { it.disable() }
         .authorizeExchange { exchange ->
             exchange
                 .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()   // ★추가
