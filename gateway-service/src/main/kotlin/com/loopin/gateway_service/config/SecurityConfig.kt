@@ -90,11 +90,11 @@ class SecurityConfig(
 //            // (3) JWT/Token 기반이면 통째로 끄기
 //            // csrf.disable()
 //        }
-        .csrf { csrf ->
-            csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
-            csrf.csrfTokenRequestHandler(ServerCsrfTokenRequestAttributeHandler())
-            // ↑ 옛날 핸들러로 교체 → 평문 토큰 허용
-        }
+//        .csrf { csrf ->
+//            csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse())
+//            csrf.csrfTokenRequestHandler(ServerCsrfTokenRequestAttributeHandler())
+//            // ↑ 옛날 핸들러로 교체 → 평문 토큰 허용
+//        }
         .build()
 
     /** OIDC 로그아웃 후 리다이렉트 처리 */
