@@ -72,7 +72,7 @@ spring:
         registration:
           keycloak:
             client-id: gateway-service
-            client-secret: Pa7pQ5t2pN7YqDYcCjmMeFWGBOy9EyUL
+            client-secret: keycloak-client-secret
             scope: openid,roles
         provider:
           keycloak:
