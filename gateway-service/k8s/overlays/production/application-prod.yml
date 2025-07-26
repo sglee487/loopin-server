@@ -6,6 +6,7 @@ server:
       cookie:
         same-site: none
         secure: true
+        max-age: 365d
 
 cors:
   allowed-origins: "https://web.loopin.bid,http://localhost:1420"
@@ -68,6 +69,8 @@ spring:
                 allowedHeaders: '*'
                 allowedMethods: '*'
             add-to-simple-url-handler-mapping: true
+  session:
+    timeout: 365d
     redis:
       namespace: loopin:gateway
   security:
