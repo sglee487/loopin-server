@@ -68,9 +68,6 @@ spring:
                 allowedHeaders: '*'
                 allowedMethods: '*'
             add-to-simple-url-handler-mapping: true
-
-  session:
-    timeout: 10m
     redis:
       namespace: loopin:gateway
   security:

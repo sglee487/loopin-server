@@ -61,9 +61,6 @@ spring:
                   maxBackOff: 500ms
                   factor: 2
                   basedOnPreviousValue: false
-
-  session:
-    timeout: 10m
     redis:
       namespace: loopin:gateway
   security:
