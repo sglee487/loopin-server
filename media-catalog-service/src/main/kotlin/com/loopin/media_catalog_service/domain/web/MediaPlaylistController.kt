@@ -62,8 +62,8 @@ class MediaPlaylistController(
     fun createFromYoutube(@RequestBody req: CreatePlaylistRequestDto): Mono<MediaPlaylist> =
         svc.createByResourceId(req.resourceId)
 
-    /** YouTube ID 기반 업데이트 */
-    @PatchMapping("/youtube/{resourceId}")
-    fun updateFromYoutube(@PathVariable resourceId: String): Mono<MediaPlaylist> =
-        svc.updateByResourceId(resourceId)
+//    /** YouTube ID 기반 업데이트 */
+//    @PatchMapping("/youtube/{resourceId}")
+//    fun updateFromYoutube(@PathVariable resourceId: String): Mono<MediaPlaylist> =
+//        svc.updateByResourceId(resourceId)
 }
