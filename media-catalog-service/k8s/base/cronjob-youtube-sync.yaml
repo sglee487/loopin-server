@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: media-catalog-sync
+  labels:
+    app: media-catalog-service
+spec:
+  schedule: "0 0 * * *" # 매일 자정
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: media-catalog-service
+        spec:
+          serviceAccountName: media-catalog-sa
+          imagePullSecrets:
+            - name: ghcr-creds
+          restartPolicy: OnFailure
+          containers:
+            - name: media-catalog-sync
+              image: ghcr.io/sglee487/loopin-server/media-catalog-service
+              env:
+                - name: SPRING_PROFILES_ACTIVE
+                  value: "youtube-sync"
+              volumeMounts:
+                - name: media-catalog-config-volume
+                  mountPath: /workspace/config
+          volumes:
+            - name: media-catalog-config-volume
+              configMap:
+                name: media-catalog-service-config 
