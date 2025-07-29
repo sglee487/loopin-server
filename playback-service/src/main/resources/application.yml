@@ -34,6 +34,9 @@ spring:
 logging:
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+  level:
+    com.loopin.playback_service: debug
+
 
 loopin:
   media-catalog-service-uri: "http://localhost:59001"

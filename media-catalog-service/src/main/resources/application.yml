@@ -70,6 +70,7 @@ logging:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
     com.giffing.bucket4j: trace
+    com.loopin.media_catalog_service: debug
 
 loopin:
   youtube-service-uri: "http://localhost:59011"

@@ -13,3 +13,6 @@ spring:
 
 youtube:
   api-key: ${YOUTUBE_DATA_API_KEY}
+logging:
+  level:
+    com.loopin.youtube_fetcher_service: debug
