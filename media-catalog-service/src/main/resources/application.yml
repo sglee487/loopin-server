@@ -43,6 +43,9 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:59020/realms/loopin
+  http:
+    codecs:
+      max-in-memory-size: 50MB
 
 bucket4j:
   enabled: true

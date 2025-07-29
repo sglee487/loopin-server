@@ -22,13 +22,13 @@ spring:
     gateway:
       server:
         webflux:
-          httpclient:
-            connect-timeout: 2000
-            response-timeout: 5s
-            pool:
-              max-life-time: 60s
-              max-idle-time: 15s
-              type: elastic
+#          httpclient:
+#            connect-timeout: 2000
+#            response-timeout: 5s
+#            pool:
+#              max-life-time: 60s
+#              max-idle-time: 15s
+#              type: elastic
           routes:
             - id: playback-route
               uri: ${PLAYBACK_SERVICE_URL:http://localhost:59002}

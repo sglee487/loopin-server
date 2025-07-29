@@ -24,9 +24,9 @@ class YoutubeClient(factory: WebClientFactory) {
             .uri("/playlists/{id}", playlistId)
             .retrieve()
             .bodyToMono(PlaylistWithItems::class.java)
-            .timeout(Duration.ofSeconds(3), Mono.empty())
+//            .timeout(Duration.ofSeconds(60), Mono.empty())
             .retryWhen(
-                Retry.backoff(3, Duration.ofMillis(100))
+                Retry.backoff(3, Duration.ofMillis(3000))
                     .doBeforeRetry { retrySignal ->
                         logger.warn(
                             "Retrying playlist fetch. Attempt: {}, due to: {}",
@@ -49,8 +49,8 @@ class YoutubeClient(factory: WebClientFactory) {
             .uri("/items/{id}", mediaItemId)
             .retrieve()
             .bodyToMono(MediaItem::class.java)
-            .timeout(Duration.ofSeconds(3), Mono.empty())
-            .retryWhen(Retry.backoff(3, Duration.ofMillis(100)))
+//            .timeout(Duration.ofSeconds(60), Mono.empty())
+            .retryWhen(Retry.backoff(3, Duration.ofMillis(3000)))
             .onErrorResume(WebClientResponseException.NotFound::class.java) { Mono.empty() }
             .onErrorResume(IOException::class.java) { Mono.empty() }
             .onErrorResume { t -> logger.warn("Unhandled error: {}", t); Mono.empty() }
