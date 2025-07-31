@@ -4,7 +4,7 @@ resources:
   - ../../base
 images:
   - name: ghcr.io/sglee487/loopin-server/media-catalog-service
-    newTag: 5fbd9c12d5f75cd6a5b066fa087e9ec0ed00a76c # CI will replace this tag with the commit SHA or desired version
+    newTag: 78b4e7f52819ed0fe6c2a7fd8d0a1702e3006d2b # CI will replace this tag with the commit SHA or desired version
 configMapGenerator:
   - name: media-catalog-service-config
     behavior: merge
