@@ -9,7 +9,7 @@ server:
         max-age: 365d
 
 cors:
-  allowed-origins: "https://web.loopin.bid,http://localhost:1420"
+  allowed-origins: "https://web.loopin.bid,http://localhost:11420"
 
 loopin:
   redirect-url: https://web.loopin.bid

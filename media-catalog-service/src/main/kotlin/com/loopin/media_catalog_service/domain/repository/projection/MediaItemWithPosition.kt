@@ -15,6 +15,7 @@ data class MediaItemWithPosition(
     val platformType: String,
     val durationSeconds: Long,
     val playlistPosition: Int?,
+    val playlistRankKey: String?,
 
     var createdAt: Instant?,
     var updatedAt: Instant?,

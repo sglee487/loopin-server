@@ -8,10 +8,10 @@ server:
         max-age: 365d
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:1420}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:11420}
 
 loopin:
-  redirect-url: http://localhost:1420
+  redirect-url: http://localhost:11420
 
 spring:
   application:
@@ -71,12 +71,20 @@ spring:
       client:
         registration:
           keycloak:
+            provider: keycloak
             client-id: gateway-service
             client-secret: keycloak-client-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope: openid,roles
         provider:
           keycloak:
-            issuer-uri: http://localhost:59020/realms/loopin
+            # issuer-uri 지움!
+            authorization-uri: http://localhost:59020/realms/loopin/protocol/openid-connect/auth
+            token-uri:        http://localhost:59020/realms/loopin/protocol/openid-connect/token
+            jwk-set-uri:      http://localhost:59020/realms/loopin/protocol/openid-connect/certs
+            user-info-uri:    http://localhost:59020/realms/loopin/protocol/openid-connect/userinfo
+
   data:
     redis:
       connect-timeout: 2s

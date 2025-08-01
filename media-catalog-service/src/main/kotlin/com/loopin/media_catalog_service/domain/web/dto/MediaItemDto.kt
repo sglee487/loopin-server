@@ -15,6 +15,7 @@ data class MediaItemDto(
     val platformType: String,
     val durationSeconds: Long,
     val position: Int? = null,
+    val rankKey: String?,
     val createdAt: Instant?,
     val updatedAt: Instant?,
     val createdBy: String?,

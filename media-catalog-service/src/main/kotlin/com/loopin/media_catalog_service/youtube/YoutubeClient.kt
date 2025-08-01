@@ -1,6 +1,7 @@
 package com.loopin.media_catalog_service.youtube
 
 import com.loopin.media_catalog_service.config.WebClientFactory
+import com.loopin.media_catalog_service.domain.exception.YoutubeFetchFailedException
 import com.loopin.media_catalog_service.domain.model.MediaItem
 import com.loopin.media_catalog_service.domain.model.PlaylistWithItems
 import org.springframework.stereotype.Component
@@ -38,8 +39,8 @@ class YoutubeClient(factory: WebClientFactory) {
             .onErrorResume(WebClientResponseException.NotFound::class.java) { Mono.empty() }
             .onErrorResume(IOException::class.java) { Mono.empty() }
             .onErrorResume { t ->
-                logger.warn("Unhandled error during playlist fetch: {}", t.message)
-                Mono.empty()
+                logger.error("Unhandled error during playlist fetch: {}", t.message)
+                throw YoutubeFetchFailedException("Failed to fetch playlist $playlistId, due to: ${t.message}")
             }
     }
 

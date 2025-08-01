@@ -35,6 +35,9 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework:spring-jdbc")
 
+	// for media position
+	implementation("com.davidarvelo:fractional-indexing:3.2.2")
+
 	// bucket4j
 	implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.12.10")
 	implementation("com.bucket4j:bucket4j-redis:8.10.1")

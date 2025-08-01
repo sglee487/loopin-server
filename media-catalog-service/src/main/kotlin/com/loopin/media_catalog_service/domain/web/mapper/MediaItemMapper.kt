@@ -18,13 +18,14 @@ fun MediaItem.toDto(position: Int? = null): MediaItemDto =
         platformType = platformType,
         durationSeconds = durationSeconds,
         position = position,
+        rankKey = null,
         createdAt = createdAt,
         updatedAt = updatedAt,
         createdBy = createdBy,
         updatedBy = updatedBy,
     )
 
-fun MediaItemWithPosition.toDto(position: Int?) =
+fun MediaItemWithPosition.toDto(position: Int?, rankKey: String?) =
     MediaItemDto(
         id = id,
         resourceId = resourceId,
@@ -38,6 +39,7 @@ fun MediaItemWithPosition.toDto(position: Int?) =
         platformType = platformType,
         durationSeconds = durationSeconds,
         position = position ?: -1,
+        rankKey = rankKey,
         createdAt = createdAt,
         updatedAt = updatedAt,
         createdBy = createdBy,

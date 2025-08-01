@@ -1,7 +1,6 @@
 package com.loopin.media_catalog_service.domain.model
 
 import org.springframework.data.relational.core.mapping.Column
-import org.springframework.data.relational.core.mapping.Embedded
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 
@@ -12,8 +11,10 @@ data class PlaylistItemMapping(
     @Column("playlist_id") val playlistId: Long,
     @Column("media_item_id") val mediaItemId: Long,
 
-    val position: Int,
+    @Column("rank_key") val rankKey: String,
+
+    val position: Int? = null,
 
     override var createdAt: Instant? = null,
     override var updatedAt: Instant? = null,
-): AuditTime
+) : AuditTime

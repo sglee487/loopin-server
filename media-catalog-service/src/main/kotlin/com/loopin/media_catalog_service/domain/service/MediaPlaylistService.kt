@@ -1,5 +1,6 @@
 package com.loopin.media_catalog_service.domain.service
 
+import com.davidarvelo.fractionalindexing.FractionalIndexing
 import com.loopin.media_catalog_service.domain.exception.AlreadyExistsException
 import com.loopin.media_catalog_service.domain.exception.NotExistsException
 import com.loopin.media_catalog_service.domain.model.MediaPlaylist
@@ -17,6 +18,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.util.function.component1
 import reactor.kotlin.core.util.function.component2
+import java.util.concurrent.atomic.AtomicReference
 
 @Service
 class MediaPlaylistService(
@@ -36,8 +38,8 @@ class MediaPlaylistService(
                 mediaItemWithPositionRepository
                     .findByPlaylistId(playlist.id!!)
                     .map {
-                        logger.info("Found ${it.id} ${it.title} ${it.playlistPosition}")
-                        it.toDto(position = it.playlistPosition)
+                        logger.info("Found ${it.id} ${it.title} ${it.playlistPosition} ${it.playlistRankKey}")
+                        it.toDto(position = it.playlistPosition, rankKey = it.playlistRankKey)
                     }
                     .collectList()
                     .map { items -> playlist.toDto(items) }
@@ -55,38 +57,69 @@ class MediaPlaylistService(
             .switchIfEmpty(
                 youtubeClient.getPlaylistWithItems(resourceId)
                     .flatMap { youtubeData ->
-                        logger.info(youtubeData.toString())
+//                        logger.info(youtubeData.toString())
+                        logger.debug("Saving playlist ${youtubeData.playlist.resourceId} ${youtubeData.playlist.title}")
 
                         mediaPlaylistRepository.findByResourceId(youtubeData.playlist.resourceId)
                             .switchIfEmpty(mediaPlaylistRepository.save(youtubeData.playlist))
                             .flatMap { playlist ->
-                                Flux.fromIterable(youtubeData.mediaItem)
-                                    .index()
-                                    .flatMap { indexedItem ->
-                                        val (index, item) = indexedItem
-                                        mediaItemRepository.findByResourceId(item.resourceId)
-                                            .switchIfEmpty(mediaItemRepository.save(item))
-                                            .flatMap { savedItem ->
-                                                logger.info(
-                                                    "Saving playlist item mapping for playlist ${playlist.id} " +
-                                                            "${playlist.resourceId} ${playlist.title} and media item ${savedItem.id} " +
-                                                            "${savedItem.resourceId} ${savedItem.title} "
-                                                )
-                                                playlistItemMappingRepository.findByPlaylistIdAndMediaItemId(
-                                                    playlistId = playlist.id!!,
-                                                    mediaItemId = savedItem.id!!
-                                                )
-                                                    .switchIfEmpty(
-                                                        playlistItemMappingRepository.save(
-                                                            PlaylistItemMapping(
-                                                                playlistId = playlist.id,
-                                                                mediaItemId = savedItem.id,
-                                                                position = index.toInt()
-                                                            )
+
+                                logger.debug("Saving ${youtubeData.mediaItem.size} items for playlist ${playlist.id} ${playlist.resourceId} ${playlist.title}")
+
+                                playlistItemMappingRepository.findFirstByPlaylistIdOrderByRankKeyAsc(playlist.id!!)
+                                    .map { it.rankKey }
+                                    .defaultIfEmpty("")
+                                    .flatMap { firstKeyRaw ->
+                                        val firstKey: String? = firstKeyRaw.ifEmpty { null }
+
+                                        logger.debug("firstKey: $firstKey")
+
+                                        val prevKeyRef = AtomicReference<String?>(null)
+
+                                        Flux.fromIterable(youtubeData.mediaItem)
+                                            .index()
+                                            .concatMap { indexedItem ->
+                                                val (index, item) = indexedItem
+                                                mediaItemRepository.findByResourceId(item.resourceId)
+                                                    .switchIfEmpty(mediaItemRepository.save(item))
+                                                    .flatMap { savedItem ->
+                                                        logger.info(
+                                                            "Saving playlist item mapping for playlist ${playlist.id} " +
+                                                                    "${playlist.resourceId} ${playlist.title} and media item ${savedItem.id} " +
+                                                                    "${savedItem.resourceId} ${savedItem.title} "
                                                         )
-                                                    )
-                                            }
-                                    }.then(Mono.just(playlist))
+                                                        playlistItemMappingRepository.findByPlaylistIdAndMediaItemId(
+                                                            playlistId = playlist.id,
+                                                            mediaItemId = savedItem.id!!
+                                                        )
+                                                            .switchIfEmpty(
+                                                                Mono.defer {
+                                                                    /* ❸ Fractional Index 계산 */
+                                                                    val newKey = if (index == 0L) {
+                                                                        // 맨 앞에 넣는 첫 번째 항목
+                                                                        FractionalIndexing.generateFractionalIndexBetween(
+                                                                            null, firstKey
+                                                                        )
+                                                                    } else {
+                                                                        FractionalIndexing.generateFractionalIndexBetween(
+                                                                            prevKeyRef.get(), firstKey
+                                                                        )
+                                                                    }
+                                                                    prevKeyRef.set(newKey)
+
+                                                                    playlistItemMappingRepository.save(
+                                                                        PlaylistItemMapping(
+                                                                            playlistId = playlist.id,
+                                                                            mediaItemId = savedItem.id,
+                                                                            rankKey = newKey
+                                                                        )
+                                                                    )
+                                                                }
+                                                            )
+                                                    }
+                                            }.then(Mono.just(playlist))
+                                    }
+
                             }
                     }
             )
@@ -94,10 +127,17 @@ class MediaPlaylistService(
     fun updateByResourceId(resourceId: String): Mono<MediaPlaylist> =
         youtubeClient.getPlaylistWithItems(resourceId)
             .flatMap { youtubeData ->
+
+                /* ───────────────────── 0. 플레이리스트 존재 확인 ───────────────────── */
                 mediaPlaylistRepository.findByResourceId(resourceId)
-                    .switchIfEmpty(Mono.error(NotExistsException("Playlist with resourceId $resourceId not found")))
+                    .switchIfEmpty(
+                        Mono.error(NotExistsException("Playlist with resourceId $resourceId not found"))
+                    )
                     .flatMap { current ->
-                        /* 1) 메타데이터가 달라졌으면 갱신 */
+
+                        logger.debug("Updating playlist ${current.id} ${current.resourceId} ${current.title}")
+
+                        /* ───────────────────── 1. 메타데이터가 바뀌면 갱신 ───────────────────── */
                         val metaChanged = current.title != youtubeData.playlist.title ||
                                 current.description != youtubeData.playlist.description ||
                                 current.thumbnail != youtubeData.playlist.thumbnail ||
@@ -115,69 +155,86 @@ class MediaPlaylistService(
                                 )
                             } else Mono.just(current)
 
-                        /* 2) 항목 upsert + 매핑 upsert */
+                        /* ───────────────────── 2. 아이템 upsert + 매핑 upsert ───────────────────── */
+
                         val newItems = youtubeData.mediaItem
                         val newResIdSet = newItems.map { it.resourceId }.toSet()
 
-                        val upsertItemsMono = Flux.fromIterable(newItems)
-                            .index()   // (index, MediaItem)
-                            .flatMap { (idx, newItem) ->
-                                mediaItemRepository.findByResourceId(newItem.resourceId)
-                                    /* 없는 경우 저장 */
-                                    .switchIfEmpty(mediaItemRepository.save(newItem))
-                                    /* 존재하지만 내용이 달라지면 업데이트 */
-                                    .flatMap { saved ->
-                                        val needUpdate =
-                                            saved.title != newItem.title ||
-                                                    saved.description != newItem.description ||
-                                                    saved.thumbnail != newItem.thumbnail ||
-                                                    saved.durationSeconds != newItem.durationSeconds
+                        /* 2-A) 가장 앞 rankKey(firstKey) 만 한 번 조회 */
+                        val firstKeyMonoRow: Mono<String> =
+                            playlistItemMappingRepository
+                                .findFirstByPlaylistIdOrderByRankKeyAsc(current.id!!)
+                                .map { it.rankKey }                             // Mono<String>
+                                .defaultIfEmpty("")
 
-                                        val finalItemMono =
-                                            if (needUpdate) mediaItemRepository.save(
-                                                saved.copy(
-                                                    title = newItem.title,
-                                                    description = newItem.description,
-                                                    thumbnail = newItem.thumbnail,
-                                                    durationSeconds = newItem.durationSeconds,
-                                                )
-                                            ) else Mono.just(saved)
+                        val firstKeyMono: Mono<String?> = firstKeyMonoRow.mapNotNull { it.ifEmpty { null } }
 
-                                        /* 매핑 upsert & position 수정 */
-                                        finalItemMono.flatMap { finalItem ->
-                                            playlistItemMappingRepository
-                                                .findByPlaylistIdAndMediaItemId(
-                                                    playlistId = current.id!!,
-                                                    mediaItemId = finalItem.id!!,
-                                                )
-                                                /* 매핑 없으면 생성 */
-                                                .switchIfEmpty(
-                                                    playlistItemMappingRepository.save(
-                                                        PlaylistItemMapping(
-                                                            playlistId = current.id,
-                                                            mediaItemId = finalItem.id,
-                                                            position = idx.toInt(),
-                                                        )
-                                                    )
-                                                )
-                                                /* 매핑은 있지만 position 달라지면 갱신 */
-                                                .flatMap { mapping ->
-                                                    if (mapping!!.position != idx.toInt()) {
-                                                        playlistItemMappingRepository.save(
-                                                            mapping.copy(
-                                                                position = idx.toInt(),
+                        val upsertItemsMono: Mono<Void> =
+                            firstKeyMono.flatMap { firstKey ->
+
+                                val prevKeyRef = AtomicReference<String?>(null)
+
+                                Flux.fromIterable(newItems)
+                                    .index()                 // (idx, MediaItem) ← YouTube 순서: 최신 → 오래된
+                                    .concatMap { (idx, newItem) ->
+
+                                        /* 2-B) MediaItem upsert */
+                                        mediaItemRepository.findByResourceId(newItem.resourceId)
+                                            .switchIfEmpty(mediaItemRepository.save(newItem))
+                                            .flatMap { saved ->
+
+                                                /* 내용 달라졌으면 업데이트 */
+                                                val needUpdate =
+                                                    saved.title != newItem.title ||
+                                                            saved.description != newItem.description ||
+                                                            saved.thumbnail != newItem.thumbnail ||
+                                                            saved.durationSeconds != newItem.durationSeconds
+
+                                                val finalItemMono =
+                                                    if (needUpdate)
+                                                        mediaItemRepository.save(
+                                                            saved.copy(
+                                                                title = newItem.title,
+                                                                description = newItem.description,
+                                                                thumbnail = newItem.thumbnail,
+                                                                durationSeconds = newItem.durationSeconds,
                                                             )
                                                         )
-                                                    } else Mono.just(mapping)
-                                                }
-                                        }
-                                    }
-                            }
-                            .then()   // Flux → Mono<Void>
+                                                    else Mono.just(saved)
 
-                        /* 3) 사라진(=비공개/삭제) 항목 매핑 제거 */
-                        val deleteOldMappingsMono =
-                            playlistItemMappingRepository.findByPlaylistId(current.id!!)
+                                                /* 2-C) PlaylistItemMapping upsert + rankKey 재계산 */
+                                                finalItemMono.flatMap { finalItem ->
+
+                                                    val newKey = if (idx == 0L) {
+                                                        FractionalIndexing.generateFractionalIndexBetween(
+                                                            null,
+                                                            firstKey
+                                                        )
+                                                    } else {
+                                                        FractionalIndexing.generateFractionalIndexBetween(
+                                                            prevKeyRef.get(),
+                                                            null
+                                                        )
+                                                    }
+                                                    prevKeyRef.set(newKey)
+
+                                                    /* ⬇— 새 upsert 메서드 호출 */
+                                                    playlistItemMappingRepository
+                                                        .upsertRankKey(
+                                                            playlistId = current.id,
+                                                            mediaItemId = finalItem.id!!,
+                                                            rankKey = newKey,
+                                                        )
+                                                        .then()              // Mono<Void>
+                                                }
+                                            }
+                                    }
+                                    .then()   // Flux<Void> → Mono<Void>
+                            }
+
+                        /* ───────────────────── 3. 비공개/삭제된 항목 매핑 제거 ───────────────────── */
+                        val deleteOldMappingsMono: Mono<Void> =
+                            playlistItemMappingRepository.findByPlaylistId(current.id)
                                 .flatMap { mapping ->
                                     mediaItemRepository.findById(mapping.mediaItemId)
                                         .flatMap { item ->
@@ -190,9 +247,9 @@ class MediaPlaylistService(
                                             } else Mono.empty()
                                         }
                                 }
-                                .then()   // Mono<Void>
+                                .then()
 
-                        /* 모두 끝나면 최종 플레이리스트 반환 */
+                        /* ───────────────────── 4. 모든 작업 병렬 실행 후 플레이리스트 반환 ───────────────────── */
                         Mono.`when`(playlistMono, upsertItemsMono, deleteOldMappingsMono)
                             .then(playlistMono)
                     }

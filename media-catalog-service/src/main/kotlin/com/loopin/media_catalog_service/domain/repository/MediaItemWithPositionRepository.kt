@@ -9,11 +9,12 @@ interface MediaItemWithPositionRepository : R2dbcRepository<MediaItemWithPositio
     @Query(
         """
     SELECT mi.*,
-           pim.position AS playlist_position   -- snake_case 그대로
+           pim.position AS playlist_position,
+           pim.rank_key AS playlist_rank_key
       FROM playlist_item_mapping pim
       JOIN media_item mi ON mi.id = pim.media_item_id
      WHERE pim.playlist_id = :playlistId
-     ORDER BY pim.position DESC
+     ORDER BY pim.rank_key COLLATE "C";
     """
     )
     fun findByPlaylistId(playlistId: Long): Flux<MediaItemWithPosition>

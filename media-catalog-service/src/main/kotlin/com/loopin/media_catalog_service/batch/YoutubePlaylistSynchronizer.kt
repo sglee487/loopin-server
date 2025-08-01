@@ -21,7 +21,7 @@ class YoutubePlaylistSynchronizer(
     private fun synchronizePlaylists(): Mono<Void> {
         logger.info("Starting YouTube playlist synchronization.")
 
-        return mediaPlaylistRepository.findAllByKind("youtube#playlist")
+        return mediaPlaylistRepository.findAll()
             .flatMap { existingPlaylist ->
                 mediaPlaylistService.updateByResourceId(resourceId = existingPlaylist.resourceId)
             }
