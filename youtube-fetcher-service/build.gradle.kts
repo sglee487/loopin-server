@@ -19,6 +19,7 @@ java {
 repositories {
 	mavenCentral()
 }
+val otelVersion = "2.18.1"
 
 
 dependencies {
@@ -29,6 +30,10 @@ dependencies {
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+
+	runtimeOnly("io.opentelemetry.javaagent:opentelemetry-javaagent:$otelVersion")
+	runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -49,6 +54,13 @@ kotlin {
 
 tasks.named<BootBuildImage>("bootBuildImage") {
 	imageName.set(project.name)
+
+	environment.set(
+		mapOf(
+			"BP_OPENTELEMETRY_ENABLED" to "true",
+			"BP_OPENTELEMETRY_VERSION" to otelVersion
+		)
+	)
 
 	docker.publishRegistry {
 		username.set(project.findProperty("registryUsername")?.toString())
