@@ -2,6 +2,110 @@ version: "3.8"
 name: loopin-system
 
 services:
+  gateway-service:
+    depends_on:
+      - gateway-redis
+      - tempo
+    container_name: gateway-service
+    image: gateway-service
+#    pull_policy: always
+    ports:
+      - 59000:8080
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar"
+      OTEL_SERVICE_NAME: "gateway-service"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
+      SERVER_PORT: 8080
+      PLAYBACK_SERVICE_URL: http://playback-service:8080
+      MEDIA_CATALOG_SERVICE_URL: http://media-catalog-service:8080
+      ISSUER_URI: http://keycloak:8080/realms/loopin
+      REDIRECT_URL: http://localhost:11420
+      REDIS_HOST: gateway-redis
+      REDIS_PORT: 6379
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  media-catalog-service:
+    depends_on:
+      - loopin-postgres
+      - media-catalog-redis
+      - tempo
+    container_name: media-catalog-service
+    image: media-catalog-service
+#    pull_policy: always
+    ports:
+      - 59001:8080
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar"
+      OTEL_SERVICE_NAME: "media-catalog-service"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
+      SERVER_PORT: 8080
+      REDIS_HOST: media-catalog-redis
+      REDIS_PORT: 6379
+      DB_HOST: loopin-postgres
+      ISSUER_URI: http://keycloak:8080/realms/loopin
+      YOUTUBE_FETCHER_SERVICE_URL: http://youtube-fetcher-service:8080
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  playback-service:
+    depends_on:
+      - loopin-postgres
+      - tempo
+    container_name: playback-service
+    image: playback-service
+#    pull_policy: always
+    ports:
+      - 59002:8080
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar"
+      OTEL_SERVICE_NAME: "playback-service"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
+      SERVER_PORT: 8080
+      DB_HOST: loopin-postgres
+      ISSUER_URI: http://keycloak:8080/realms/loopin
+      MEDIA_CATALOG_SERVICE_URL: http://media-catalog-service:8080
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  youtube-fetcher-service:
+    depends_on:
+      - tempo
+    container_name: youtube-fetcher-service
+    image: youtube-fetcher-service
+#    pull_policy: always
+    ports:
+      - 59011:8080
+    env_file:
+      - ../../youtube-fetcher-service/.env
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar"
+      OTEL_SERVICE_NAME: "youtube-fetcher-service"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
+      SERVER_PORT: 8080
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
   # Backing Services
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.5
@@ -55,3 +159,59 @@ services:
     container_name: media-catalog-redis
     ports:
       - 56371:6379
+
+  # observability
+  fluent-bit:
+    image: grafana/fluent-bit-plugin-loki:3.5.3
+    container_name: fluent-bit
+    ports:
+      - "24224:24224"
+    environment:
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+    volumes:
+      - ./observability/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+
+  loki:
+    image: grafana/loki:3.5.3
+    container_name: loki
+    depends_on:
+      - fluent-bit
+    ports:
+      - "3100:3100"
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:v3.5.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  tempo:
+    image: grafana/tempo:2.8.1
+    container_name: tempo
+    command: -config.file=/etc/tempo-config.yml
+    ports:
+      - "3200:3200"   # OTLP
+      - "4317:4317"   # OTLP
+      - "4318:4318"   # HTTP
+      - "9095:9095"   # rpc
+    volumes:
+      - ./observability/tempo/tempo.yml:/etc/tempo-config.yml
+
+  grafana:
+    image: grafana/grafana-oss:12.1.0
+    container_name: grafana
+    depends_on:
+      - loki
+      - prometheus
+      - tempo
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=user
+      - GF_SECURITY_ADMIN_PASSWORD=password
+    volumes:
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./observability/grafana/grafana.ini:/etc/grafana/grafana.ini

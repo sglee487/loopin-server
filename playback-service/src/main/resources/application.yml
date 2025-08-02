@@ -30,13 +30,36 @@ spring:
         jwt:
           issuer-uri: ${ISSUER_URI:http://localhost:59022/realms/loopin}
 
-
 logging:
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
     com.loopin.playback_service: debug
 
-
 loopin:
-  media-catalog-service-uri: "http://localhost:59001"
+  media-catalog-service-uri: "${MEDIA_CATALOG_SERVICE_URL:http://localhost:59001}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: configprops, env, gateway, health, heapdump, info, loggers, mappings, prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
