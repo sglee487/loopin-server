@@ -19,7 +19,7 @@ spec:
         - name: ghcr-creds
       containers:
       - name: playback-service
-        image: ghcr.io/sglee487/loopin-server/playback-service:78b4e7f52819ed0fe6c2a7fd8d0a1702e3006d2b
+        image: ghcr.io/sglee487/loopin-server/playback-service:9e26d4bfaf911577fb62d4bcefe1269b373e81ea
         ports:
         - containerPort: 8080
         env:
