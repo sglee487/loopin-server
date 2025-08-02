@@ -58,7 +58,7 @@ flowchart TB
 | `media-catalog-service`   | 59001           | Stores media items & playlists, exposes CRUD+search APIs, caches hot data in Redis.                               |
 | `playback-service`        | 59002           | Tracks user playback history & statistics; consumes catalog APIs.                                                 |
 | `youtube-fetcher-service` | 59011           | Internal worker (no public API); fetches playlists/videos from YouTube Data API and pushes them into the catalog. |
-| **Backing (Keycloak)**    | 59020           | OAuth2 provider realm `loopin`; holds users & client registrations.                                               |
+| **Backing (Keycloak)**    | 59022           | OAuth2 provider realm `loopin`; holds users & client registrations.                                               |
 | **Shared Infra**          | 5432 / 6379     | PostgreSQL & Redis instances used by services.                                                                    |
 
 ---

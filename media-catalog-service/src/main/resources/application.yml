@@ -42,7 +42,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:59020/realms/loopin
+          issuer-uri: http://localhost:59022/realms/loopin
   http:
     codecs:
       max-in-memory-size: 50MB

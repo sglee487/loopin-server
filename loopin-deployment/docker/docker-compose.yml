@@ -19,7 +19,7 @@ services:
       - KC_DB_USERNAME=keycloak
       - KC_DB_PASSWORD=password
     ports:
-      - 59020:8080
+      - 59022:8080
 
   loopin-postgres:
     image: "postgres:14.12"
