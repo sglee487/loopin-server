@@ -1,5 +1,5 @@
 server:
-  port: 59002
+  port: ${SERVER_PORT:59002}
   shutdown: graceful
   netty:
     connection-timeout: 2s
@@ -15,7 +15,7 @@ spring:
   r2dbc:
     username: user
     password: password
-    url: r2dbc:postgresql://localhost:5432/loopin_playback
+    url: r2dbc:postgresql://${DB_HOST:localhost}:5432/loopin_playback
     pool:
       max-create-connection-time: 2s
       initial-size: 5
@@ -23,12 +23,12 @@ spring:
   flyway:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
-    url: jdbc:postgresql://localhost:5432/loopin_playback
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/loopin_playback
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:59022/realms/loopin
+          issuer-uri: ${ISSUER_URI:http://localhost:59022/realms/loopin}
 
 
 logging:

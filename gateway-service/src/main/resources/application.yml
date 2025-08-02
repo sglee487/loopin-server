@@ -80,7 +80,7 @@ spring:
         provider:
           keycloak:
             # issuer-uri 지움!
-            issuer-uri: http://localhost:59022/realms/loopin
+            issuer-uri: ${ISSUER_URI:http://localhost:59022/realms/loopin}
   #            authorization-uri: http://localhost:59022/realms/loopin/protocol/openid-connect/auth
   #            token-uri:        http://localhost:59022/realms/loopin/protocol/openid-connect/token
   #            jwk-set-uri:      http://localhost:59022/realms/loopin/protocol/openid-connect/certs
