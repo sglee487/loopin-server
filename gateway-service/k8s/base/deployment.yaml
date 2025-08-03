@@ -29,6 +29,9 @@ spec:
             secretKeyRef:
               name: gateway-keycloak-client-secret
               key: client-secret
+        envFrom:
+          - configMapRef:
+              name: gateway-service-config
         volumeMounts:
         - name: gateway-config-volume
           mountPath: /workspace/config

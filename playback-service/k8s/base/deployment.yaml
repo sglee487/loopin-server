@@ -25,6 +25,9 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "prod"
+        envFrom:
+          - configMapRef:
+              name: playback-service-config
         volumeMounts:
         - name: playback-config-volume
           mountPath: /workspace/config

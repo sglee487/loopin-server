@@ -25,6 +25,9 @@ spec:
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "prod"
+        envFrom:
+          - configMapRef:
+              name: media-catalog-service-config
         volumeMounts:
         - name: media-catalog-config-volume
           mountPath: /workspace/config

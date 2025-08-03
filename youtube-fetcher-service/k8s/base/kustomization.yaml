@@ -6,6 +6,7 @@ resources:
   - service.yaml
   - youtube-fetcher-sa.yaml
   - youtube-fetcher-rbac.yaml
+  - configmap.yaml
 
 configMapGenerator:
   - name: youtube-fetcher-service-config
