@@ -18,20 +18,29 @@ spec:
       imagePullSecrets:
         - name: ghcr-creds
       containers:
-      - name: playback-service
-        image: ghcr.io/sglee487/loopin-server/playback-service:b1ef41fa7f90bd585cb421d189995943d5c41a96
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "prod"
-        envFrom:
-          - configMapRef:
-              name: playback-service-config
-        volumeMounts:
-        - name: playback-config-volume
-          mountPath: /workspace/config
+        - name: playback-service
+          image: ghcr.io/sglee487/loopin-server/playback-service:b1ef41fa7f90bd585cb421d189995943d5c41a96
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar"
+            - name: OTEL_SERVICE_NAME
+              value: "playback-service"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://tempo.monitoring.svc.cluster.local:4317"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"
+          volumeMounts:
+            - name: playback-config-volume
+              mountPath: /workspace/config
       volumes:
-      - name: playback-config-volume
-        configMap:
-          name: playback-service-config
+        - name: playback-config-volume
+          configMap:
+            name: playback-service-config
