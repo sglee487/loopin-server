@@ -6,7 +6,6 @@ resources:
   - service.yaml
   - playback-sa.yaml
   - playback-rbac.yaml
-  - configmap.yaml
 
 configMapGenerator:
   - name: playback-service-config
