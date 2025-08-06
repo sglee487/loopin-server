@@ -40,8 +40,6 @@ spec:
           envFrom:
             - secretRef:
                 name: youtube-api-key-secret
-            - configMapRef:
-                name: youtube-fetcher-config
           volumeMounts:
             - name: youtube-fetcher-config-volume
               mountPath: /workspace/config
