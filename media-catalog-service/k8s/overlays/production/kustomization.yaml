@@ -5,7 +5,7 @@ resources:
   - r2dbc-secret.yaml
 images:
   - name: ghcr.io/sglee487/loopin-server/media-catalog-service
-    newTag: b4501847761a5cc7758d44c2e6c8008b18500de3 # CI will replace this tag with the commit SHA or desired version
+    newTag: 125dc554b4cd520b0f133cb3a96696fdeb6c41ff # CI will replace this tag with the commit SHA or desired version
 configMapGenerator:
   - name: media-catalog-service-config
     behavior: merge
