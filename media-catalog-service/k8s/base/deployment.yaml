@@ -37,9 +37,6 @@ spec:
           value: "none"
         - name: OTEL_LOGS_EXPORTER
           value: "none"
-        envFrom:
-          - configMapRef:
-              name: media-catalog-service-config
         volumeMounts:
         - name: media-catalog-config-volume
           mountPath: /workspace/config

@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-  - r2dbc-secret.yaml
 images:
   - name: ghcr.io/sglee487/loopin-server/media-catalog-service
     newTag: 125dc554b4cd520b0f133cb3a96696fdeb6c41ff # CI will replace this tag with the commit SHA or desired version

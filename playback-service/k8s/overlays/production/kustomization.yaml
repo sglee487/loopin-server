@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - ../../base
-  - r2dbc-secret.yaml
 
 configMapGenerator:
   - name: playback-service-config
