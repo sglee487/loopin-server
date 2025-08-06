@@ -5,6 +5,19 @@ metadata:
 spec:
   template:
     spec:
+      containers:
+        - name: media-catalog-service
+          env:
+            - name: R2DBC_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: media-catalog-r2dbc-secret
+                  key: username
+            - name: R2DBC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: media-catalog-r2dbc-secret
+                  key: password
       volumes:
         - name: media-catalog-config-volume
           configMap:

@@ -3,6 +3,9 @@ client_secret_*
 # Kubernetes Secrets (containing sensitive data)
 k8s/backing-services/keycloak/gateway-keycloak-client-secret.yaml
 k8s/backing-services/youtube/youtube-api-key-secret.yaml
+k8s/backing-services/postgres/postgres-secret.yaml
+playback-service/k8s/overlays/production/r2dbc-secret.yaml
+media-catalog-service/k8s/overlays/production/r2dbc-secret.yaml
 
 .idea
 

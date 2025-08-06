@@ -11,8 +11,8 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 15s
   r2dbc:
-    username: user
-    password: password
+    username: ${R2DBC_USERNAME}
+    password: ${R2DBC_PASSWORD}
     url: r2dbc:postgresql://loopin-postgres:5432/loopin_playback
     pool:
       max-create-connection-time: 2s
@@ -27,7 +27,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://auth.loopin.bid/realms/loopin
-
 
 logging:
   pattern:

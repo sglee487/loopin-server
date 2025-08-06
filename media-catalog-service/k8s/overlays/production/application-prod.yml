@@ -23,8 +23,8 @@ spring:
   reactor:
     context-propagation: auto
   r2dbc:
-    username: user
-    password: password
+    username: ${R2DBC_USERNAME}
+    password: ${R2DBC_PASSWORD}
     url: r2dbc:postgresql://loopin-postgres:5432/loopin_media_catalog
     pool:
       max-create-connection-time: 2s
