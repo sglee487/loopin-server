@@ -8,7 +8,7 @@ resources:
   - postgres/postgres-init-db-configmap.yaml
   - postgres/postgres-pvc.yaml
   - postgres/postgres-service.yaml
-  - postgres/postgres-secret.yaml
+  # - postgres/postgres-secret.yaml
   - redis/redis-deployment.yaml
   - redis/redis-service.yaml
   - ../../gateway-service/k8s/overlays/production
