@@ -6,7 +6,6 @@ resources:
   - service.yaml
   - gateway-rbac.yaml
   - gateway-sa.yaml
-  - configmap.yaml
 
 configMapGenerator:
   - name: gateway-service-config

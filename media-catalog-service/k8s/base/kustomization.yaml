@@ -7,7 +7,6 @@ resources:
   - media-catalog-sa.yaml
   - media-catalog-rbac.yaml
   - cronjob-youtube-sync.yaml
-  - configmap.yaml
 
 configMapGenerator:
   - name: media-catalog-service-config
