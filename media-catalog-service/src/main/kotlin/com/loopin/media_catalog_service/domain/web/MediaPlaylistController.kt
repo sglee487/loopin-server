@@ -8,7 +8,11 @@ import com.loopin.media_catalog_service.domain.web.dto.PlaylistResponseDto
 import com.loopin.media_catalog_service.domain.web.dto.SliceResponse
 import com.loopin.media_catalog_service.domain.web.mapper.toDto
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -31,12 +35,13 @@ class MediaPlaylistController(
             sortBy = sortBy,
             direction = direction,
             offset = offset,
-        ).map {
-            SliceResponse(
-                items = it.content,
-                hasNext = it.hasNext(),
-            )
-        }
+        )
+            .map {
+                SliceResponse(
+                    items = it.content,
+                    hasNext = it.hasNext(),
+                )
+            }
 
     /** 내부 PK로 조회 */
     @GetMapping("/{id}")
@@ -45,12 +50,7 @@ class MediaPlaylistController(
 
     @PostMapping("/batch")
     fun getListsBatch(@RequestBody ids: IdListDto): Flux<PlaylistResponseDto> =
-        svc.findAllById(ids.ids)
-            .map {
-                it.toDto(
-                    items = emptyList()
-                )
-            }
+        svc.findAllById(ids.ids).map { it.toDto(items = emptyList()) }
 
     /** YouTube ID로 조회 */
     @GetMapping("/youtube/{resourceId}")
@@ -62,8 +62,60 @@ class MediaPlaylistController(
     fun createFromYoutube(@RequestBody req: CreatePlaylistRequestDto): Mono<MediaPlaylist> =
         svc.createByResourceId(req.resourceId)
 
-//    /** YouTube ID 기반 업데이트 */
-//    @PatchMapping("/youtube/{resourceId}")
-//    fun updateFromYoutube(@PathVariable resourceId: String): Mono<MediaPlaylist> =
-//        svc.updateByResourceId(resourceId)
+    //    /** YouTube ID 기반 업데이트 */
+    //    @PatchMapping("/youtube/{resourceId}")
+    //    fun updateFromYoutube(@PathVariable resourceId: String): Mono<MediaPlaylist> =
+    //        svc.updateByResourceId(resourceId)
+
+    /** 내부 PK로 삭제 */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteById(@PathVariable id: Long, @AuthenticationPrincipal jwt: Jwt): Mono<Void> =
+        svc.getById(id).flatMap { playlist ->
+            val username =
+                jwt.getClaimAsString("sub") ?: jwt.getClaimAsString("sub")
+            val roles = jwt.getClaimAsStringList("roles") ?: emptyList<String>()
+            val isAdmin = roles.any { it.equals("admin", ignoreCase = true) }
+            if (isAdmin || playlist.createdBy == username) svc.deleteById(id)
+            else
+                Mono.error(
+                    ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Not allowed to delete this playlist"
+                    )
+                )
+        }
+
+    /** YouTube ID로 삭제 */
+    @DeleteMapping("/youtube/{resourceId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteByResourceId(
+        @PathVariable resourceId: String,
+        @AuthenticationPrincipal jwt: Jwt
+    ): Mono<Void> =
+        svc.getByResourceId(resourceId)
+            .switchIfEmpty(
+                Mono.error(
+                    ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Playlist not found"
+                    )
+                )
+            )
+            .flatMap { playlist ->
+                val username =
+                    jwt.getClaimAsString("preferred_username")
+                        ?: jwt.getClaimAsString("sub")
+                val roles = jwt.getClaimAsStringList("roles") ?: emptyList<String>()
+                val isAdmin = roles.any { it.equals("admin", ignoreCase = true) }
+                if (isAdmin || playlist.createdBy == username)
+                    svc.deleteByResourceId(resourceId)
+                else
+                    Mono.error(
+                        ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Not allowed to delete this playlist"
+                        )
+                    )
+            }
 }
