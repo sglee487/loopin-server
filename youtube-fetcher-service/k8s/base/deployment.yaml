@@ -19,7 +19,7 @@ spec:
         - name: ghcr-creds
       containers:
         - name: youtube-fetcher-service
-          image: ghcr.io/sglee487/loopin-server/youtube-fetcher-service:b4501847761a5cc7758d44c2e6c8008b18500de3
+          image: ghcr.io/sglee487/loopin-server/youtube-fetcher-service:d6098c40aa5acc425d76fa0837afd73597ed38ac
           ports:
             - containerPort: 8080
           env:
