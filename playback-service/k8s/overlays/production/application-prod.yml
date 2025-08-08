@@ -3,13 +3,13 @@ server:
   shutdown: graceful
   netty:
     connection-timeout: 2s
-    idle-timeout: 15s
+    idle-timeout: 120s
 
 spring:
   application:
     name: playback-service
   lifecycle:
-    timeout-per-shutdown-phase: 15s
+    timeout-per-shutdown-phase: 120s
   r2dbc:
     username: ${R2DBC_USERNAME}
     password: ${R2DBC_PASSWORD}

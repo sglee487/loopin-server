@@ -3,7 +3,7 @@ server:
   shutdown: graceful
   netty:
     connection-timeout: 2s
-    idle-timeout: 15s
+    idle-timeout: 120s
 
 spring:
   application:
@@ -19,7 +19,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   lifecycle:
-    timeout-per-shutdown-phase: 15s
+    timeout-per-shutdown-phase: 120s
   reactor:
     context-propagation: auto
   r2dbc:
