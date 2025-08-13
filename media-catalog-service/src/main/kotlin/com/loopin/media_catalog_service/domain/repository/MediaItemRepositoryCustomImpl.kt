@@ -41,9 +41,10 @@ class MediaItemRepositoryCustomImpl(
             videoOwnerChannelTitle = row.get("video_owner_channel_title", String::class.java),
             platformType = row.get("platform_type", String::class.java)!!,
             durationSeconds = row.get("duration_seconds", java.lang.Long::class.java)!!.toLong(),
+            videoId = row.get("video_id", String::class.java),
             createdAt = row.get("created_at", java.time.Instant::class.java),
             updatedAt = row.get("updated_at", java.time.Instant::class.java),
             createdBy = row.get("created_by", String::class.java),
-            updatedBy = row.get("updated_by", String::class.java),
+            updatedBy = row.get("updated_by", String::class.java)
         )
 }

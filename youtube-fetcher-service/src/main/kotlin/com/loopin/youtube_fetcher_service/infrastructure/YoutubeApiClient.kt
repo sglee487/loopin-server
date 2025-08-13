@@ -75,8 +75,9 @@ class YoutubeApiClient(
 
             println(playlistItemsResponse.items)
 
-            val videoListResponse = youtubeService.videos().list(listOf("snippet,contentDetails")).setKey(youtubeDataProperties.apiKey)
-                .setId(playlistItemsResponse.items.map { it.snippet.resourceId.videoId }).execute()
+            val videoListResponse =
+                youtubeService.videos().list(listOf("snippet,contentDetails")).setKey(youtubeDataProperties.apiKey)
+                    .setId(playlistItemsResponse.items.map { it.snippet.resourceId.videoId }).execute()
 
             items.addAll(videoListResponse.items.map {
                 MediaItem(
@@ -90,6 +91,7 @@ class YoutubeApiClient(
                     videoOwnerChannelTitle = it.snippet.channelTitle,
                     platformType = it.kind,
                     durationSeconds = Duration.parse(it.contentDetails.duration).seconds,
+                    videoId = it.id,
                 )
             })
             nextPageToken = playlistItemsResponse.nextPageToken

@@ -61,7 +61,8 @@ class MediaItemControllerTest {
                 videoOwnerChannelId = "CHAN_1",
                 videoOwnerChannelTitle = "Channel 1",
                 platformType = "YOUTUBE",
-                durationSeconds = 180L
+                durationSeconds = 180L,
+                videoId = "video_id"
             )
             val item2 = item1.copy(id = 2L, resourceId = "VID_B", title = "Video B")
             val item3 = item1.copy(id = 3L, resourceId = "VID_C", title = "Video C")
@@ -101,7 +102,8 @@ class MediaItemControllerTest {
                             videoOwnerChannelId = null,
                             videoOwnerChannelTitle = null,
                             platformType = "YOUTUBE",
-                            durationSeconds = 60L
+                            durationSeconds = 60L,
+                            videoId = "video_id"
                         )
                     )
                 )

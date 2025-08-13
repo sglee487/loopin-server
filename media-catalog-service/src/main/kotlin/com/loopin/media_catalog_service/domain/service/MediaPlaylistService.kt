@@ -236,7 +236,10 @@ class MediaPlaylistService(
 
                                     /* 2-B) MediaItem upsert */
                                     mediaItemRepository
-                                        .findByResourceId(newItem.resourceId)
+                                        .run {
+                                            newItem.videoId?.let { findByVideoId(it) }
+                                                ?: findByResourceId(newItem.resourceId)
+                                        }
                                         .switchIfEmpty(
                                             mediaItemRepository.save(
                                                 newItem
@@ -253,7 +256,11 @@ class MediaPlaylistService(
                                                         saved.thumbnail !=
                                                         newItem.thumbnail ||
                                                         saved.durationSeconds !=
-                                                        newItem.durationSeconds
+                                                        newItem.durationSeconds ||
+                                                        saved.resourceId !=
+                                                        newItem.resourceId ||
+                                                        saved.videoId !=
+                                                        newItem.videoId
 
                                             val finalItemMono =
                                                 if (needUpdate)
@@ -268,6 +275,10 @@ class MediaPlaylistService(
                                                                     newItem.thumbnail,
                                                                 durationSeconds =
                                                                     newItem.durationSeconds,
+                                                                resourceId =
+                                                                    newItem.resourceId,
+                                                                videoId =
+                                                                    newItem.videoId,
                                                             )
                                                         )
                                                 else Mono.just(saved)
