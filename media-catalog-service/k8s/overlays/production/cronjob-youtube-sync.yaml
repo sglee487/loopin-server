@@ -27,10 +27,20 @@ spec:
               env:
                 - name: SPRING_PROFILES_ACTIVE
                   value: "youtube-sync"
+                - name: R2DBC_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: media-catalog-r2dbc-secret
+                      key: username
+                - name: R2DBC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: media-catalog-r2dbc-secret
+                      key: password
               volumeMounts:
                 - name: media-catalog-config-volume
                   mountPath: /workspace/config
           volumes:
             - name: media-catalog-config-volume
               configMap:
-                name: media-catalog-service-config 
+                name: media-catalog-service-config
