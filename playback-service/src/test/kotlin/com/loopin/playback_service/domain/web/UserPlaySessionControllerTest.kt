@@ -73,6 +73,7 @@ class UserPlaySessionControllerTest {
         videoOwnerChannelTitle = "샘플 채널",
         platformType = "YOUTUBE",
         durationSeconds = 300,
+        videoId = "video_id",
         createdAt = Instant.parse("2024-02-01T00:00:00Z"),
         updatedAt = Instant.parse("2024-02-01T00:00:00Z"),
         createdBy = "init",

@@ -14,6 +14,7 @@ data class MediaItemDto(
     val channelTitle: String?,
     val platformType: String,
     val durationSeconds: Long,
+    val videoId: String?,
     val position: Int? = null,
     val createdAt: Instant? = null,
     val updatedAt: Instant? = null,

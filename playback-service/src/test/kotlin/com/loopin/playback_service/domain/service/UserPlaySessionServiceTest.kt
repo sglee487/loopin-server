@@ -33,7 +33,7 @@ class UserPlaySessionServiceTest {
         id = 10L, resourceId = "VID_x", title = "V", description = null,
         kind = "youtube#video", publishedAt = Instant.now(), thumbnail = null,
         videoOwnerChannelId = null, videoOwnerChannelTitle = null,
-        platformType = "YOUTUBE", durationSeconds = 100
+        platformType = "YOUTUBE", durationSeconds = 100, videoId = "video_id",
     )
     private val session = PlaySession(
         id = 100L, userId = "u1", mediaPlaylistId = 1L, nowPlayingItemId = 10L
