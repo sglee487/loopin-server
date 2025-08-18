@@ -1,13 +1,29 @@
 spring:
   main:
-    # Disable the embedded web server so the application terminates after the CommandLineRunner completes
     web-application-type: none
+  cache:
+    type: none
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 
+bucket4j:
+  enabled: false
+
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: false
+      group:
+        readiness:
+          include: readinessState   # ← redis 빼기
+      validate-group-membership: false   # (선택) 안전장치
   health:
     redis:
-      enabled: false 
+      enabled: false
