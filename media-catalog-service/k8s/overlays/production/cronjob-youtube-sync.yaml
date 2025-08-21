@@ -26,7 +26,7 @@ spec:
               image: ghcr.io/sglee487/loopin-server/media-catalog-service
               env:
                 - name: SPRING_PROFILES_ACTIVE
-                  value: "youtube-sync"
+                  value: "prod,youtube-sync"
                 - name: R2DBC_USERNAME
                   valueFrom:
                     secretKeyRef:
