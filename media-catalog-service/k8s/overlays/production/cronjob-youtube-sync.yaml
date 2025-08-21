@@ -25,6 +25,8 @@ spec:
             - name: media-catalog-sync
               image: ghcr.io/sglee487/loopin-server/media-catalog-service
               env:
+                - name: JAVA_TOOL_OPTIONS
+                  value: "-XX:MaxRAMPercentage=75"
                 - name: SPRING_PROFILES_ACTIVE
                   value: "prod,youtube-sync"
                 - name: R2DBC_USERNAME
@@ -37,6 +39,13 @@ spec:
                     secretKeyRef:
                       name: media-catalog-r2dbc-secret
                       key: password
+              resources:
+                requests:
+                  cpu: "200m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "1000m"
+                  memory: "1Gi"
               volumeMounts:
                 - name: media-catalog-config-volume
                   mountPath: /workspace/config

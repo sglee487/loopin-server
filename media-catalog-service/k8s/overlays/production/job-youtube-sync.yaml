@@ -1,20 +1,28 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: media-catalog-service
+  name: media-catalog-sync-manual
+  labels:
+    app: media-catalog-service
 spec:
-  selector:
-    matchLabels:
-      app: media-catalog-service
+  backoffLimit: 3
   template:
+    metadata:
+      labels:
+        app: media-catalog-service
     spec:
+      serviceAccountName: media-catalog-sa
+      imagePullSecrets:
+        - name: ghcr-creds
+      restartPolicy: OnFailure
       containers:
-        - name: media-catalog-service
+        - name: media-catalog-sync
+          image: ghcr.io/sglee487/loopin-server/media-catalog-service
           env:
             - name: JAVA_TOOL_OPTIONS
-              value: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar -XX:MaxRAMPercentage=75"
+              value: "-XX:MaxRAMPercentage=75"
             - name: SPRING_PROFILES_ACTIVE
-              value: "prod"
+              value: "prod,youtube-sync"
             - name: R2DBC_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -32,6 +40,9 @@ spec:
             limits:
               cpu: "1000m"
               memory: "1Gi"
+          volumeMounts:
+            - name: media-catalog-config-volume
+              mountPath: /workspace/config
       volumes:
         - name: media-catalog-config-volume
           configMap:
