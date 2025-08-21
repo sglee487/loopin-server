@@ -3,11 +3,16 @@ kind: Deployment
 metadata:
   name: media-catalog-service
 spec:
+  selector:
+    matchLabels:
+      app: media-catalog-service
   template:
     spec:
       containers:
         - name: media-catalog-service
           env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
             - name: R2DBC_USERNAME
               valueFrom:
                 secretKeyRef:

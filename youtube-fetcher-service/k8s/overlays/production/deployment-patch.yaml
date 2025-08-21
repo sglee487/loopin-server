@@ -3,8 +3,16 @@ kind: Deployment
 metadata:
   name: youtube-fetcher-service
 spec:
+  selector:
+    matchLabels:
+      app: youtube-fetcher-service
   template:
     spec:
+      containers:
+        - name: youtube-fetcher-service
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
       volumes:
         - name: youtube-fetcher-config-volume
           configMap:

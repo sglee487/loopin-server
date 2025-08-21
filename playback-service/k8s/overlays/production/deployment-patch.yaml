@@ -3,11 +3,16 @@ kind: Deployment
 metadata:
   name: playback-service
 spec:
+  selector:
+    matchLabels:
+      app: playback-service
   template:
     spec:
       containers:
         - name: playback-service
           env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
             - name: R2DBC_USERNAME
               valueFrom:
                 secretKeyRef:

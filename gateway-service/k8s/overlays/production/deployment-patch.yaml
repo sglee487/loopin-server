@@ -3,8 +3,16 @@ kind: Deployment
 metadata:
   name: gateway-service
 spec:
+  selector:
+    matchLabels:
+      app: gateway-service
   template:
     spec:
+      containers:
+        - name: gateway-service
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
       volumes:
         - name: gateway-config-volume
           configMap:
