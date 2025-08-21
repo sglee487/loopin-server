@@ -5,7 +5,7 @@ resources:
   - cronjob-youtube-sync.yaml
 images:
   - name: ghcr.io/sglee487/loopin-server/media-catalog-service
-    newTag: 9d34854f48600111e7d045871d7d4b2f84840275 # CI will replace this tag with the commit SHA or desired version
+    newTag: 892253a66bd8ae469291428868045b32eacd0db4 # CI will replace this tag with the commit SHA or desired version
 configMapGenerator:
   - name: media-catalog-service-config
     behavior: merge
