@@ -21,6 +21,7 @@ services:
       SERVER_PORT: 8080
       PLAYBACK_SERVICE_URL: http://playback-service:8080
       MEDIA_CATALOG_SERVICE_URL: http://media-catalog-service:8080
+      STREAMING_SERVICE_URL: http://streaming-service:8080
       ISSUER_URI: http://keycloak:8080/realms/loopin
       REDIRECT_URL: http://localhost:11420
       REDIS_HOST: gateway-redis
@@ -106,6 +107,36 @@ services:
       options:
         fluentd-address: 127.0.0.1:24224
 
+  streaming-service:
+    depends_on:
+      - loopin-postgres
+      - streaming-redis
+      - tempo
+    container_name: streaming-service
+    image: streaming-service
+#    pull_policy: always
+    ports:
+      - 59003:8080
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar"
+      OTEL_SERVICE_NAME: "streaming-service"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
+      SERVER_PORT: 8080
+      REDIS_HOST: streaming-redis
+      REDIS_PORT: 6379
+      DB_HOST: loopin-postgres
+      ISSUER_URI: http://keycloak:8080/realms/loopin
+      STREAMING_STORAGE_PATH: /app/streams
+    volumes:
+      - ./streams:/app/streams
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
   # Backing Services
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.5
@@ -129,7 +160,7 @@ services:
     image: "postgres:14.12"
     container_name: loopin-postgres
     ports:
-      - 5432:5432
+      - 54322:5432
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
@@ -159,6 +190,12 @@ services:
     container_name: media-catalog-redis
     ports:
       - 56371:6379
+
+  streaming-redis:
+    image: "redis:8.0.2"
+    container_name: streaming-redis
+    ports:
+      - 56372:6379
 
   # observability
   fluent-bit:
