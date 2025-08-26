@@ -23,12 +23,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture Overview
 
 ### Microservice Architecture
-This is a microservices platform with 4 main services communicating through REST APIs:
+This is a microservices platform with 5 main services communicating through REST APIs:
 
 1. **gateway-service** (Port 59000): Spring Cloud Gateway with OAuth2, session management via Redis, circuit breakers for downstream services
 2. **media-catalog-service** (Port 59001): R2DBC/PostgreSQL for media items and playlists, Redis caching, Bucket4j rate limiting, YouTube API integration
 3. **playback-service** (Port 59002): R2DBC/PostgreSQL for user playback sessions, communicates with media-catalog-service
-4. **youtube-fetcher-service** (Port 59011): Google YouTube Data API client, pushes data to media-catalog-service
+4. **streaming-service** (Port 59003): Real-time HLS video streaming with FFmpeg processing, multi-resolution support, R2DBC/PostgreSQL for stream sessions
+5. **youtube-fetcher-service** (Port 59011): Google YouTube Data API client, pushes data to media-catalog-service
 
 ### Key Patterns
 - **Reactive Programming**: All services use Spring WebFlux with R2DBC for non-blocking operations
@@ -40,6 +41,7 @@ This is a microservices platform with 4 main services communicating through REST
 ### Inter-Service Communication
 - Gateway routes `/api/v1/user-play-session/**` → playback-service
 - Gateway routes `/api/v1/playlists/**` → media-catalog-service
+- Gateway routes `/api/v1/streams/**` → streaming-service
 - media-catalog-service calls youtube-fetcher-service for YouTube data
 - playback-service calls media-catalog-service for media metadata
 
@@ -51,11 +53,15 @@ This is a microservices platform with 4 main services communicating through REST
 ### Database Schema
 - **media-catalog-service**: media_item, media_playlist, playlist_item_mapping tables with fractional indexing for ordering
 - **playback-service**: play_session table tracking user media consumption
+- **streaming-service**: stream_session, video_segment tables for live streaming management
 - **Recent Changes**: videoId field added to MediaItem (V4 migration)
 
 ### Special Features
 - **YouTube Sync**: Cron job batch process (`YoutubePlaylistSynchronizer`) syncs YouTube playlists
 - **Rate Limiting**: Bucket4j limits YouTube playlist operations (5 requests/day per user)
+- **HLS Streaming**: Real-time video streaming with adaptive bitrate (240p-720p) using FFmpeg/JavaCV
+- **Video Processing**: Multi-resolution encoding with 6-second segments for smooth playback
+- **Stream Management**: Live stream sessions with real-time segment cleanup and playlist generation
 - **Observability**: Full OpenTelemetry integration with Grafana/Prometheus/Tempo stack
 - **Fractional Indexing**: Uses davidarvelo/fractional-indexing for playlist item ordering
 
@@ -64,3 +70,6 @@ This is a microservices platform with 4 main services communicating through REST
 - **Integration Testing**: Services use TestContainers for PostgreSQL and Redis
 - **Security**: OAuth2 resource server pattern, JWT validation, session-based gateway auth
 - **API Versioning**: All APIs prefixed with `/api/v1/`
+- **Streaming Development**: streaming-service requires FFmpeg libraries, file storage setup, and proper WebFlux configuration
+- **Video Storage**: Stream segments stored in `/tmp/streams` by default, configurable via `STREAMING_STORAGE_PATH`
+- **Bean Conflicts**: If WebMVC/WebFlux conflicts occur, ensure `@SpringBootApplication(exclude = [WebMvcAutoConfiguration::class])`
