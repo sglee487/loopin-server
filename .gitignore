@@ -6,6 +6,7 @@ k8s/backing-services/youtube/youtube-api-key-secret.yaml
 k8s/backing-services/postgres/postgres-secret.yaml
 playback-service/k8s/overlays/production/r2dbc-secret.yaml
 media-catalog-service/k8s/overlays/production/r2dbc-secret.yaml
+youtube-fetcher-service/k8s/overlays/production/secret.yaml
 
 .idea
 
