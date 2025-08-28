@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono
 @Service
 class StreamService(
     private val streamSessionRepository: StreamSessionRepository,
-    private val videoConversionService: VideoConversionService,
     private val hlsService: HlsService
 ) {
 
@@ -50,10 +49,6 @@ class StreamService(
                 val updatedStream = stream.copy(status = StreamStatus.LIVE)
                 streamSessionRepository.save(updatedStream)
             }
-            .doOnNext { stream ->
-                // Start video processing pipeline
-                videoConversionService.startStreamProcessing(stream.streamKey)
-            }
             .map(::toResponseDto)
     }
 
@@ -62,10 +57,6 @@ class StreamService(
             .flatMap { stream ->
                 val updatedStream = stream.copy(status = StreamStatus.ENDED)
                 streamSessionRepository.save(updatedStream)
-            }
-            .doOnNext { stream ->
-                // Stop video processing pipeline
-                videoConversionService.stopStreamProcessing(stream.streamKey)
             }
             .map(::toResponseDto)
     }

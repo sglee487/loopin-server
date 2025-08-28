@@ -112,6 +112,7 @@ services:
       - loopin-postgres
       - streaming-redis
       - tempo
+      - srs-server
     container_name: streaming-service
     image: streaming-service
 #    pull_policy: always
@@ -130,12 +131,27 @@ services:
       DB_HOST: loopin-postgres
       ISSUER_URI: http://keycloak:8080/realms/loopin
       STREAMING_STORAGE_PATH: /app/streams
+      SRS_SERVER_URL: http://srs-server:1985
     volumes:
       - ./streams:/app/streams
     logging:
       driver: fluentd
       options:
         fluentd-address: 127.0.0.1:24224
+
+  srs-server:
+    image: ossrs/srs:5
+    container_name: srs-server
+    ports:
+      - "1935:1935"    # RTMP port
+      - "8080:8080"    # HTTP API and HLS
+      - "1985:1985"    # HTTP API
+    environment:
+      - SRS_DAEMON=off
+    volumes:
+      - ./srs/srs.conf:/usr/local/srs/conf/srs.conf
+      - ./streams:/usr/local/srs/objs/nginx/html
+    command: ["./objs/srs", "-c", "/usr/local/srs/conf/srs.conf"]
 
   # Backing Services
   keycloak:

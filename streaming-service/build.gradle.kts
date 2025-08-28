@@ -39,12 +39,6 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework:spring-jdbc")
 
-	// FFmpeg for video processing
-	implementation("org.bytedeco:javacv-platform:1.5.10")
-	
-	// WebSocket for real-time streaming
-	implementation("org.springframework.boot:spring-boot-starter-websocket")
-	
 	// For file storage and streaming
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
