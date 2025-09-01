@@ -140,17 +140,18 @@ services:
         fluentd-address: 127.0.0.1:24224
 
   srs-server:
-    image: ossrs/srs:5
+    image: ossrs/srs:6
     container_name: srs-server
     ports:
-      - "1935:1935"    # RTMP port
-      - "8080:8080"    # HTTP API and HLS
-      - "1985:1985"    # HTTP API
+      - "11935:1935"    # RTMP port
+      - "18080:8080"    # HTTP API and HLS
+      - "11985:1985"    # HTTP API
     environment:
       - SRS_DAEMON=off
     volumes:
       - ./srs/srs.conf:/usr/local/srs/conf/srs.conf
-      - ./streams:/usr/local/srs/objs/nginx/html
+#      - ./streams:/usr/local/srs/objs/nginx/html
+      - ./logs:/usr/local/srs/objs/logs  # 로그 디렉토리 추가
     command: ["./objs/srs", "-c", "/usr/local/srs/conf/srs.conf"]
 
   # Backing Services
