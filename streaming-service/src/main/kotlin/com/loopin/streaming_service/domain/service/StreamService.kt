@@ -3,32 +3,38 @@ package com.loopin.streaming_service.domain.service
 import com.loopin.streaming_service.domain.model.StreamSession
 import com.loopin.streaming_service.domain.model.StreamStatus
 import com.loopin.streaming_service.domain.repository.StreamSessionRepository
-import com.loopin.streaming_service.domain.web.dto.CreateStreamRequestDto
-import com.loopin.streaming_service.domain.web.dto.StreamResponseDto
-import org.springframework.core.io.Resource
-import org.springframework.data.domain.PageRequest
+import com.loopin.streaming_service.domain.web.dto.*
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
 class StreamService(
-    private val streamSessionRepository: StreamSessionRepository,
-    private val hlsService: HlsService
+    private val streamSessionRepository: StreamSessionRepository
 ) {
 
-    fun createStream(request: CreateStreamRequestDto): Mono<StreamResponseDto> {
-        return Mono.fromCallable {
-            StreamSession.create(
-                title = request.title,
-                description = request.description,
-                streamerId = "current-user", // TODO: Get from security context
-                resolution = request.resolution,
-                bitrate = request.bitrate
+    private val logger = LoggerFactory.getLogger(StreamService::class.java)
+
+    fun createStreamKey(request: CreateStreamRequestDto, userId: String): Mono<StreamerResponseDto> {
+        return streamSessionRepository.findByStreamerId(userId)
+            .flatMap<StreamerResponseDto> {
+                Mono.error(IllegalStateException("User already has a stream key. Use PATCH to update metadata or PATCH /refresh to get new key."))
+            }
+            .switchIfEmpty(
+                // 새 스트림 생성
+                Mono.fromCallable {
+                    StreamSession.create(
+                        title = request.title,
+                        description = request.description,
+                        streamerId = userId,
+                        resolution = request.resolution,
+                        bitrate = request.bitrate
+                    )
+                }.flatMap(streamSessionRepository::save)
+                    .map(::toStreamerDto)
             )
-        }
-        .flatMap(streamSessionRepository::save)
-        .map(::toResponseDto)
+            .doOnSuccess { logger.info("Stream key created for user: $userId") }
     }
 
     fun getStreamByKey(streamKey: String): Mono<StreamResponseDto> {
@@ -36,11 +42,51 @@ class StreamService(
             .map(::toResponseDto)
     }
 
-    fun getLiveStreams(page: Int, size: Int): Flux<StreamResponseDto> {
+    fun getStreamByPublicId(publicId: String): Mono<ViewerResponseDto> {
+        return streamSessionRepository.findByPublicId(publicId)
+            .map(::toViewerDto)
+    }
+
+    fun getStreamKeyByPublicId(publicId: String): Mono<String> {
+        return streamSessionRepository.findByPublicId(publicId)
+            .map { it.streamKey }
+    }
+
+    fun getLiveStreams(page: Int, size: Int): Flux<ViewerResponseDto> {
         return streamSessionRepository.findByStatus(StreamStatus.LIVE)
             .skip((page * size).toLong())
             .take(size.toLong())
-            .map(::toResponseDto)
+            .map(::toViewerDto)
+    }
+
+    fun getMyStream(streamerId: String): Mono<StreamerResponseDto> {
+        return streamSessionRepository.findByStreamerId(streamerId)
+            .map(::toStreamerDto)
+    }
+
+    fun refreshStreamKey(streamerId: String): Mono<StreamerResponseDto> {
+        return streamSessionRepository.findByStreamerId(streamerId)
+            .flatMap { existingStream ->
+                val refreshedStream = existingStream.refreshStreamKey()
+                streamSessionRepository.save(refreshedStream)
+            }
+            .map(::toStreamerDto)
+            .doOnSuccess { logger.info("Stream key refreshed for user: $streamerId") }
+    }
+
+    fun updateStreamMetadata(streamerId: String, request: UpdateStreamRequestDto): Mono<StreamerResponseDto> {
+        return streamSessionRepository.findByStreamerId(streamerId)
+            .flatMap { existingStream ->
+                val updatedStream = existingStream.copy(
+                    title = request.title ?: existingStream.title,
+                    description = request.description ?: existingStream.description,
+                    resolution = request.resolution ?: existingStream.resolution,
+                    bitrate = request.bitrate ?: existingStream.bitrate
+                )
+                streamSessionRepository.save(updatedStream)
+            }
+            .map(::toStreamerDto)
+            .doOnSuccess { logger.info("Stream metadata updated for user: $streamerId") }
     }
 
     fun startStream(streamKey: String): Mono<StreamResponseDto> {
@@ -61,27 +107,32 @@ class StreamService(
             .map(::toResponseDto)
     }
 
-    fun getMasterPlaylist(streamKey: String): Mono<String> {
-        return streamSessionRepository.findByStreamKey(streamKey)
-            .flatMap { stream ->
-                hlsService.generateMasterPlaylist(stream.streamKey, stream.resolution)
-            }
-    }
-
-    fun getResolutionPlaylist(streamKey: String, resolution: String): Mono<String> {
-        return streamSessionRepository.findByStreamKey(streamKey)
-            .flatMap { stream ->
-                hlsService.generateResolutionPlaylist(stream.streamKey, resolution)
-            }
-    }
-
-    fun getSegment(streamKey: String, resolution: String, segmentName: String): Mono<Resource> {
-        return hlsService.getSegmentFile(streamKey, resolution, segmentName)
-    }
-
-    private fun toResponseDto(stream: StreamSession): StreamResponseDto {
+    private fun toResponseDto(
+        stream: StreamSession,
+        includeStreamKey: Boolean = true,
+        includeStreamerId: Boolean = true
+    ): StreamResponseDto {
         return StreamResponseDto(
             id = stream.id!!,
+            publicId = stream.publicId,
+            streamKey = if (includeStreamKey) stream.streamKey else null,
+            title = stream.title,
+            description = stream.description,
+            status = stream.status,
+            streamerId = if (includeStreamerId) stream.streamerId else null,
+            resolution = stream.resolution,
+            bitrate = stream.bitrate,
+            viewersCount = stream.viewersCount,
+            createdAt = stream.createdAt!!,
+            updatedAt = stream.updatedAt,
+            hlsUrl = "/api/v1/streams/${stream.publicId}/playlist.m3u8"
+        )
+    }
+
+    private fun toStreamerDto(stream: StreamSession): StreamerResponseDto {
+        return StreamerResponseDto(
+            id = stream.id!!,
+            publicId = stream.publicId,
             streamKey = stream.streamKey,
             title = stream.title,
             description = stream.description,
@@ -92,7 +143,23 @@ class StreamService(
             viewersCount = stream.viewersCount,
             createdAt = stream.createdAt!!,
             updatedAt = stream.updatedAt,
-            hlsUrl = "/api/v1/streams/${stream.streamKey}/playlist.m3u8"
+            hlsUrl = "/api/v1/streams/${stream.publicId}/playlist.m3u8"
+        )
+    }
+
+    private fun toViewerDto(stream: StreamSession): ViewerResponseDto {
+        return ViewerResponseDto(
+            id = stream.id!!,
+            publicId = stream.publicId,
+            title = stream.title,
+            description = stream.description,
+            status = stream.status,
+            resolution = stream.resolution,
+            bitrate = stream.bitrate,
+            viewersCount = stream.viewersCount,
+            createdAt = stream.createdAt!!,
+            updatedAt = stream.updatedAt,
+            hlsUrl = "/api/v1/streams/${stream.publicId}/playlist.m3u8"
         )
     }
 }

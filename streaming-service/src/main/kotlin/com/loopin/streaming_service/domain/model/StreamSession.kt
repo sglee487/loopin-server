@@ -13,6 +13,9 @@ data class StreamSession(
     @Id
     val id: Long? = null,
     
+    @Column("public_id")
+    val publicId: String,
+    
     @Column("stream_key")
     val streamKey: String,
     
@@ -45,6 +48,10 @@ data class StreamSession(
     @Column("updated_at")
     val updatedAt: Instant? = null
 ) {
+    fun refreshStreamKey(): StreamSession {
+        return this.copy(streamKey = UUID.randomUUID().toString())
+    }
+
     companion object {
         fun create(
             title: String,
@@ -54,6 +61,7 @@ data class StreamSession(
             bitrate: Int = 2500
         ): StreamSession {
             return StreamSession(
+                publicId = UUID.randomUUID().toString(),
                 streamKey = UUID.randomUUID().toString(),
                 title = title,
                 description = description,

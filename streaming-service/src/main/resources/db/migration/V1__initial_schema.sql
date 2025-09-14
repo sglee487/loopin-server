@@ -13,24 +13,11 @@ CREATE TABLE stream_session (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create video_segment table
-CREATE TABLE video_segment (
-    id BIGSERIAL PRIMARY KEY,
-    stream_session_id BIGINT NOT NULL REFERENCES stream_session(id) ON DELETE CASCADE,
-    segment_number INTEGER NOT NULL,
-    file_path VARCHAR(500) NOT NULL,
-    duration DECIMAL(5,2) NOT NULL,
-    resolution VARCHAR(10) NOT NULL,
-    file_size BIGINT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
 
 -- Create indexes
 CREATE INDEX idx_stream_session_stream_key ON stream_session(stream_key);
 CREATE INDEX idx_stream_session_streamer_id ON stream_session(streamer_id);
 CREATE INDEX idx_stream_session_status ON stream_session(status);
-CREATE INDEX idx_video_segment_stream_session ON video_segment(stream_session_id);
-CREATE INDEX idx_video_segment_resolution ON video_segment(stream_session_id, resolution);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

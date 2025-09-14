@@ -16,6 +16,8 @@ class SecurityConfig {
             .authorizeExchange { exchanges ->
                 exchanges
                     .pathMatchers("/actuator/**").permitAll()
+                    .pathMatchers("/api/v1/hooks/**").permitAll()
+                    .pathMatchers("/api/v1/streams/**").permitAll()
                     .pathMatchers("/api/v1/streams/*/playlist.m3u8").permitAll()
                     .pathMatchers("/api/v1/streams/*/*/playlist.m3u8").permitAll()
                     .pathMatchers("/api/v1/streams/*/*/*.ts").permitAll()
@@ -23,6 +25,16 @@ class SecurityConfig {
             }
             .oauth2ResourceServer { oauth2 ->
                 oauth2.jwt { }
+            }
+            .cors { cors ->
+                cors.configurationSource { request ->
+                    val config = org.springframework.web.cors.CorsConfiguration()
+                    config.allowedOrigins = listOf("*")
+                    config.allowedMethods = listOf("*")
+                    config.allowedHeaders = listOf("*")
+                    config.allowCredentials = false
+                    config
+                }
             }
             .csrf { it.disable() }
             .build()

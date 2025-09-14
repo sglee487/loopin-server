@@ -44,29 +44,7 @@ logging:
     com.loopin.streaming_service: debug
 
 streaming:
-  storage:
-    base-path: ${STREAMING_STORAGE_PATH:/tmp/streams}
-    cleanup-interval: 300000 # 5 minutes in milliseconds
-    segment-retention-count: 20
-  encoding:
-    segment-duration: 6
-    resolutions:
-      - name: "240p"
-        width: 426
-        height: 240
-        bitrate: 400000
-      - name: "360p" 
-        width: 640
-        height: 360
-        bitrate: 800000
-      - name: "480p"
-        width: 854
-        height: 480
-        bitrate: 1200000
-      - name: "720p"
-        width: 1280
-        height: 720
-        bitrate: 2500000
+  base-url: ${BASE_URL:http://localhost:59103}
 
 management:
   endpoints:
