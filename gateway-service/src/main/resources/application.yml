@@ -48,6 +48,15 @@ spring:
                   args:
                     name: mediaCatalogCircuitBreaker
                     fallbackUri: forward:/media-catalog-fallback
+            - id: streaming-route
+              uri: ${STREAMING_SERVICE_URL:http://localhost:59003}
+              predicates:
+                - Path=/api/v1/streams/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: streamingCircuitBreaker
+                    fallbackUri: forward:/streaming-fallback
           default-filters:
             - SaveSession
             - TokenRelay
