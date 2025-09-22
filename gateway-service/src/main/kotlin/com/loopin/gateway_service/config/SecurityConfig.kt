@@ -62,6 +62,11 @@ class SecurityConfig(
                     "/api/v1/playlists",
                     "/api/v1/playlists/**"
                 ).permitAll()
+                .pathMatchers(
+                    HttpMethod.GET,
+                    "/api/v1/streams",
+                    "/api/v1/streams/**"
+                ).permitAll()
                 .anyExchange().authenticated()
         }
         .exceptionHandling { handlers ->

@@ -44,7 +44,7 @@ logging:
     com.loopin.streaming_service: debug
 
 streaming:
-  base-url: ${BASE_URL:http://localhost:59103}
+  base-url: ${BASE_URL:http://localhost:59000}
 
 management:
   endpoints:
