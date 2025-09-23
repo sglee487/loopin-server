@@ -11,7 +11,8 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 class CorsConfig(
     @Value("\${cors.allowed-origins:}") private val allowedOriginsRaw: String
 ) {
-    @Bean
+    // Commented out to avoid duplication with nginx CORS headers
+    // @Bean
     fun corsWebFilter(): CorsWebFilter {
         val origins: List<String> = allowedOriginsRaw
             .takeIf { it.isNotBlank() }
