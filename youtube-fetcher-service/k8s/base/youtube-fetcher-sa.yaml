@@ -1,5 +1,0 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: youtube-fetcher-sa
-  namespace: production

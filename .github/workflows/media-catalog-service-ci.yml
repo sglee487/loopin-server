@@ -155,26 +155,26 @@ jobs:
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
 
-      - name: Update production kustomization image tag
-        run: |
-          FILE="media-catalog-service/k8s/overlays/production/kustomization.yaml"
-
-          # 이미지 태그 교체 (newTag)
-          yq eval "( .images[] | select(.name == \"ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}\") ).newTag = \"${{ env.VERSION }}\"" -i "$FILE"
-
-          # Git 설정
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # 원격 변경 사항 가져오고 리베이스
-          git fetch origin main
-          git pull --rebase --autostash origin main
-
-          # 변경 사항 커밋 & 푸시
-          if ! git diff --quiet "$FILE"; then
-            git add "$FILE"
-            git commit -m "ci(media-catalog-service): bump image tag to ${{ env.VERSION }}"
-            git push
-          else
-            echo "Kustomization image tag is already up-to-date."
-          fi
+#      - name: Update production kustomization image tag
+#        run: |
+#          FILE="media-catalog-service/k8s/overlays/production/kustomization.yaml"
+#
+#          # 이미지 태그 교체 (newTag)
+#          yq eval "( .images[] | select(.name == \"ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}\") ).newTag = \"${{ env.VERSION }}\"" -i "$FILE"
+#
+#          # Git 설정
+#          git config user.name "github-actions[bot]"
+#          git config user.email "github-actions[bot]@users.noreply.github.com"
+#
+#          # 원격 변경 사항 가져오고 리베이스
+#          git fetch origin main
+#          git pull --rebase --autostash origin main
+#
+#          # 변경 사항 커밋 & 푸시
+#          if ! git diff --quiet "$FILE"; then
+#            git add "$FILE"
+#            git commit -m "ci(media-catalog-service): bump image tag to ${{ env.VERSION }}"
+#            git push
+#          else
+#            echo "Kustomization image tag is already up-to-date."
+#          fi
