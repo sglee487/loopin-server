@@ -1,0 +1,181 @@
+name: Streaming Service CI
+
+on:
+  push:
+    branches: [ '**' ]
+    paths:
+      - 'streaming-service/**'
+      # ↓ 자동 생성되는 매니페스트는 제외
+      - '!streaming-service/k8s/base/**'
+  pull_request:
+    paths:
+      - 'streaming-service/**'
+      - '!streaming-service/k8s/base/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: sglee487
+  IMAGE_NAME: loopin-server/streaming-service
+  VERSION: ${{ github.sha }}
+
+  # main‧argocd‧deploy 브랜치에 push 될 때만 릴리스
+  SHOULD_RELEASE: ${{ github.event_name == 'push' && (
+    github.ref_name == 'main' ||
+    github.ref_name == 'argocd' ||
+    github.ref_name == 'deploy' ||
+    github.ref_name == 'feat/video-streaming' 
+    ) }}
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # 1) 각 아키텍처별 이미지 빌드·푸시
+  # ──────────────────────────────────────────────────────────
+  ci:
+    strategy:
+      matrix:
+        os: [ ubuntu-22.04, ubuntu-22.04-arm ]   # amd64, arm64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: streaming-service
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+    steps:
+      # ── 소스 빌드 & 테스트 ───────────────────────────────
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Unit & integration tests
+        run: |
+          chmod +x gradlew
+          ./gradlew build
+
+      # ── 소스 스캔 (SARIF) ───────────────────────────────
+      - name: Source scan (Anchore / Grype)
+        uses: anchore/scan-action@v3
+        id: src-scan
+        with:
+          path: .
+          fail-build: false
+          severity-cutoff: high
+
+      - name: Upload SARIF (src)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.src-scan.outputs.sarif }}
+          category: anchore-src
+
+      # ── 이미지 빌드 & 푸시 ───────────────────────────────
+      - name: Log in to GHCR
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Build image (bootBuildImage)
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        env:
+          BP_OCI_SOURCE: https://github.com/${{ github.repository }}
+        run: |
+          chmod +x gradlew
+          ./gradlew bootBuildImage \
+            --imageName ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
+
+      - name: Push image (version tag only)
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        run: |
+          docker push ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
+
+      - name: Scan image (Anchore / Grype)
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        uses: anchore/scan-action@v3
+        id: img-scan
+        with:
+          image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.os }}
+          fail-build: false
+          severity-cutoff: high
+
+      - name: Upload SARIF (image)
+        if: ${{ env.SHOULD_RELEASE == 'true' }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.img-scan.outputs.sarif }}
+          category: anchore-image
+
+  # ──────────────────────────────────────────────────────────
+  # 2) 두 아키텍처 이미지를 하나의 매니페스트로 병합
+  # ──────────────────────────────────────────────────────────
+  manifest:
+    # env 컨텍스트를 쓸 수 없으므로 조건을 직접 다시 작성
+    if: ${{ github.event_name == 'push' && (
+      github.ref_name == 'main' ||
+      github.ref_name == 'argocd' ||
+      github.ref_name == 'deploy') }}
+    needs: ci
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.ref_name }}-manifest-update
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Create & push multi-arch manifest
+        run: |
+          # buildx가 없으면 생성
+          docker buildx create --use --name tmpbuilder || true
+
+          # VERSION·latest 태그에 매니페스트 작성
+          docker buildx imagetools create \
+            -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
+            -t ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest \
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
+            ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
+
+#      - name: Update and push Kubernetes manifest
+#        run: |
+#          # 이미지 태그 교체
+#          sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}|g" \
+#            streaming-service/k8s/base/deployment.yaml
+#
+#          # Git 설정
+#          git config user.name "github-actions[bot]"
+#          git config user.email "github-actions[bot]@users.noreply.github.com"
+#
+#          # 원격 변경 사항 가져와서 리베이스
+#          git fetch origin main
+#          git pull --rebase --autostash origin main
+#
+#          # 변경 사항 커밋 & 푸시
+#          if ! git diff --quiet streaming-service/k8s/base/deployment.yaml; then
+#            git add streaming-service/k8s/base/deployment.yaml
+#            git commit -m "ci(streaming-service): update image to ${{ env.VERSION }}"
+#            git push
+#          else
+#            echo "Manifest is already up-to-date."
+#          fi

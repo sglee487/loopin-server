@@ -10,3 +10,5 @@ class StreamingServiceApplication
 fun main(args: Array<String>) {
 	runApplication<StreamingServiceApplication>(*args)
 }
+
+// temp for ci test
