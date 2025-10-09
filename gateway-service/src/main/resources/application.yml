@@ -48,8 +48,8 @@ spring:
                   args:
                     name: mediaCatalogCircuitBreaker
                     fallbackUri: forward:/media-catalog-fallback
-            - id: streaming-route
-              uri: ${STREAMING_SERVICE_URL:http://localhost:59103}
+            - id: streaming-accel-route
+              uri: ${STREAMING_SERVICE_ACCEL_URL:http://localhost:59103}
               predicates:
                 - Path=/api/v1/streams/**
               filters:
