@@ -1,29 +1,31 @@
-name: Media Catalog Service CI
+name: Streaming Service CI
 
 on:
   push:
     branches: [ '**' ]
     paths:
-      - 'media-catalog-service/**'
+      - 'streaming-service/**'
       # ↓ 자동 생성되는 매니페스트는 제외
-      - '!media-catalog-service/k8s/base/**'
+      - '!streaming-service/k8s/base/**'
   pull_request:
     paths:
-      - 'media-catalog-service/**'
-      - '!media-catalog-service/k8s/base/**'
+      - 'streaming-service/**'
+      - '!streaming-service/k8s/base/**'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   OWNER: sglee487
-  IMAGE_NAME: loopin-server/media-catalog-service
+  IMAGE_NAME: loopin-server/streaming-service
   VERSION: ${{ github.sha }}
 
   # main‧argocd‧deploy 브랜치에 push 될 때만 릴리스
   SHOULD_RELEASE: ${{ github.event_name == 'push' && (
     github.ref_name == 'main' ||
     github.ref_name == 'argocd' ||
-    github.ref_name == 'deploy') }}
+    github.ref_name == 'deploy' ||
+    github.ref_name == 'feat/video-streaming' 
+    ) }}
 
 jobs:
   # ──────────────────────────────────────────────────────────
@@ -36,7 +38,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: media-catalog-service
+        working-directory: streaming-service
     permissions:
       contents: read
       packages: write
@@ -119,7 +121,9 @@ jobs:
     if: ${{ github.event_name == 'push' && (
       github.ref_name == 'main' ||
       github.ref_name == 'argocd' ||
-      github.ref_name == 'deploy') }}
+      github.ref_name == 'deploy' ||
+      github.ref_name == 'feat/video-streaming'
+      ) }}
     needs: ci
     runs-on: ubuntu-latest
     concurrency:
@@ -155,26 +159,25 @@ jobs:
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04 \
             ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-ubuntu-22.04-arm
 
-#      - name: Update production kustomization image tag
+#      - name: Update and push Kubernetes manifest
 #        run: |
-#          FILE="media-catalog-service/k8s/overlays/production/kustomization.yaml"
-#
-#          # 이미지 태그 교체 (newTag)
-#          yq eval "( .images[] | select(.name == \"ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}\") ).newTag = \"${{ env.VERSION }}\"" -i "$FILE"
+#          # 이미지 태그 교체
+#          sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}|g" \
+#            streaming-service/k8s/base/deployment.yaml
 #
 #          # Git 설정
 #          git config user.name "github-actions[bot]"
 #          git config user.email "github-actions[bot]@users.noreply.github.com"
 #
-#          # 원격 변경 사항 가져오고 리베이스
+#          # 원격 변경 사항 가져와서 리베이스
 #          git fetch origin main
 #          git pull --rebase --autostash origin main
 #
 #          # 변경 사항 커밋 & 푸시
-#          if ! git diff --quiet "$FILE"; then
-#            git add "$FILE"
-#            git commit -m "ci(media-catalog-service): bump image tag to ${{ env.VERSION }}"
+#          if ! git diff --quiet streaming-service/k8s/base/deployment.yaml; then
+#            git add streaming-service/k8s/base/deployment.yaml
+#            git commit -m "ci(streaming-service): update image to ${{ env.VERSION }}"
 #            git push
 #          else
-#            echo "Kustomization image tag is already up-to-date."
+#            echo "Manifest is already up-to-date."
 #          fi

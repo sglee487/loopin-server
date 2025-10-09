@@ -2,7 +2,9 @@ version: "3.8"
 name: loopin-system
 
 services:
+  # Application Services
   gateway-service:
+    profiles: ["app", "all"]
     depends_on:
       - gateway-redis
       - tempo
@@ -21,6 +23,7 @@ services:
       SERVER_PORT: 8080
       PLAYBACK_SERVICE_URL: http://playback-service:8080
       MEDIA_CATALOG_SERVICE_URL: http://media-catalog-service:8080
+      STREAMING_SERVICE_URL: http://streaming-service:8080
       ISSUER_URI: http://keycloak:8080/realms/loopin
       REDIRECT_URL: http://localhost:11420
       REDIS_HOST: gateway-redis
@@ -31,6 +34,7 @@ services:
         fluentd-address: 127.0.0.1:24224
 
   media-catalog-service:
+    profiles: ["app", "all"]
     depends_on:
       - loopin-postgres
       - media-catalog-redis
@@ -59,6 +63,7 @@ services:
         fluentd-address: 127.0.0.1:24224
 
   playback-service:
+    profiles: ["app", "all"]
     depends_on:
       - loopin-postgres
       - tempo
@@ -84,6 +89,7 @@ services:
         fluentd-address: 127.0.0.1:24224
 
   youtube-fetcher-service:
+    profiles: ["app", "all"]
     depends_on:
       - tempo
     container_name: youtube-fetcher-service
@@ -106,8 +112,72 @@ services:
       options:
         fluentd-address: 127.0.0.1:24224
 
-  # Backing Services
+  streaming-service:
+    profiles: ["app", "all"]
+    depends_on:
+      - loopin-postgres
+      - streaming-redis
+      - tempo
+      - srs-server
+    container_name: streaming-service
+    image: streaming-service
+#    pull_policy: always
+    ports:
+      - 59003:8080
+    environment:
+      JAVA_TOOL_OPTIONS: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-2.18.1.jar"
+      OTEL_SERVICE_NAME: "streaming-service"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4317"
+      OTEL_METRICS_EXPORTER: "none"
+      OTEL_LOGS_EXPORTER: "none"
+      SERVER_PORT: 8080
+      REDIS_HOST: streaming-redis
+      REDIS_PORT: 6379
+      DB_HOST: loopin-postgres
+      ISSUER_URI: http://keycloak:8080/realms/loopin
+      STREAMING_STORAGE_PATH: /app/streams
+      SRS_SERVER_URL: http://srs-server:1985
+    volumes:
+      - ./streams:/app/streams
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+
+  nginx-accel:
+    profiles: ["streaming", "all"]
+    image: nginx:stable
+    container_name: nginx-accel
+    ports:
+      - "59103:80"
+    volumes:
+      - ./hls-accel/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./srs-hls:/hlsroot:ro     # SRS HLS 디렉터리 공유
+#    depends_on:
+#      - streaming-service
+
+  srs-server:
+    profiles: ["streaming", "all"]
+    image: ossrs/srs:6
+    container_name: srs-server
+    ports:
+      - "1935:1935"    # RTMP port
+      - "8080:8080"    # HTTP API and HLS
+      - "1985:1985"    # HTTP API
+    environment:
+      - SRS_DAEMON=off
+    volumes:
+      - ./srs/srs.conf:/usr/local/srs/conf/srs.conf
+#      - ./streams:/usr/local/srs/objs/nginx/html
+      - ./srs/generate_master.sh:/usr/local/srs/scripts/generate_master.sh
+      - ./logs:/usr/local/srs/objs/logs  # 로그 디렉토리 추가
+      - ./srs-hls:/usr/local/srs/objs/nginx/html
+    command: ["./objs/srs", "-c", "/usr/local/srs/conf/srs.conf"]
+
+  # Infrastructure Services
   keycloak:
+    profiles: ["infra", "all"]
     image: quay.io/keycloak/keycloak:26.2.5
     container_name: keycloak
     command: start-dev --import-realm
@@ -126,10 +196,11 @@ services:
       - 59022:8080
 
   loopin-postgres:
+    profiles: ["infra", "all"]
     image: "postgres:14.12"
     container_name: loopin-postgres
     ports:
-      - 5432:5432
+      - 54322:5432
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
@@ -137,6 +208,7 @@ services:
       - ./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   keycloak-postgres:
+    profiles: ["infra", "all"]
     image: "postgres:14.12"
     container_name: keycloak-postgres
     environment:
@@ -149,19 +221,22 @@ services:
       - 5433:5432 # Use a different port to avoid conflict with loopin-postgres
 
   gateway-redis:
+    profiles: ["infra", "all"]
     image: "redis:8.0.2"
     container_name: gateway-redis
     ports:
       - 6379:6379
 
   media-catalog-redis:
+    profiles: ["infra", "all"]
     image: "redis:8.0.2"
     container_name: media-catalog-redis
     ports:
       - 56371:6379
 
-  # observability
+  # Observability Services
   fluent-bit:
+    profiles: ["observability", "all"]
     image: grafana/fluent-bit-plugin-loki:3.5.3
     container_name: fluent-bit
     ports:
@@ -172,6 +247,7 @@ services:
       - ./observability/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
 
   loki:
+    profiles: ["observability", "all"]
     image: grafana/loki:3.5.3
     container_name: loki
     depends_on:
@@ -180,6 +256,7 @@ services:
       - "3100:3100"
 
   prometheus:
+    profiles: ["observability", "all"]
     image: quay.io/prometheus/prometheus:v3.5.0
     container_name: prometheus
     ports:
@@ -188,6 +265,7 @@ services:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
   tempo:
+    profiles: ["observability", "all"]
     image: grafana/tempo:2.8.1
     container_name: tempo
     command: -config.file=/etc/tempo-config.yml
@@ -200,6 +278,7 @@ services:
       - ./observability/tempo/tempo.yml:/etc/tempo-config.yml
 
   grafana:
+    profiles: ["observability", "all"]
     image: grafana/grafana-oss:12.1.0
     container_name: grafana
     depends_on:

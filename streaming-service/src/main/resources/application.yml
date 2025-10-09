@@ -1,21 +1,24 @@
 server:
-  port: ${SERVER_PORT:59002}
+  port: ${SERVER_PORT:59003}
   shutdown: graceful
   netty:
     connection-timeout: 2s
-    idle-timeout: 15s
+    idle-timeout: 30s
 
 spring:
   application:
-    name: playback-service
+    name: streaming-service
   config:
     import: "optional:kubernetes:"
+  main:
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
   lifecycle:
     timeout-per-shutdown-phase: 15s
   r2dbc:
     username: user
     password: password
-    url: r2dbc:postgresql://${DB_HOST:localhost}:5432/loopin_playback
+    url: r2dbc:postgresql://${DB_HOST:localhost}:54322/loopin_streaming
     pool:
       max-create-connection-time: 2s
       initial-size: 5
@@ -23,7 +26,7 @@ spring:
   flyway:
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
-    url: jdbc:postgresql://${DB_HOST:localhost}:5432/loopin_playback
+    url: jdbc:postgresql://${DB_HOST:localhost}:54322/loopin_streaming
   security:
     oauth2:
       resourceserver:
@@ -34,17 +37,17 @@ logging:
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
-    com.loopin.playback_service: debug
+    com.loopin.streaming_service: debug
   exception-conversion-word: "%ex{10}"
 
-loopin:
-  media-catalog-service-uri: "${MEDIA_CATALOG_SERVICE_URL:http://localhost:59001}"
+streaming:
+  base-url: ${BASE_URL:http://localhost:59000}
 
 management:
   endpoints:
     web:
       exposure:
-        include: configprops, env, gateway, health, heapdump, info, loggers, mappings, prometheus
+        include: configprops, env, health, heapdump, info, loggers, mappings, prometheus
   endpoint:
     health:
       show-details: always

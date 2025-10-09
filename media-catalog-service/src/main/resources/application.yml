@@ -74,6 +74,7 @@ logging:
   level:
     com.giffing.bucket4j: trace
     com.loopin.media_catalog_service: debug
+  exception-conversion-word: "%ex{10}"
 
 loopin:
   youtube-service-uri: ${YOUTUBE_FETCHER_SERVICE_URL:http://localhost:59011}

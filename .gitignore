@@ -8,6 +8,8 @@ playback-service/k8s/overlays/production/r2dbc-secret.yaml
 media-catalog-service/k8s/overlays/production/r2dbc-secret.yaml
 youtube-fetcher-service/k8s/overlays/production/secret.yaml
 
+loopin-deployment/docker/srs-hls
+
 .idea
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux,intellij+all,visualstudiocode,kotlin,java,dotenv

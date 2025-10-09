@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-init-db-configmap
-data:
-  init.sql: |
-    CREATE DATABASE loopin_media_catalog;
-    CREATE DATABASE loopin_playback;
