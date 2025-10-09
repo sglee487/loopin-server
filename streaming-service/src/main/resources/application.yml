@@ -32,10 +32,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${ISSUER_URI:http://localhost:59022/realms/loopin}
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
 
 logging:
   pattern:
@@ -59,7 +55,7 @@ management:
         enabled: true
       group:
         readiness:
-          include: readinessState,redis
+          include: readinessState
   info:
     env:
       enabled: true

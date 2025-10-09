@@ -234,13 +234,6 @@ services:
     ports:
       - 56371:6379
 
-  streaming-redis:
-    profiles: ["infra", "all"]
-    image: "redis:8.0.2"
-    container_name: streaming-redis
-    ports:
-      - 56372:6379
-
   # Observability Services
   fluent-bit:
     profiles: ["observability", "all"]
