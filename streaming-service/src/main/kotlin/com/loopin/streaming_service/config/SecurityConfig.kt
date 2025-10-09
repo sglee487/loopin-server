@@ -2,8 +2,11 @@ package com.loopin.streaming_service.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import org.springframework.security.web.server.SecurityWebFilterChain
 
 @Configuration
@@ -24,19 +27,19 @@ class SecurityConfig {
                     .anyExchange().authenticated()
             }
             .oauth2ResourceServer { oauth2 ->
-                oauth2.jwt { }
+                oauth2.jwt(Customizer.withDefaults())
             }
-            .cors { cors ->
-                cors.configurationSource { request ->
-                    val config = org.springframework.web.cors.CorsConfiguration()
-                    config.allowedOrigins = listOf("*")
-                    config.allowedMethods = listOf("*")
-                    config.allowedHeaders = listOf("*")
-                    config.allowCredentials = false
-                    config
-                }
-            }
-            .csrf { it.disable() }
             .build()
+    }
+
+    @Bean
+    fun jwtAuthenticationConverter(): JwtAuthenticationConverter {
+        val jwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter()
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_")
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("roles")
+
+        val jwtAuthenticationConverter = JwtAuthenticationConverter()
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter)
+        return jwtAuthenticationConverter
     }
 }
