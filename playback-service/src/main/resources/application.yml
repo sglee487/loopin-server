@@ -35,6 +35,7 @@ logging:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
     com.loopin.playback_service: debug
+  exception-conversion-word: "%ex{10}"
 
 loopin:
   media-catalog-service-uri: "${MEDIA_CATALOG_SERVICE_URL:http://localhost:59001}"

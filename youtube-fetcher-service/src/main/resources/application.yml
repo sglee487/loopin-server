@@ -16,6 +16,7 @@ youtube:
 logging:
   level:
     com.loopin.youtube_fetcher_service: debug
+  exception-conversion-word: "%ex{10}"
 
 management:
   endpoints:

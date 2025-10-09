@@ -38,6 +38,7 @@ logging:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
   level:
     com.loopin.streaming_service: debug
+  exception-conversion-word: "%ex{10}"
 
 streaming:
   base-url: ${BASE_URL:http://localhost:59000}
