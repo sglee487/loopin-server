@@ -8,6 +8,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 import org.springframework.security.web.server.SecurityWebFilterChain
+import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache
 
 @Configuration
 @EnableWebFluxSecurity
@@ -16,6 +17,7 @@ class SecurityConfig {
     @Bean
     fun securityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
         return http
+            .csrf { it.disable() }
             .authorizeExchange { exchanges ->
                 exchanges
                     .pathMatchers("/actuator/**").permitAll()
@@ -29,6 +31,7 @@ class SecurityConfig {
             .oauth2ResourceServer { oauth2 ->
                 oauth2.jwt(Customizer.withDefaults())
             }
+            .requestCache { it.requestCache(NoOpServerRequestCache.getInstance()) }
             .build()
     }
 
