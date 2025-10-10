@@ -6,7 +6,8 @@ import java.time.Instant
 data class StreamerResponseDto(
     val id: Long,
     val publicId: String,
-    val streamKey: String,
+    val streamKey: String,  // OBS Stream Key 필드에 입력
+    val rtmpUrl: String,    // OBS Server 필드에 입력 (예: rtmp://host:1935/live)
     val title: String,
     val description: String?,
     val status: StreamStatus,

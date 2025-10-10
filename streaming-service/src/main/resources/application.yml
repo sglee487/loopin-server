@@ -42,6 +42,7 @@ logging:
 
 streaming:
   base-url: ${BASE_URL:http://localhost:59000}
+  rtmp-url: ${RTMP_URL:rtmp://localhost:1935/live}
 
 management:
   endpoints:

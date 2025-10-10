@@ -5,13 +5,15 @@ import com.loopin.streaming_service.domain.model.StreamStatus
 import com.loopin.streaming_service.domain.repository.StreamSessionRepository
 import com.loopin.streaming_service.domain.web.dto.*
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
 class StreamService(
-    private val streamSessionRepository: StreamSessionRepository
+    private val streamSessionRepository: StreamSessionRepository,
+    @Value("\${streaming.rtmp-url}") private val rtmpBaseUrl: String
 ) {
 
     private val logger = LoggerFactory.getLogger(StreamService::class.java)
@@ -134,6 +136,7 @@ class StreamService(
             id = stream.id!!,
             publicId = stream.publicId,
             streamKey = stream.streamKey,
+            rtmpUrl = rtmpBaseUrl,  // OBS Server 필드용 (예: rtmp://host:1935/live)
             title = stream.title,
             description = stream.description,
             status = stream.status,
