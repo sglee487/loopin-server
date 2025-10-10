@@ -28,13 +28,13 @@ class CorsConfig(
         }
 
         val source = UrlBasedCorsConfigurationSource()
-        // Apply CORS to all paths except streaming
+        // Apply CORS to all API paths
         source.registerCorsConfiguration("/api/v1/playlists/**", corsConfig)
         source.registerCorsConfiguration("/api/v1/user-play-session/**", corsConfig)
         source.registerCorsConfiguration("/api/v1/stream/**", corsConfig)
         source.registerCorsConfiguration("/api/v1/streams/**", corsConfig)
+        source.registerCorsConfiguration("/api/v1/streams/hls/**", corsConfig)
         source.registerCorsConfiguration("/api/v1/user/**", corsConfig)
-        // Streaming paths are handled by nginx, so no CORS config needed
 
         return CorsWebFilter(source)
     }

@@ -60,6 +60,10 @@ spring:
                 - name: RemoveRequestHeader
                   args:
                     name: Authorization
+                - name: DedupeResponseHeader
+                  args:
+                    name: Access-Control-Allow-Origin Access-Control-Allow-Credentials
+                    strategy: RETAIN_FIRST
             - id: streaming-management-route
               uri: ${STREAMING_SERVICE_URL:http://localhost:59003}
               predicates:
