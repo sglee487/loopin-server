@@ -49,20 +49,12 @@ class ViewerController(
             #EXT-X-VERSION:3
             #EXT-X-INDEPENDENT-SEGMENTS
 
-            # 1080p (60fps)
-            #EXT-X-STREAM-INF:BANDWIDTH=5500000,RESOLUTION=1920x1080,FRAME-RATE=60
-            ${baseURL}/api/v1/streams/hls/${publicId}/seg/1080p/index.m3u8
-
-            # 720p (60fps)
-            #EXT-X-STREAM-INF:BANDWIDTH=3200000,RESOLUTION=1280x720,FRAME-RATE=60
+            # 720p (30fps) - 고화질
+            #EXT-X-STREAM-INF:BANDWIDTH=1750000,RESOLUTION=1280x720,FRAME-RATE=30
             ${baseURL}/api/v1/streams/hls/${publicId}/seg/720p/index.m3u8
 
-            # 480p (30fps)
-            #EXT-X-STREAM-INF:BANDWIDTH=1500000,RESOLUTION=854x480,FRAME-RATE=30
-            ${baseURL}/api/v1/streams/hls/${publicId}/seg/480p/index.m3u8
-
-            # 360p (30fps)
-            #EXT-X-STREAM-INF:BANDWIDTH=900000,RESOLUTION=640x360,FRAME-RATE=30
+            # 360p (30fps) - 저화질
+            #EXT-X-STREAM-INF:BANDWIDTH=300000,RESOLUTION=640x360,FRAME-RATE=30
             ${baseURL}/api/v1/streams/hls/${publicId}/seg/360p/index.m3u8
 
         """.trimIndent()
