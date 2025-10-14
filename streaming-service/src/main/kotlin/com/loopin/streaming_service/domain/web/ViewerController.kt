@@ -76,9 +76,18 @@ class ViewerController(
             logger.info("HLS seg request: secret=$secret")
             val internalPath = "/_internal/hls/abr/live/${secret}_${variant}/$file"
             logger.info("HLS seg request: internalPath=$internalPath")
-            ResponseEntity.ok()
+
+            // m3u8 파일은 캐싱하지 않고, ts 파일은 캐싱 허용
+            val responseBuilder = ResponseEntity.ok()
                 .header("X-Accel-Redirect", internalPath)
-                .build()
+
+            if (file.endsWith(".m3u8")) {
+                responseBuilder
+                    .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    .header("Pragma", "no-cache")
+                    .header("Expires", "0")
+            }
+            responseBuilder.build()
         }
     }
 
