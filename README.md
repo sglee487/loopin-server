@@ -7,52 +7,42 @@ A collection of Kotlin/Spring Boot services that together provide the **LoopIn**
 ## 🗺️ Architecture
 
 ```mermaid
-flowchart TB
+block-beta
+  columns 5
 
-  %% CLIENT
-  subgraph "Client"
-    C["Web / Mobile"]
+  space:2 C["🖥️ Client"]:1 space:2
+
+  space:5
+
+  KC["🔐 Keycloak"]:1 space G["🚪 gateway-service"]:1 space GR[("Session\nRedis")]:1
+
+  space:5
+
+  block:services:5
+    columns 3
+    MC["📚 media-catalog"]:1
+    PB["▶️ playback"]:1
+    ST["📡 streaming"]:1
   end
 
-  %% SERVERS
-  subgraph "Servers"
-    direction TB
-    G["gateway-service"]
-    YF["youtube-fetcher-service"]
-    subgraph "Business"
-      direction TB
-      MC["media-catalog-service"]
-      PB["playback-service"]
-      ST["streaming-service"]
-    end
-  end
+  space:5
 
-  %% INFRA
-  subgraph "Infra"
-    KC["Keycloak"]
-    DS[("PostgreSQL & Redis")]
-    FS[("File Storage")]
-  end
+  YT["🌐 YouTube API"]:1 YF["⚙️ youtube-fetcher"]:1 PG[("PostgreSQL")]:1 RD[("Cache\nRedis")]:1 FS[("File\nStorage")]:1
 
-  %% EXTERNAL API
-  YT["YouTube API"]
-
-  %% FLOWS
   C --> G
   G --> KC
-  G --> MC
-  G --> PB
-  G --> ST
-  YF --> MC
-  YF -- fetch --> YT
-  MC --> DS
-  PB --> DS
-  ST --> DS
+  G --> GR
+  G --> services
+  MC --> PG
+  MC --> RD
+  PB --> PG
+  ST --> PG
   ST --> FS
-  ST -- HLS --> C
+  YF --> MC
+  YF --> YT
 ```
 
-> Zone legend: **Client** (users), **Servers** (application layer including gateway & business services), **Infra** (authentication, data storage & file storage). External traffic reaches `gateway-service`, which routes to core services (`media-catalog-service`, `playback-service`, `streaming-service`). `streaming-service` provides real-time HLS video streaming with multi-resolution support. `youtube-fetcher-service` is an internal worker that pulls data from the YouTube Data API into the catalog. Persistence is handled by PostgreSQL and Redis; Keycloak provides OAuth2.
+> Zone legend: **Client** (users), **Servers** (application layer including gateway & business services), **Infra** (authentication, data storage & file storage). External traffic reaches `gateway-service`, which routes to core services (`media-catalog-service`, `playback-service`, `streaming-service`). `streaming-service` provides real-time HLS video streaming with multi-resolution support. `youtube-fetcher-service` is an internal worker that pulls data from the YouTube Data API into the catalog. PostgreSQL handles persistence for business services; Redis provides session management for `gateway-service` and caching/rate-limiting for `media-catalog-service`; Keycloak provides OAuth2.
 
 ---
 
@@ -60,13 +50,13 @@ flowchart TB
 
 | Service                   | Port (internal) | Description                                                                                                       |
 | ------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `gateway-service`         | 59000 (default) | Entry-point; routes requests, enforces CORS, rate-limiting, and JWT authentication. Overrides via `SERVER_PORT`.  |
+| `gateway-service`         | 59000 (default) | Entry-point; routes requests, enforces CORS, rate-limiting, JWT authentication, and Redis-backed session management. |
 | `media-catalog-service`   | 59001           | Stores media items & playlists, exposes CRUD+search APIs, caches hot data in Redis.                               |
 | `playback-service`        | 59002           | Tracks user playback history & statistics; consumes catalog APIs.                                                 |
 | `streaming-service`       | 59003           | Real-time video streaming with HLS; handles live streams, video conversion, and multi-resolution adaptive streaming. |
 | `youtube-fetcher-service` | 59011           | Internal worker (no public API); fetches playlists/videos from YouTube Data API and pushes them into the catalog. |
 | **Backing (Keycloak)**    | 59022           | OAuth2 provider realm `loopin`; holds users & client registrations.                                               |
-| **Shared Infra**          | 5432 / 6379     | PostgreSQL & Redis instances used by services.                                                                    |
+| **Shared Infra**          | 5432 / 6379     | PostgreSQL (media-catalog, playback, streaming) & Redis (gateway session, media-catalog cache/rate-limit).        |
 
 ---
 
