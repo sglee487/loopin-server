@@ -7,42 +7,90 @@ A collection of Kotlin/Spring Boot services that together provide the **LoopIn**
 ## 🗺️ Architecture
 
 ```mermaid
-block-beta
-  columns 5
-
-  space:2 C["🖥️ Client"]:1 space:2
-
-  space:5
-
-  KC["🔐 Keycloak"]:1 space G["🚪 gateway-service"]:1 space GR[("Session\nRedis")]:1
-
-  space:5
-
-  block:services:5
-    columns 3
-    MC["📚 media-catalog"]:1
-    PB["▶️ playback"]:1
-    ST["📡 streaming"]:1
+flowchart TB
+  subgraph Clients["👥 Clients"]
+    C["🖥️ Viewer"]
+    OBS["🎥 OBS/Streamer"]
   end
 
-  space:5
+  subgraph Ingress["🌐 Ingress (Traefik)"]
+    ING_HTTP["HTTP/HTTPS"]
+    ING_RTMP["RTMP :1935"]
+  end
 
-  YT["🌐 YouTube API"]:1 YF["⚙️ youtube-fetcher"]:1 PG[("PostgreSQL")]:1 RD[("Cache\nRedis")]:1 FS[("File\nStorage")]:1
+  subgraph Gateway["🚪 Gateway Layer"]
+    G["gateway-service"]
+    KC["🔐 Keycloak"]
+    GR[("Session<br/>Redis")]
+  end
 
-  C --> G
-  G --> KC
+  subgraph Services["⚙️ Application Services"]
+    MC["📚 media-catalog"]
+    PB["▶️ playback"]
+    ST["📡 streaming-service"]
+  end
+
+  subgraph Streaming["📺 Streaming Infrastructure"]
+    NA["⚡ nginx-accel"]
+    SRS["📺 srs-server"]
+    HLS[("hls-storage<br/>PVC")]
+  end
+
+  subgraph Data["💾 Data Layer"]
+    PG[("PostgreSQL")]
+    RD[("Cache<br/>Redis")]
+  end
+
+  subgraph External["🌍 External"]
+    YT["YouTube API"]
+    YF["⚙️ youtube-fetcher"]
+  end
+
+  %% Client to Ingress
+  C -->|API Request| ING_HTTP
+  OBS -->|RTMP Stream| ING_RTMP
+
+  %% Ingress Routing
+  ING_HTTP --> G
+  ING_RTMP --> SRS
+
+  %% Gateway connections
+  G <-->|OAuth2| KC
   G --> GR
-  G --> services
+  G --> MC & PB & ST
+
+  %% Service to Data
   MC --> PG
   MC --> RD
   PB --> PG
   ST --> PG
-  ST --> FS
+
+  %% YouTube Fetcher
   YF --> MC
   YF --> YT
+
+  %% HLS Streaming Flow (nginx-accel handles HLS delivery)
+  C -->|HLS Request| NA
+  NA -->|X-Accel Auth| ST
+  ST -.->|X-Accel-Redirect| NA
+  NA -->|Read| HLS
+
+  %% SRS Flow
+  SRS -->|on_publish<br/>on_unpublish| ST
+  SRS -->|Write HLS| HLS
 ```
 
-> Zone legend: **Client** (users), **Servers** (application layer including gateway & business services), **Infra** (authentication, data storage & file storage). External traffic reaches `gateway-service`, which routes to core services (`media-catalog-service`, `playback-service`, `streaming-service`). `streaming-service` provides real-time HLS video streaming with multi-resolution support. `youtube-fetcher-service` is an internal worker that pulls data from the YouTube Data API into the catalog. PostgreSQL handles persistence for business services; Redis provides session management for `gateway-service` and caching/rate-limiting for `media-catalog-service`; Keycloak provides OAuth2.
+> **Architecture Overview:**
+>
+> - **Ingress Layer**: Traefik handles HTTP traffic and RTMP streaming (`:1935` via IngressRouteTCP).
+> - **Gateway**: `gateway-service` routes API requests to backend services, manages sessions (Redis), and authenticates via Keycloak OAuth2.
+> - **Application Services**: `media-catalog`, `playback`, and `streaming-service` handle business logic with PostgreSQL persistence.
+> - **Streaming Infrastructure**:
+>   - **OBS/Streamer** → RTMP → **srs-server**: Receives live streams, transcodes to HLS, writes to shared `hls-storage` PVC.
+>   - **srs-server** → **streaming-service**: Calls `on_publish`/`on_unpublish` webhooks for stream lifecycle management.
+>   - **Viewer** → **nginx-accel** → **streaming-service**: HLS requests proxied for auth; `streaming-service` returns `X-Accel-Redirect` header.
+>   - **nginx-accel** → **hls-storage**: Serves HLS files directly from shared PVC (internal location).
+> - **External**: `youtube-fetcher-service` syncs playlists from YouTube Data API into `media-catalog`.
 
 ---
 
