@@ -69,8 +69,8 @@ flowchart TB
   YF --> MC
   YF --> YT
 
-  %% HLS Streaming Flow (nginx-accel handles HLS delivery)
-  C -->|HLS Request| NA
+  %% HLS Streaming Flow (gateway routes to nginx-accel)
+  G -->|HLS /api/v1/streams/hls/**| NA
   NA -->|X-Accel Auth| ST
   ST -.->|X-Accel-Redirect| NA
   NA -->|Read| HLS
@@ -88,7 +88,7 @@ flowchart TB
 > - **Streaming Infrastructure**:
 >   - **OBS/Streamer** → RTMP → **srs-server**: Receives live streams, transcodes to HLS, writes to shared `hls-storage` PVC.
 >   - **srs-server** → **streaming-service**: Calls `on_publish`/`on_unpublish` webhooks for stream lifecycle management.
->   - **Viewer** → **nginx-accel** → **streaming-service**: HLS requests proxied for auth; `streaming-service` returns `X-Accel-Redirect` header.
+>   - **Viewer** → **gateway-service** → **nginx-accel** → **streaming-service**: HLS requests (`/api/v1/streams/hls/**`) routed through gateway; `streaming-service` returns `X-Accel-Redirect` header.
 >   - **nginx-accel** → **hls-storage**: Serves HLS files directly from shared PVC (internal location).
 > - **External**: `youtube-fetcher-service` syncs playlists from YouTube Data API into `media-catalog`.
 
